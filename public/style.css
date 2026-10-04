@@ -1581,3 +1581,45 @@ html.knit-bg:not([data-theme="knit_night"]) .how-to-play-title { color: color-mi
 :root[data-theme="honey"] .how-to-play-title, :root[data-theme="sky"] .highlight, :root[data-theme="sky"] .how-to-play-title,
 :root[data-theme="meadow"] .highlight, :root[data-theme="meadow"] .how-to-play-title { color: color-mix(in srgb, var(--cyan) 72%, #000); }
 html[data-theme="dark"] .mode-btn.active, html[data-theme="dark"] .lb-modal-tab.active { background: linear-gradient(var(--pink), color-mix(in srgb, var(--pink) 92%, #000)); }
+
+
+/* =====================================================================
+   PART 17 - FUSED TILE COLOURS (level 1 and level 2 picked in Settings)
+   html.fc1 / html.fc2 are set by client.js when a colour is chosen.
+   The colour wins over the yarn colours; selected / wrong / peek tiles
+   keep their own look so those signals are never hidden.
+   ===================================================================== */
+html.fc1 .tile.fused[data-f="1"]:not(.sel):not(.wrong):not(.peek),
+html.fc2 .tile.fused[data-f="2"]:not(.sel):not(.wrong):not(.peek) {
+  background: linear-gradient(var(--fc-b1), var(--fc-b2));
+  border-color: var(--fc-be); border-width: 2px;
+  box-shadow: 0 3px 0 var(--fc-be);
+  color: var(--fc-tx); text-shadow: none;
+}
+html.fc1 .tile.fused[data-f="1"] { --fc-b1: var(--f1-b1); --fc-b2: var(--f1-b2); --fc-be: var(--f1-be); --fc-tx: var(--f1-tx); }
+html.fc2 .tile.fused[data-f="2"] { --fc-b1: var(--f2-b1); --fc-b2: var(--f2-b2); --fc-be: var(--f2-be); --fc-tx: var(--f2-tx); }
+html.fc1 .tile.fused[data-f="1"]:not(.sel):not(.wrong):not(.peek)::before,
+html.fc2 .tile.fused[data-f="2"]:not(.sel):not(.wrong):not(.peek)::before { border-color: color-mix(in srgb, var(--fc-tx) 45%, transparent); }
+html.fc1 .tile.fused[data-f="1"]:not(.sel):not(.wrong):not(.peek) .tile-sub,
+html.fc2 .tile.fused[data-f="2"]:not(.sel):not(.wrong):not(.peek) .tile-sub { opacity: 1; }
+/* level 2 also gets a second thin ring, so the two levels differ by more than colour alone */
+html.fc2 .tile.fused[data-f="2"]:not(.sel):not(.wrong):not(.peek) { outline: 2px solid var(--fc-be); outline-offset: -5px; }
+html.fc1 .tile.fused[data-f="1"]:not(.sel):not(.wrong):not(.peek):active,
+html.fc2 .tile.fused[data-f="2"]:not(.sel):not(.wrong):not(.peek):active { box-shadow: 0 1px 0 var(--fc-be); }
+
+/* settings box */
+.fc-box { border: 2px dashed var(--border); border-radius: 12px; padding: 10px 12px; margin: 0 0 12px; background: var(--bg-panel); }
+.fc-box .hints-title { margin: 0 0 4px; }
+.fc-row { padding: 8px 0 6px; border-top: 1px dashed var(--border); }
+.fc-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.fc-title { font-weight: 800; font-size: 13px; color: var(--text); }
+.fc-title small { font-weight: 600; color: var(--text-dim); }
+.fc-preview { flex: 0 1 auto; min-width: 0; max-width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 4px 12px; border-radius: 10px; border: 2px solid var(--border); font-weight: 800; font-size: 12px; background: var(--given); color: var(--text); }
+.fc-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(30px, 1fr)); gap: 6px; }
+.fc-sw { box-sizing: border-box; width: 100%; max-width: 38px; aspect-ratio: 1 / 1; border-radius: 50%; border: 2px solid var(--border); cursor: pointer; padding: 0; position: relative; box-shadow: 0 2px 0 rgba(0,0,0,.18); }
+.fc-sw.fc-none { background: repeating-linear-gradient(45deg, var(--given) 0 5px, var(--bg-input) 5px 10px); }
+.fc-sw.fc-none::after { content: "\2205"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--text); font-size: 15px; font-weight: 800; }
+.fc-sw.active { border-color: var(--text); box-shadow: 0 0 0 2px var(--bg-panel), 0 0 0 4px var(--text); }
+.fc-custom { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 12px; font-weight: 700; color: var(--text); }
+.fc-custom input[type="color"] { width: 44px; height: 28px; padding: 0; border: 2px solid var(--border); border-radius: 8px; background: var(--bg-input); cursor: pointer; }
+.fc-box .timing-reset-btn { margin-top: 6px; }

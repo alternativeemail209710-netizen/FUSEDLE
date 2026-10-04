@@ -2,6 +2,12 @@
 
 This folder is the complete, finished app. You do not need to edit any code.
 
+> **v7.7 - fused tile colours:** Settings has a new **Fused tile colours** box. Level 1 fused tiles (e.g. "Car") and level 2 fused tiles
+> (e.g. "Land Transport") each get their own colour, chosen from 18 shades or any custom colour, or "same as other tiles" to switch it off.
+> Defaults are Teal (level 1) and Burgundy (level 2), so fused tiles stand out from tiles that are still waiting. Level 2 also has a thin inner ring,
+> so the two levels differ by more than colour. Letters switch between dark and white automatically (at least 4.5:1 on every palette colour).
+> The choice is saved on the device.
+
 > **v7.6 - phone fit + dark-theme readability**
 > - The game area now sizes itself to the phone: tile rows (54px down to 32px) and the finished-group cards (normal, slim, or two per row) shrink only as far as needed, so the status row, tiles, both leaderboards and the console all stay on screen from 360x640 phones up. Only a very short phone (about 320x568) with many finished groups may scroll inside the game box.
 > - The status line keeps the timer fully visible (long words are dropped on narrow screens), and the Offline guess bar is now one slim row.

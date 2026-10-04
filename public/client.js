@@ -52,6 +52,74 @@
   applyYarn(localStorage.getItem('fusedle-yarn') !== '0');
   $('yarnToggle').addEventListener('change', (e) => applyYarn(e.target.checked));
 
+  // ---- Fused tile colours (level 1 and level 2 can each get their own colour) ----
+  const FUSED_PALETTE = [
+    ['Teal', '#1F7A72'], ['Aqua', '#2EC4B6'], ['Sky', '#3A9AD9'], ['Royal Blue', '#2F5DA8'], ['Navy', '#1F3A5F'],
+    ['Forest', '#2F6B3A'], ['Lime', '#9ACD32'], ['Gold', '#E8B100'], ['Orange', '#E8731A'], ['Red', '#D13438'],
+    ['Burgundy', '#9B2C4F'], ['Hot Pink', '#E0457B'], ['Violet', '#5B3A9E'], ['Lilac', '#B79CE8'],
+    ['Chocolate', '#5B3A21'], ['Charcoal', '#3A3F47'], ['Silver', '#CBD2D9'], ['White', '#FFFFFF']
+  ];
+  const FUSED_DEFAULTS = { 1: '#1F7A72', 2: '#9B2C4F' };       // 'none' = same as the other tiles
+  const hexOk = (v) => /^#[0-9a-f]{6}$/i.test(String(v || ''));
+  let fusedPrefs = (function () {
+    const p = readJson('fusedle-fused'), o = {};
+    [1, 2].forEach((k) => { o[k] = (p[k] === 'none' || hexOk(p[k])) ? p[k] : FUSED_DEFAULTS[k]; });
+    return o;
+  })();
+  function hexToRgb(h) { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+  function rgbToHex(c) { return '#' + c.map((x) => Math.max(0, Math.min(255, Math.round(x))).toString(16).padStart(2, '0')).join(''); }
+  function mixRgb(a, b, t) { return a.map((x, i) => x + (b[i] - x) * t); }
+  function lum(c) { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]); }
+  function contrast(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+  // Letters: dark or white, whichever reads better on this colour.
+  // Dark letters sit on a slightly lighter gradient, white letters on a slightly darker one, so contrast never drops.
+  function fusedStyle(hex) {
+    const base = hexToRgb(hex), dark = [30, 20, 8], white = [255, 255, 255];
+    const lightTop = mixRgb(base, white, 0.18), darkBot = mixRgb(base, [0, 0, 0], 0.14);
+    const useDark = Math.min(contrast(base, dark), contrast(lightTop, dark)) >= Math.min(contrast(base, white), contrast(darkBot, white));
+    const top = useDark ? lightTop : base, bot = useDark ? base : darkBot, edge = mixRgb(base, [0, 0, 0], 0.38);
+    const inkRgb = useDark ? dark : white;
+    return { b1: rgbToHex(top), b2: rgbToHex(bot), be: rgbToHex(edge), tx: useDark ? '#1E1408' : '#FFFFFF', ok: Math.min(contrast(top, inkRgb), contrast(bot, inkRgb)) };
+  }
+  function applyFusedColors() {
+    const root = document.documentElement;
+    [1, 2].forEach((k) => {
+      const v = fusedPrefs[k], on = hexOk(v);
+      root.classList.toggle('fc' + k, on);
+      if (on) {
+        const st = fusedStyle(v);
+        root.style.setProperty('--f' + k + '-b1', st.b1); root.style.setProperty('--f' + k + '-b2', st.b2);
+        root.style.setProperty('--f' + k + '-be', st.be); root.style.setProperty('--f' + k + '-tx', st.tx);
+      } else ['b1', 'b2', 'be', 'tx'].forEach((n) => root.style.removeProperty('--f' + k + '-' + n));
+      const pv = $('fcPreview' + k);
+      if (pv) { pv.classList.toggle('plain', !on); if (on) { const st = fusedStyle(v); pv.style.background = 'linear-gradient(' + st.b1 + ',' + st.b2 + ')'; pv.style.borderColor = st.be; pv.style.color = st.tx; } else { pv.style.background = ''; pv.style.borderColor = ''; pv.style.color = ''; } }
+      const cp = $('fcCustom' + k); if (cp && on) cp.value = v.toLowerCase();
+      document.querySelectorAll('#fcSwatches' + k + ' .fc-sw').forEach((b) => {
+        const sel = (b.dataset.c === 'none' && v === 'none') || (hexOk(v) && b.dataset.c && b.dataset.c.toLowerCase() === v.toLowerCase());
+        b.classList.toggle('active', !!sel); b.setAttribute('aria-checked', sel ? 'true' : 'false');
+      });
+    });
+    writeJson('fusedle-fused', fusedPrefs);
+  }
+  function buildFusedPickers() {
+    [1, 2].forEach((k) => {
+      const box = $('fcSwatches' + k); if (!box) return;
+      const mkSw = (name, c) => {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'fc-sw' + (c === 'none' ? ' fc-none' : '');
+        b.dataset.c = c; b.title = name; b.setAttribute('role', 'radio'); b.setAttribute('aria-label', name);
+        if (c !== 'none') b.style.background = c;
+        b.addEventListener('click', () => { fusedPrefs[k] = c; applyFusedColors(); });
+        box.appendChild(b);
+      };
+      mkSw('Same as other tiles', 'none');
+      FUSED_PALETTE.forEach((p) => mkSw(p[0], p[1]));
+      $('fcCustom' + k).addEventListener('input', (e) => { fusedPrefs[k] = e.target.value; applyFusedColors(); });
+    });
+    $('fcResetBtn').addEventListener('click', () => { fusedPrefs = { 1: FUSED_DEFAULTS[1], 2: FUSED_DEFAULTS[2] }; applyFusedColors(); });
+    applyFusedColors();
+  }
+  buildFusedPickers();
+
   // ---- Dropdowns ----------------------------------------------------------
   function wireDropdown(rootId, onPick) {
     const root = $(rootId), btn = root.querySelector('.toolbar-dropdown-trigger'), menu = root.querySelector('.toolbar-dropdown-menu');

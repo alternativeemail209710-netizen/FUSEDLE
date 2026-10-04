@@ -213,6 +213,22 @@
         </span>
       </label>
 
+      <div class="fc-box" id="fusedColorBox">
+        <h3 class="hints-title">&#127912; Fused tile colours</h3>
+        <p class="hint">Pick a colour for each fusion level, so fused tiles never look like tiles that are still waiting to be fused. Text colour adjusts itself to stay readable.</p>
+        <div class="fc-row" data-level="1">
+          <div class="fc-head"><span class="fc-title">Level 1 <small>(e.g. &ldquo;Car&rdquo;)</small></span><span class="fc-preview" id="fcPreview1">Car</span></div>
+          <div class="fc-swatches" id="fcSwatches1" role="radiogroup" aria-label="Level 1 fused tile colour"></div>
+          <label class="fc-custom">Custom colour <input type="color" id="fcCustom1" value="#1F7A72"></label>
+        </div>
+        <div class="fc-row" data-level="2">
+          <div class="fc-head"><span class="fc-title">Level 2 <small>(e.g. &ldquo;Land Transport&rdquo;)</small></span><span class="fc-preview" id="fcPreview2">Land Transport</span></div>
+          <div class="fc-swatches" id="fcSwatches2" role="radiogroup" aria-label="Level 2 fused tile colour"></div>
+          <label class="fc-custom">Custom colour <input type="color" id="fcCustom2" value="#9B2C4F"></label>
+        </div>
+        <button id="fcResetBtn" type="button" class="btn btn-secondary timing-reset-btn">Reset fused colours</button>
+      </div>
+
       <div class="mode-tabs">
         <button class="mode-btn active" data-mode="offline">Offline</button>
         <button class="mode-btn" data-mode="test">Test</button>
