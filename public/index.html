@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Fusion Associations</title>
+<style>
+:root{--ink:#0d1030;--panel:#171c4a;--tile:#eef0ff;--mut:#9aa3e8;--gold:#ffc83d}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;background:#060822;color:#fff;font-family:"Trebuchet MS",system-ui,sans-serif}
+#app{max-width:480px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;gap:7px;padding:10px 10px calc(8px + env(safe-area-inset-bottom));background:radial-gradient(130% 55% at 50% 0,#27338a,var(--ink))}
+header{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+h1{font-size:21px;letter-spacing:.2px;font-weight:800}
+.badge{font-size:11px;font-weight:800;padding:2px 8px;border-radius:99px;background:var(--gold);color:#2a1d00}
+.badge.live{background:#ff4d6d;color:#fff}
+.sub{width:100%;font-size:13px;color:var(--mut)}
+.bar{height:8px;border-radius:9px;background:#252c6b;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#4cc9f0,#7bd88f);transition:width .5s}
+.tick{overflow:hidden;white-space:nowrap;background:#10153b;border-radius:9px;padding:6px 0;font-size:13px}
+.tick div{display:inline-block;padding-left:100%;animation:mq 26s linear infinite}
+@keyframes mq{to{transform:translateX(-100%)}}
+.tick span{margin-right:26px}
+#board{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:6px}
+.ban{border-radius:12px;padding:7px 12px;color:#14132a;animation:pop .45s}
+.ban b{display:block;font-size:15px}.ban span{font-size:12.5px;font-weight:700;opacity:.85}
+@keyframes pop{from{transform:scale(.92);opacity:0}}
+#grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:minmax(46px,64px);gap:6px}
+.tile{position:relative;border:0;border-radius:12px;background:var(--tile);color:#1b1f55;font:800 clamp(11px,3.4vw,15px) "Trebuchet MS",system-ui,sans-serif;display:flex;align-items:center;justify-content:center;padding:0 3px;box-shadow:0 3px 0 #b9bff0;overflow:hidden}
+.tile:active{transform:translateY(2px);box-shadow:0 1px 0 #b9bff0}
+.tile i{position:absolute;left:5px;top:3px;font:800 10px system-ui;font-style:normal;color:#fff;background:#1b1f55;border-radius:50%;width:16px;height:16px;line-height:16px;text-align:center}
+.tile.on{background:var(--gold);box-shadow:0 3px 0 #c99a12}
+.chips{display:flex;gap:6px;font-size:13px}
+.chips div{flex:1;background:#1d2358;border-radius:99px;padding:5px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chips b{color:var(--gold)}
+#feed div{display:flex;justify-content:space-between;font-size:13.5px;padding:5px 9px;margin-top:3px;border-radius:8px;border-left:4px solid}
+.ok{background:#173b2f;border-color:#3ddc97}.near{background:#40361a;border-color:#ffc83d}.x{background:#3d1d33;border-color:#ff5c7a}
+#feed{min-height:92px}
+#hint{font-size:13.5px;text-align:center;color:var(--gold);min-height:18px}
+.how{font-size:13px;text-align:center;background:#1d2358;border-radius:12px;padding:8px}
+.how em{font-style:normal;background:var(--gold);color:#2a1d00;border-radius:6px;padding:1px 6px;font-weight:800}
+#host{background:#12163f;border-radius:12px;padding:8px}
+#host summary{font-size:13px;color:var(--mut);cursor:pointer}
+.row{display:flex;gap:6px;margin-top:7px}
+#host input{flex:1;min-width:0;padding:9px;border-radius:9px;border:0;background:#eef0ff;font-size:15px}
+#host button{padding:8px 10px;border-radius:9px;border:0;background:#3a46b8;color:#fff;font-weight:700;font-size:13px}
+#host button.on{background:#ff4d6d}
+#st{font-size:12px;color:var(--mut);margin-top:6px}
+@media (prefers-reduced-motion:reduce){.tick div,.ban{animation:none}}
+</style></head><body>
+<div id="app">
+ <header><h1>Fusion Associations</h1><span id="mode" class="badge">TEST</span><div class="sub" id="sub"></div></header>
+ <div class="bar"><i id="bar"></i></div>
+ <div class="tick"><div id="tick"></div></div>
+ <div id="board"><div id="solved"></div><div id="grid"></div></div>
+ <div class="chips" id="chips"></div>
+ <div id="feed"></div>
+ <div id="hint"></div>
+ <div class="how">Fuse 4 tiles that share a link. Type their numbers in chat, e.g. <em>2 5 8 12</em></div>
+ <details id="host" open><summary>Host panel</summary>
+  <div class="row"><input id="g" inputmode="numeric" placeholder="Type 4 tile numbers"><button id="send">Send</button></div>
+  <div class="row"><button id="hint1">Hint</button><button id="rev">Reveal</button><button id="skip">Skip</button><button id="bots">Bots</button><button id="fs">Full screen</button></div>
+  <div class="row"><input id="u" placeholder="TikTok username"><button id="conn">Connect</button></div>
+  <div class="row"><button id="rs">Reset scores</button></div>
+  <div id="st"></div>
+ </details>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const C=['#ef5da8','#4cc9f0','#7bd88f','#ffb347','#a58bff','#ff7a7a'],M=['🥇','🥈','🥉'],MC=['#ffd54a','#d5dbe8','#e29a5b'];
+const $=s=>document.querySelector(s),sock=io();
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const act=(a,x={})=>sock.emit('host',{act:a,...x});
+let bots=false;
+sock.on('state',s=>{
+ bots=s.bots;
+ $('#mode').textContent=s.mode==='live'?'LIVE':'TEST';$('#mode').className='badge'+(s.mode==='live'?' live':'');
+ $('#sub').textContent=`Puzzle ${s.puzzle}/${s.total} · ${s.title} · ${s.solved.length}/${s.groupsTotal} groups`;
+ $('#bar').style.width=(s.solved.length/s.groupsTotal*100)+'%';
+ const t=s.top.map(([n,p],i)=>`<span>${M[i]||(i+1)+'.'} <b style="color:${MC[i]||'#fff'}">${esc(n)}</b> ${p}</span>`).join('');
+ $('#tick').innerHTML=t?t+t:'<span>Scores appear here</span>';
+ $('#solved').innerHTML=s.solved.map(g=>`<div class="ban" style="background:${C[g.g]};margin-bottom:6px"><b>${esc(g.name)}</b><span>${g.words.map(esc).join(' · ')}</span></div>`).join('');
+ const sel=new Set(($('#g').value.match(/\d+/g)||[]).map(Number));
+ $('#grid').innerHTML=s.tiles.map(x=>`<button class="tile${sel.has(x.n)?' on':''}" data-n="${x.n}"><i>${x.n}</i>${esc(x.w)}</button>`).join('');
+ $('#chips').innerHTML=s.top.slice(0,3).map(([n,p],i)=>`<div>${M[i]} ${esc(n)} <b>${p}</b></div>`).join('');
+ $('#feed').innerHTML=s.feed.slice().reverse().map(f=>`<div class="${f.r}"><span><b>${esc(f.u)}</b> ${f.n}</span><span>${f.r==='ok'?'✅ +'+f.p:f.r==='near'?'One away':'✕'}</span></div>`).join('');
+ $('#hint').textContent=s.done?'Puzzle complete! Next puzzle starting...':s.hint;
+ $('#bots').className=bots?'on':'';$('#st').textContent=s.msg||(s.connected?'TikTok connected':'TikTok not connected');
+});
+$('#grid').onclick=e=>{const b=e.target.closest('.tile');if(!b)return;const n=b.dataset.n,i=$('#g');const a=(i.value.match(/\d+/g)||[]);
+ const k=a.indexOf(n);k>-1?a.splice(k,1):a.length<4&&a.push(n);i.value=a.join(' ');b.classList.toggle('on',a.includes(n));};
+const send=()=>{const v=$('#g').value;if(v.trim())act('guess',{text:v});$('#g').value='';};
+$('#send').onclick=send;$('#g').onkeydown=e=>{if(e.key==='Enter')send()};
+$('#hint1').onclick=()=>act('hint');$('#rev').onclick=()=>act('reveal');$('#skip').onclick=()=>act('skip');
+$('#bots').onclick=()=>act('bots',{on:!bots});$('#rs').onclick=()=>confirm('Reset all scores?')&&act('reset');
+$('#conn').onclick=()=>{localStorage.u=$('#u').value;act('connect',{user:$('#u').value})};
+$('#u').value=localStorage.u||'';
+$('#fs').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{});
+</script></body></html>
