@@ -94,7 +94,9 @@
 
   // ---- Board -------------------------------------------------------------
   // Colour per group (peek tint + finished-group cards) and per fusion level (fused tiles).
-  const groupColor = (g) => 'hsl(' + ((g * 47 + 8) % 360) + ' 72% 64%)';
+  // Soft, cute-but-mature pastel colours for finished groups (all used with dark text, so letters stay easy to read).
+  const GROUP_COLORS = ['#F4B6C2', '#B7D9B0', '#CDB4E6', '#FFE29A', '#FFC4A3', '#A9D4EE', '#D9C3A5', '#B9BEF2'];
+  const groupColor = (g) => GROUP_COLORS[Math.abs(Number(g) || 0) % GROUP_COLORS.length];
   let wrongNums = [], wrongTimer = null;
   const tileEls = new Map();      // tile number -> button element (kept between renders so animations play once)
   let renderedStart = null;
@@ -103,8 +105,8 @@
 
   // A finished group is one small card: category name, the viewer who fused it (round TikTok photo + name)
   // and only the 4 latest words that made it. It stays compact so tiles and scores never leave the screen.
-  function solvedCard(g, isNew) {
-    const d = mk('div', 'solved-card' + (isNew ? ' is-new' : '')); d.style.setProperty('--gc', groupColor(g.g));
+  function solvedCard(g, isNew, idx) {
+    const d = mk('div', 'solved-card' + (isNew ? ' is-new' : '')); d.style.setProperty('--gc', GROUP_COLORS[(idx || 0) % GROUP_COLORS.length]);   // each finished group gets the next colour, so no two cards look alike
     const by = g.by || null;
     d.appendChild(by ? avatarImg(by.avatar, by.uniqueId, by.name, 'sm') : mk('span', 'solved-host', '\u2728'));
     const t = mk('div', 'solved-text');
@@ -144,7 +146,7 @@
     if (sl.dataset.sig !== sig) {
       const prev = sl.dataset.start === String(S.startedAt) ? Number(sl.dataset.count || 0) : 0;
       sl.dataset.sig = sig; sl.dataset.start = String(S.startedAt); sl.dataset.count = String(S.solved.length); sl.innerHTML = '';
-      S.solved.forEach((g, i) => sl.appendChild(solvedCard(g, i >= prev)));
+      S.solved.forEach((g, i) => sl.appendChild(solvedCard(g, i >= prev, i)));
     }
 
     // tile grid: keyed diff so only NEW fused tiles animate and nothing flickers

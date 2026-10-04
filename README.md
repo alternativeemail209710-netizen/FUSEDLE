@@ -24,6 +24,8 @@ Each group is either a **2-level fusion** (7 starting tiles) or a **3-level fusi
 > the empty spaces, so the board only uses the rows it needs. Every finished group has its own row. If a phone is too short to show everything at once,
 > only the game area (finished groups + tiles) scrolls inside its own box; the top line and leaderboards never move.
 
+> **Finished-group colors:** soft pastel colors (pink, sage, lavender, butter, peach, sky, latte, periwinkle) with dark text. Every card keeps at least an 8:1 contrast ratio, so the letters stay easy to read. Each finished group gets the next color in order.
+
 **When a group is completely finished** it shows as one small card: the category name, the viewer who fused it (their round TikTok
 photo and name) and only the **4 latest words** that made it. Each card takes one row of its own and stays small, so the unsolved tiles and
 the leaderboards stay on the screen. If the host used Reveal, the card says "Host reveal".
