@@ -3,14 +3,17 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { TileFace } from './Tile.jsx';
 
 export default function Header({ game, tiktok, online }) {
-  const ok = online && (tiktok === 'connected' || tiktok === 'no-username');
+  const mode = game.mode;
+  // chat connection only matters in Live mode; other modes just need the socket
+  const ok = online && (mode !== 'live' || tiktok === 'connected');
+  const pill = { live: 'LIVE', test: 'TEST', offline: 'SOLO' }[mode];
   return (
     <section className="zone zone-top">
       <div className="title-row">
         <h1 className="title">
-          Fusion Associations <span className="live-pill">LIVE</span>
+          Fusion Associations <span className={`live-pill ${mode}`}>{pill}</span>
         </h1>
-        <span className={`dot ${ok ? 'ok' : 'bad'}`} title={`chat: ${tiktok}`} />
+        {mode !== 'offline' && <span className={`dot ${ok ? 'ok' : 'bad'}`} title={`chat: ${tiktok}`} />}
       </div>
       <div className="theme">
         Puzzle {game.puzzleNo}/{game.totalPuzzles} - {game.title}

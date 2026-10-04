@@ -11,7 +11,9 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 20
+      - key: MODE              # test | live | offline  (switchable later at /control)
+        value: live
       - key: TIKTOK_USERNAME   # your TikTok @handle WITHOUT the @ (set in Render dashboard)
         sync: false
-      - key: ADMIN_KEY
+      - key: ADMIN_KEY         # password for /control (auto-generated, view it in Render > Environment)
         generateValue: true

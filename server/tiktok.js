@@ -3,13 +3,21 @@ import { WebcastPushConnection } from 'tiktok-live-connector';
 /**
  * Connects to a TikTok LIVE chat and forwards comments. Reconnects forever with backoff,
  * so the game keeps running even if the connection drops or the stream starts later.
+ * Returns { stop() } so the server can disconnect when leaving Live mode.
  */
 export function connectTikTok({ username, onChat, onStatus }) {
   let delay = 5000;
   let timer = null;
+  let stopped = false;
+  let current = null;
+
+  const status = (s) => {
+    if (!stopped) onStatus(s);
+  };
 
   const scheduleRetry = (why) => {
-    onStatus('retrying');
+    if (stopped) return;
+    status('retrying');
     console.log(`[tiktok] ${why} - retry in ${Math.round(delay / 1000)}s`);
     clearTimeout(timer);
     timer = setTimeout(connect, delay);
@@ -17,11 +25,13 @@ export function connectTikTok({ username, onChat, onStatus }) {
   };
 
   async function connect() {
+    if (stopped) return;
     const conn = new WebcastPushConnection(username, {
       processInitialData: false,
       enableExtendedGiftInfo: false,
       sessionId: process.env.TIKTOK_SESSION_ID || undefined
     });
+    current = conn;
 
     let retried = false;
     const retryOnce = (why) => {
@@ -30,23 +40,28 @@ export function connectTikTok({ username, onChat, onStatus }) {
       scheduleRetry(why);
     };
 
-    conn.on('chat', (d) =>
+    conn.on('chat', (d) => {
+      if (stopped) return;
       onChat({
         uniqueId: d.uniqueId,
         nickname: d.nickname,
         profilePictureUrl: d.profilePictureUrl,
         comment: d.comment
-      })
-    );
+      });
+    });
     conn.on('disconnected', () => retryOnce('disconnected'));
     conn.on('streamEnd', () => retryOnce('stream ended'));
     conn.on('error', (e) => console.warn('[tiktok] error:', e?.message || e));
 
     try {
-      onStatus('connecting');
+      status('connecting');
       const state = await conn.connect();
+      if (stopped) {
+        try { conn.disconnect(); } catch { /* already closed */ }
+        return;
+      }
       delay = 5000;
-      onStatus('connected');
+      status('connected');
       console.log(`[tiktok] connected to @${username} (room ${state.roomId})`);
     } catch (err) {
       retryOnce(`connect failed: ${err?.message || err}`);
@@ -54,4 +69,13 @@ export function connectTikTok({ username, onChat, onStatus }) {
   }
 
   connect();
+
+  return {
+    stop() {
+      stopped = true;
+      clearTimeout(timer);
+      try { current?.disconnect(); } catch { /* already closed */ }
+      console.log('[tiktok] stopped');
+    }
+  };
 }

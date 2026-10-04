@@ -12,7 +12,7 @@ export function TileFace({ tile }) {
   return <span className={cls}>{tile.content}</span>;
 }
 
-export default function Tile({ tile, size, anim, registerTile, selected, hinted, onTap }) {
+export default function Tile({ tile, size, anim, registerTile, selected, onTap }) {
   const fly = anim?.offsets?.[tile.uid];
   let animate = { x: 0, y: 0, scale: 1, rotate: 0, opacity: 1 };
   let transition = { type: 'spring', stiffness: 300, damping: 22 };
@@ -28,7 +28,7 @@ export default function Tile({ tile, size, anim, registerTile, selected, hinted,
   const hue = (tile.num * 47) % 360;
   const hasLabel = !!tile.label && tile.type !== 'text';
   const ll = (tile.label || '').length;
-  const cls = ['tile', tile.type, hasLabel && 'has-label', hasLabel && (ll > 11 ? 'lbl-sm' : ll > 7 ? 'lbl-md' : 'lbl-lg'), tile.fused && 'fused', selected && 'selected', hinted && 'hinted', onTap && 'tappable']
+  const cls = ['tile', tile.type, hasLabel && 'has-label', hasLabel && (ll > 11 ? 'lbl-sm' : ll > 7 ? 'lbl-md' : 'lbl-lg'), tile.fused && 'fused', selected && 'selected', onTap && 'tappable']
     .filter(Boolean)
     .join(' ');
 

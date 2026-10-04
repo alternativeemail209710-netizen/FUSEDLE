@@ -1,9 +1,9 @@
 {
   "name": "fusion-associations-live",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
-  "description": "Fusion Associations Live - automated multi-level association game for TikTok Live (Mobile Gaming screen share).",
+  "description": "Fusion Associations Live - multi-level association game with Test, Live (TikTok) and Offline modes.",
   "engines": {
     "node": "20.x"
   },

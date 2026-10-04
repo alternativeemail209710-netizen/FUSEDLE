@@ -34,6 +34,8 @@ body { font-family: var(--body); font-weight: 700; color: var(--ink); user-selec
 .title { font: 400 6.4cqw/1 var(--display); margin: 0; letter-spacing: 0.01em; color: var(--ink); }
 .live-pill { display: inline-block; background: var(--pink); color: #fff; font: 400 3.4cqw/1 var(--display); padding: 0.7cqw 1.8cqw; border-radius: 2cqw; vertical-align: 0.4cqw; margin-left: 1cqw; animation: pulse 1.6s ease-in-out infinite; }
 @keyframes pulse { 50% { transform: scale(1.08); } }
+.live-pill.test { background: var(--gold); color: var(--ink); }
+.live-pill.offline { background: var(--blue); animation: none; }
 .dot { width: 2.4cqw; height: 2.4cqw; border-radius: 50%; margin-left: auto; }
 .dot.ok { background: var(--green); }
 .dot.bad { background: var(--pink); }
@@ -124,7 +126,6 @@ body { font-family: var(--body); font-weight: 700; color: var(--ink); user-selec
 .zone-footer { display: flex; flex-direction: column; justify-content: flex-start; align-items: center; gap: 1cqh; padding-top: 1cqh; padding-right: 15cqw; }
 .how { margin: 0; text-align: center; font-size: 4cqw; line-height: 1.25; background: var(--soft); color: var(--ink); padding: 1.6cqh 4cqw; border-radius: 4cqw; border: 0.5cqw solid var(--line); }
 .how b { font-family: var(--display); font-weight: 400; background: var(--gold); padding: 0 1.6cqw; border-radius: 1.6cqw; letter-spacing: 0.08em; }
-.hint { font-size: 3.4cqw; color: #b87400; text-align: center; font-weight: 900; }
 
 /* ---------- victory ---------- */
 .victory { position: absolute; inset: 0; z-index: 50; display: grid; place-items: center; background: #ffffffee; overflow: hidden; }
@@ -135,23 +136,24 @@ body { font-family: var(--body); font-weight: 700; color: var(--ink); user-selec
 .victory-mvp { font: 400 5.4cqw/1 var(--display); background: var(--ink); color: #fff; padding: 1.2cqh 4cqw; border-radius: 4cqw; }
 .victory-next { font-size: 3.6cqw; color: #6c7194; }
 
-/* ---------- selection, hints, tap-play ---------- */
+/* ---------- selection (Offline tap-to-guess) ---------- */
 .tile.tappable { cursor: pointer; }
 .tile.selected { border-color: var(--blue); box-shadow: 0 0 0 1.4cqw #3b5bff55, 0 1.6cqw 0 #aebcff; }
-.tile.hinted { animation: hintpulse 0.9s ease-in-out infinite; }
-@keyframes hintpulse { 50% { box-shadow: 0 0 0 1.6cqw #ffb30088, 0 1.6cqw 0 var(--line); border-color: var(--gold); } }
 .board.close::after { content: ''; position: absolute; inset: -2cqw; border-radius: 6cqw; box-shadow: inset 0 0 8cqw #ffb300; animation: closeglow 0.7s ease-out forwards; pointer-events: none; }
 @keyframes closeglow { from { opacity: 1; } to { opacity: 0; } }
 
-.playbar { position: absolute; left: 4cqw; right: 4cqw; bottom: 16.5cqh; z-index: 40; display: flex; align-items: center; gap: 2cqw; background: #fff; border: 0.8cqw solid var(--blue); border-radius: 4cqw; padding: 1.2cqh 3cqw; box-shadow: 0 1cqw 0 #aebcff; }
-.playbar-nums { flex: 1; font: 400 6cqw/1 var(--display); letter-spacing: 0.08em; overflow: hidden; text-overflow: ellipsis; }
-.playbar button { font: 400 4.6cqw/1 var(--display); border: 0.5cqw solid var(--ink); border-radius: 3cqw; padding: 1.2cqh 4cqw; cursor: pointer; }
-.pb-clear { background: #fff; color: var(--ink); }
-.pb-fuse { background: var(--green); color: #fff; }
-.pb-fuse:disabled { opacity: 0.4; }
 
 .loading { position: absolute; inset: 0; display: grid; place-items: center; font: 400 6cqw var(--display); }
-.debug { position: absolute; top: 0; left: 0; right: 0; z-index: 200; display: flex; gap: 6px; padding: 6px; background: #fffe; }
-.debug input { flex: 1; font-size: 16px; padding: 6px; }
+
+/* ---------- Offline mode: your own guess box (replaces the instructions) ---------- */
+.zone-footer.offline { padding-right: 4cqw; }
+.guessbar { width: 100%; display: flex; gap: 2cqw; align-items: center; }
+.guessbar input { flex: 1; min-width: 0; font: 400 6cqw/1 var(--display); letter-spacing: 0.08em; color: var(--ink); border: 0.8cqw solid var(--blue); border-radius: 4cqw; padding: 1.4cqh 3cqw; outline: none; user-select: text; }
+.guessbar button { font: 400 4.6cqw/1 var(--display); border: 0.5cqw solid var(--ink); border-radius: 3cqw; padding: 1.6cqh 3.4cqw; cursor: pointer; }
+.gb-clear { background: #fff; color: var(--ink); }
+.gb-fuse { background: var(--green); color: #fff; }
+.guessbar button:disabled { opacity: 0.4; cursor: default; }
+.gb-row { width: 100%; display: flex; justify-content: space-between; align-items: center; font-size: 3.2cqw; color: #6c7194; }
+.gb-skip { font: 700 3.2cqw/1 var(--body); background: none; border: none; color: var(--blue); text-decoration: underline; cursor: pointer; padding: 1cqh 0; }
 
 @media (prefers-reduced-motion: reduce) { .live-pill { animation: none; } }

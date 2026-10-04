@@ -54,7 +54,6 @@ export default function Board({ game, anim, boardEl, registerTile, pulse, select
                 anim={anim}
                 registerTile={registerTile}
                 selected={selected.includes(t.num)}
-                hinted={game.hintNum === t.num}
                 onTap={onTap}
               />
             ))}
