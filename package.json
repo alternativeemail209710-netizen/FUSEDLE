@@ -1,10 +1,14 @@
 {
   "name": "fusedle-live",
-  "version": "1.0.0",
-  "description": "FUSEDLE Live: fully automated TikTok LIVE word-association game. Audience types four tile numbers in chat.",
+  "version": "2.0.0",
+  "description": "FUSEDLE Live: multi-level fusion word game for TikTok LIVE. Audience types four tile numbers in chat; groups fuse into new tiles that fuse again.",
   "main": "server.js",
-  "engines": { "node": ">=18.0.0" },
-  "scripts": { "start": "node server.js" },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
     "dotenv": "^16.4.5",
     "express": "^4.19.2",

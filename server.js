@@ -1,5 +1,5 @@
 /**
- * FUSEDLE Live - Server
+ * FUSEDLE Live - Server  (MULTI-LEVEL FUSION edition)
  * Express (static) + Socket.IO (realtime) + MEMORY's hardened TikTok LIVE
  * connector (tiktok-connector.js) + MEMORY's viewer-photo service (avatars.js).
  *
@@ -19,7 +19,8 @@ process.on('uncaughtException', (err) => console.error('[FATAL-CAUGHT] uncaughtE
 process.on('unhandledRejection', (reason) => console.error('[FATAL-CAUGHT] unhandledRejection:', reason));
 
 const createTikTokConnector = require('./tiktok-connector');
-const PUZZLES = require('./puzzles');
+const { PACKS, ALL: PUZZLE_ALL, validate: validatePuzzles } = require('./puzzles');
+{ const problems = validatePuzzles(); if (problems.length) { console.error('[puzzles] PROBLEMS:\n  ' + problems.join('\n  ')); process.exit(1); } }
 
 const DEFAULT_TIKTOK_USERNAME = String(process.env.TIKTOK_USERNAME || '').replace('@', '').trim();
 const DEFAULT_SIGN_API_KEY = String(process.env.EULERSTREAM_SIGN_API_KEY || process.env.TIKTOK_SIGN_API_KEY || '').trim();
@@ -39,12 +40,14 @@ app.use(express.static(path.join(__dirname, 'public'), {
 // ---------------------------------------------------------------------------
 // Settings tables
 // ---------------------------------------------------------------------------
+// Difficulty = how deep the fusion chain goes and how many tiles are on the board.
+//   levels = fusion levels in the chain (Car -> Transportation = 2 levels)
 const LEVELS = {
-  1: { name: 'Warmup', groups: 3 },
-  2: { name: 'Easy', groups: 4 },
-  3: { name: 'Medium', groups: 5 },
-  4: { name: 'Hard', groups: 6 },
-  5: { name: 'Chaos', groups: 8 },
+  1: { name: 'Warmup', desc: '2 fusion levels, 7 tiles',  rule: (p) => p.levels === 2 && p.leaves <= 8 },
+  2: { name: 'Easy',   desc: '2 fusion levels, 10 tiles', rule: (p) => p.levels === 2 && p.leaves >= 9 && p.leaves <= 13 },
+  3: { name: 'Medium', desc: '3 fusion levels, 10 tiles', rule: (p) => p.levels === 3 && p.leaves <= 12 },
+  4: { name: 'Hard',   desc: '3-4 fusion levels, 13+ tiles', rule: (p) => p.levels >= 3 && p.leaves >= 13 },
+  5: { name: 'Chaos',  desc: 'Two or three chains mixed together', rule: null },
 };
 const TIMING = {
   autoNext: { min: 3, max: 300, def: 8 },
@@ -71,7 +74,7 @@ const state = {
   mode: 'test', level: 2, pack: 'mixed', cycle: 0, configured: false,
   autoNext: true, autoNextDelaySeconds: TIMING.autoNext.def, autoNextAt: 0,
   mismatchSeconds: TIMING.mismatch.def, peekSeconds: TIMING.peek.def, pointsPerGroup: 10,
-  title: '', groups: [], tiles: [], solved: [], hint: '', peeking: false,
+  title: '', nodes: [], tiles: [], nextN: 1, completed: [], rootsTotal: 0, fusionsDone: 0, lastFusion: null, hint: '', peeking: false,
   startedAt: 0, solvedAt: 0,
   scores: {}, allTimeScores: {}, rawEventCount: 0, lastEvent: null,
   bots: false,
@@ -100,48 +103,120 @@ function saveAllTimeSoon() { clearTimeout(saveTimer); saveTimer = setTimeout(sav
 // ---------------------------------------------------------------------------
 // Puzzle building
 // ---------------------------------------------------------------------------
-function pickGroups(level, pack) {
-  const n = LEVELS[level].groups;
-  if (level === 5) { // Chaos: groups from every puzzle, no repeated words
-    const used = new Set(), out = [];
-    for (const g of shuffle(PUZZLES.flatMap((p) => p.groups))) {
-      const ws = g[1].split(',').map((w) => w.toLowerCase());
-      if (ws.some((w) => used.has(w))) continue;
-      ws.forEach((w) => used.add(w)); out.push(g);
-      if (out.length === n) break;
+const queues = {};
+let lastPuzzle = null;
+
+// Chaos: 2-3 different chains share one board (no word or group name may repeat).
+function buildChaos() {
+  const keysOf = (p) => p.words.concat(p.names).map((x) => String(x).trim().toLowerCase());
+  for (let attempt = 0; attempt < 80; attempt++) {
+    const picks = [], used = new Set(); let total = 0;
+    for (const p of shuffle(PUZZLE_ALL.slice())) {
+      const keys = keysOf(p);
+      if (keys.some((k) => used.has(k)) || total + p.leaves > 30) continue;
+      picks.push(p); keys.forEach((k) => used.add(k)); total += p.leaves;
+      if ((picks.length >= 2 && total >= 20) || picks.length >= 3) break;
     }
-    return { title: 'Mixed Chaos', groups: out };
+    if (picks.length >= 2 && total >= 16) return { title: 'Mixed Chaos', roots: picks.map((p) => p.root) };
   }
-  let p;
-  if (pack === 'mixed') { p = PUZZLES[state.cycle % PUZZLES.length]; state.cycle++; }
-  else p = PUZZLES.find((x) => x.title === pack) || PUZZLES[0];
-  return { title: p.title, groups: shuffle(p.groups.slice()).slice(0, n) };
+  const two = shuffle(PUZZLE_ALL.filter((p) => p.leaves <= 10)).slice(0, 2);
+  return { title: 'Mixed Chaos', roots: two.map((p) => p.root) };
+}
+
+function pickTrees(level, pack) {
+  if (level === 5) return buildChaos();
+  let pool = PUZZLE_ALL.filter(LEVELS[level].rule);
+  if (pack !== 'mixed') { const inPack = pool.filter((p) => p.pack === pack); if (inPack.length) pool = inPack; }
+  if (!pool.length) pool = PUZZLE_ALL.slice();
+  const key = level + '|' + pack;
+  if (!queues[key] || !queues[key].length) {
+    queues[key] = shuffle(pool.slice());
+    const q = queues[key];
+    if (q.length > 1 && q[q.length - 1] === lastPuzzle) { const t = q[0]; q[0] = q[q.length - 1]; q[q.length - 1] = t; }
+  }
+  const pick = queues[key].pop();
+  lastPuzzle = pick;
+  return { title: pick.pack, roots: [pick.root] };
+}
+
+// Turn the chosen fusion trees into nodes (groups) + starting tiles.
+//   node: { id, name, parent, ord, height, done, nested }
+//   tile: { n, w, parent, ord, node, alive, sub, height }
+//     parent = the group this tile belongs to; node = group it represents (fused tiles only)
+function buildBoard(roots) {
+  state.nodes = []; state.completed = []; state.fusionsDone = 0; state.lastFusion = null;
+  const base = [];
+  const addNode = (def, parentId, ord) => {
+    const id = state.nodes.length;
+    const node = { id, name: def.name, parent: parentId, ord, height: 0, done: false, nested: null };
+    state.nodes.push(node);
+    let deepest = 0;
+    def.kids.forEach((k, i) => {
+      if (typeof k === 'string') base.push({ w: k, parent: id, ord: i });
+      else deepest = Math.max(deepest, addNode(k, id, i));
+    });
+    node.height = deepest + 1;
+    return node.height;
+  };
+  roots.forEach((r) => addNode(r, null, 0));
+  state.tiles = shuffle(base).map((t, i) => ({ n: i + 1, w: t.w, parent: t.parent, ord: t.ord, node: null, alive: true, sub: '', height: 0 }));
+  state.nextN = state.tiles.length + 1;
+  state.rootsTotal = roots.length;
 }
 
 function newGame(level) {
   cancelAutoNext();
   clearTimeout(peekTimer); state.peeking = false;
   if (Number(level) in LEVELS) state.level = Number(level);
-  const pick = pickGroups(state.level, state.pack);
+  const pick = pickTrees(state.level, state.pack);
   state.title = pick.title;
-  state.groups = pick.groups.map(([name, w]) => ({ name, words: w.split(',') }));
-  const all = [];
-  state.groups.forEach((g, gi) => g.words.forEach((w) => all.push({ w, g: gi })));
-  state.tiles = shuffle(all).map((t, i) => ({ n: i + 1, w: t.w, g: t.g }));
-  state.solved = []; state.hint = ''; state.solvedAt = 0; state.startedAt = Date.now();
+  buildBoard(pick.roots);
+  state.hint = ''; state.solvedAt = 0; state.startedAt = Date.now();
   state.scores = {};
   broadcast();
   io.emit('newGame', { title: state.title });
 }
 
-const openTiles = () => state.tiles.filter((t) => !state.solved.some((s) => s.g === t.g));
+const openTiles = () => state.tiles.filter((t) => t.alive);
+const tilesOf = (nodeId) => state.tiles.filter((t) => t.alive && t.parent === nodeId);
+// A group can be fused only when ALL 4 of its children are tiles on the board right now.
+const fusableNodes = () => state.nodes.filter((nd) => !nd.done && tilesOf(nd.id).length === 4);
+
+// The heart of the game: destroy the 4 tiles, create ONE new tile with a NEW number.
+function doFuse(node, picked, by) {
+  picked.sort((a, b) => a.ord - b.ord);
+  picked.forEach((t) => { t.alive = false; });
+  node.done = true;
+  node.nested = { name: node.name, kids: picked.map((t) => (t.node !== null ? state.nodes[t.node].nested : t.w)) };
+  const isRoot = node.parent === null;
+  const tile = {
+    n: state.nextN++, w: node.name, parent: node.parent, ord: node.ord, node: node.id,
+    alive: !isRoot,                       // a finished chain becomes a banner instead of a tile
+    sub: picked.map((t) => t.w).join(' \u00B7 '), height: node.height,
+  };
+  state.tiles.push(tile);
+  state.fusionsDone += 1;
+  state.lastFusion = { newN: tile.n, at: Date.now() };
+  if (isRoot) state.completed.push({ id: node.id, name: node.name, tree: node.nested, by: by || null });
+  state.hint = '';
+  return { tile, isRoot, from: picked.map((t) => t.n) };
+}
 
 function publicState() {
   return {
     mode: state.mode, level: state.level, levelName: LEVELS[state.level].name, pack: state.pack,
-    title: state.title, groupsTotal: state.groups.length, tilesTotal: state.tiles.length,
-    tiles: openTiles().map((t) => (state.peeking ? { n: t.n, w: t.w, g: t.g } : { n: t.n, w: t.w })),
-    solved: state.solved.map((s) => ({ g: s.g, name: state.groups[s.g].name, words: state.groups[s.g].words, by: s.by })),
+    title: state.title,
+    fusionsDone: state.fusionsDone, fusionsTotal: state.nodes.length,
+    chainsDone: state.completed.length, chainsTotal: state.rootsTotal,
+    maxLevels: Math.max(0, ...state.nodes.filter((n) => n.parent === null).map((n) => n.height)),
+    tiles: openTiles().map((t) => {
+      const o = { n: t.n, w: t.w };
+      if (t.node !== null) { o.f = t.height; o.sub = t.sub; }   // f = fusion level of a fused tile
+      if (state.peeking) o.g = t.parent;                        // peek: tile's group id
+      return o;
+    }),
+    solved: state.completed.map((c) => ({ g: c.id, name: c.name, tree: c.tree, by: c.by })),
+    lastFusion: state.lastFusion,
     hint: state.hint, peeking: state.peeking,
     startedAt: state.startedAt, solvedAt: state.solvedAt, now: Date.now(),
     autoNext: state.autoNext, autoNextDelaySeconds: state.autoNextDelaySeconds, autoNextAt: state.autoNextAt,
@@ -213,20 +288,20 @@ function attemptFuse(nums, player) {
   if (nums.some((n) => !byN.has(n))) return { kind: 'invalid' };
   const picked = nums.map((n) => byN.get(n));
   const counts = {};
-  picked.forEach((t) => { counts[t.g] = (counts[t.g] || 0) + 1; });
+  picked.forEach((t) => { counts[t.parent] = (counts[t.parent] || 0) + 1; });
   const best = Math.max(...Object.values(counts));
   if (best === 4) {
-    const g = picked[0].g;
+    const node = state.nodes[picked[0].parent];
     row.streak = (row.streak || 0) + 1;
-    const gained = state.pointsPerGroup * comboMultiplier(row.streak);
+    // Deeper fusions are worth more: points x fusion level x combo.
+    const gained = state.pointsPerGroup * node.height * comboMultiplier(row.streak);
     row.points += gained;
     const all = ensurePlayer(state.allTimeScores, player);
     all.points += gained;
     saveAllTimeSoon();
-    state.solved.push({ g, by: player.name });
-    state.hint = '';
-    const result = { kind: 'correct', streak: row.streak, gained, group: state.groups[g].name };
-    if (state.solved.length === state.groups.length) finishGame();
+    const f = doFuse(node, picked, player.name);
+    const result = { kind: 'correct', streak: row.streak, gained, group: node.name, newN: f.tile.n, height: node.height, final: f.isRoot, nums };
+    if (state.completed.length >= state.rootsTotal) finishGame();
     return result;
   }
   row.streak = 0;
@@ -246,6 +321,7 @@ function handleIncomingComment(player, text, opts) {
       uniqueId: player.uniqueId, name: player.name, avatar: player.avatar, text: text.slice(0, 60),
       kind: result.kind, nums: nums && nums.length === 4 ? nums : null,
       streak: result.streak || 0, gained: result.gained || 0, group: result.group || null,
+      newN: result.newN || null, height: result.height || 0, final: !!result.final,
     });
     broadcast();
   } catch (e) { console.error('[ERR] handleIncomingComment:', e); }
@@ -264,21 +340,29 @@ function peekBoard() {
 }
 function hintNow() {
   if (state.solvedAt) return;
-  const groupIds = [...new Set(openTiles().map((t) => t.g))];
-  if (!groupIds.length) return;
-  const g = shuffle(groupIds)[0];
-  const t = shuffle(openTiles().filter((x) => x.g === g))[0];
-  state.hint = 'Hint: "' + state.groups[g].name + '" includes tile ' + t.n;
+  const nodes = fusableNodes();
+  if (!nodes.length) return;
+  const node = shuffle(nodes.slice())[0];
+  const t = shuffle(tilesOf(node.id).slice())[0];
+  state.hint = 'Hint: \u201C' + node.name + '\u201D includes tile ' + t.n;
   io.emit('notice', { text: 'Hint on screen' });
   broadcast();
 }
+// Reveal = the host fuses groups for the viewers (no points). Each step is one fusion,
+// and a fusion can unlock the next level, so "reveal board" walks the whole chain.
 function revealGroups(count) {
   if (state.solvedAt) return;
-  const ids = shuffle([...new Set(openTiles().map((t) => t.g))]).slice(0, count);
-  ids.forEach((g) => state.solved.push({ g, by: null }));
+  let done = 0;
+  for (let i = 0; i < count; i++) {
+    const nodes = fusableNodes();
+    if (!nodes.length) break;
+    const node = shuffle(nodes.slice())[0];
+    doFuse(node, tilesOf(node.id), null);
+    done += 1;
+  }
   state.hint = '';
-  io.emit('notice', { text: 'Host revealed ' + ids.length + (ids.length === 1 ? ' group' : ' groups') });
-  if (state.solved.length >= state.groups.length) finishGame(); else broadcast();
+  io.emit('notice', { text: 'Host revealed ' + done + (done === 1 ? ' fusion' : ' fusions') });
+  if (state.completed.length >= state.rootsTotal) finishGame(); else broadcast();
 }
 
 // ---------------------------------------------------------------------------
@@ -286,12 +370,10 @@ function revealGroups(count) {
 // ---------------------------------------------------------------------------
 function botGuessText() {
   const open = openTiles();
-  const byGroup = {};
-  open.forEach((t) => { (byGroup[t.g] = byGroup[t.g] || []).push(t.n); });
-  const ids = Object.keys(byGroup);
-  if (!ids.length) return null;
+  const nodes = fusableNodes();
+  if (!nodes.length) return null;
+  const good = tilesOf(nodes[Math.floor(Math.random() * nodes.length)].id).map((t) => t.n);
   const roll = Math.random();
-  const good = byGroup[ids[Math.floor(Math.random() * ids.length)]];
   if (roll < 0.35) return good.join(' ');
   if (roll < 0.6 && open.length > 4) { // near miss: 3 right + 1 wrong
     const wrong = shuffle(open.filter((t) => !good.includes(t.n)))[0];
@@ -356,7 +438,8 @@ io.on('connection', (socket) => {
   socket.emit('leaderboard', { round: rankList(state.scores, 500, true), allTime: rankList(state.allTimeScores, 1000) });
   socket.emit('liveConfig', {
     hasDefaultSignApiKey: !!DEFAULT_SIGN_API_KEY, defaultUsername: DEFAULT_TIKTOK_USERNAME || '',
-    packs: [{ id: 'mixed', label: 'Mixed (rotate all)' }].concat(PUZZLES.map((p) => ({ id: p.title, label: p.title }))),
+    packs: [{ id: 'mixed', label: 'Mixed (rotate all)' }].concat(PACKS.map((p) => ({ id: p.title, label: p.title }))),
+    levels: Object.keys(LEVELS).map((k) => ({ level: Number(k), name: LEVELS[k].name, desc: LEVELS[k].desc })),
   });
 
   socket.on('host:applyDefaults', safe((p) => {
@@ -369,7 +452,7 @@ io.on('connection', (socket) => {
     if (p.mismatchSeconds !== undefined) state.mismatchSeconds = clampSeconds(p.mismatchSeconds, TIMING.mismatch);
     if (p.peekSeconds !== undefined) state.peekSeconds = clampSeconds(p.peekSeconds, TIMING.peek);
     if (p.pointsPerGroup !== undefined) state.pointsPerGroup = Math.round(clampSeconds(p.pointsPerGroup, { min: 1, max: 100, def: 10 }));
-    if (typeof p.pack === 'string' && (p.pack === 'mixed' || PUZZLES.some((x) => x.title === p.pack))) state.pack = p.pack;
+    if (typeof p.pack === 'string' && (p.pack === 'mixed' || PACKS.some((x) => x.title === p.pack))) state.pack = p.pack;
     if (Number(p.level) in LEVELS) newGame(p.level);
     if (typeof p.bots === 'boolean') setBots(p.bots && state.mode === 'test');
     broadcast();
@@ -379,7 +462,7 @@ io.on('connection', (socket) => {
   socket.on('host:setMode', safe((p) => setMode(p.mode), true));
   socket.on('host:setPack', safe((p) => {
     const id = String(p.pack || '');
-    if (id === 'mixed' || PUZZLES.some((x) => x.title === id)) { state.pack = id; newGame(state.level); }
+    if (id === 'mixed' || PACKS.some((x) => x.title === id)) { state.pack = id; newGame(state.level); }
   }, true));
   socket.on('host:setAutoNext', safe((p) => {
     state.autoNext = !!p.enabled;

@@ -107,30 +107,79 @@
   }
 
   // ---- Board -------------------------------------------------------------
+  // Colour per group (peek tint + finished-chain banners) and per fusion level (fused tiles).
   const groupColor = (g) => 'hsl(' + ((g * 47 + 8) % 360) + ' 72% 64%)';
   let wrongNums = [], wrongTimer = null;
+  const tileEls = new Map();      // tile number -> button element (kept between renders so animations play once)
+  let renderedStart = null;
+
+  function mk(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+
+  // A finished chain is drawn as nested boxes: the final group on the outside, every
+  // group that was fused on the way inside it, the original words at the core.
+  function treeEl(node, depth) {
+    const box = mk('div', 'ct-node ct-d' + Math.min(depth, 3));
+    box.appendChild(mk('b', 'ct-name', node.name));
+    const row = mk('div', 'ct-row');
+    node.kids.forEach((k) => { row.appendChild(typeof k === 'string' ? mk('span', 'ct-chip', k) : treeEl(k, depth + 1)); });
+    box.appendChild(row);
+    return box;
+  }
+
+  function makeTile(t, fresh) {
+    const b = mk('button', 'tile'); b.type = 'button'; b.dataset.n = t.n;
+    b.appendChild(mk('i', '', t.n));
+    if (t.f) {
+      b.classList.add('fused'); b.dataset.f = Math.min(4, t.f);
+      b.appendChild(mk('em', 'tile-lvl', 'L' + t.f));
+      b.appendChild(mk('span', 'tile-name', t.w));
+      b.appendChild(mk('span', 'tile-sub', t.sub || ''));
+      if (fresh) b.classList.add('fresh');
+    } else {
+      b.appendChild(document.createTextNode(t.w));
+    }
+    return b;
+  }
+
   function renderBoard() {
     const live = S.mode === 'live';
-    $('solvedList').innerHTML = '';
-    S.solved.forEach((s) => {
-      const d = document.createElement('div'); d.className = 'fuse-banner'; d.style.setProperty('--gc', groupColor(s.g));
-      const b = document.createElement('b'); b.textContent = s.name;
-      const sp = document.createElement('span'); sp.textContent = s.words.join(' \u00B7 ');
-      d.appendChild(b); d.appendChild(sp);
-      if (s.by) { const sm = document.createElement('small'); sm.textContent = 'fused by ' + s.by; d.appendChild(sm); }
-      $('solvedList').appendChild(d);
+
+    // finished chains (rebuild only when the list changes)
+    const sig = S.startedAt + '|' + S.solved.map((x) => x.name + x.by).join(',');
+    const sl = $('solvedList');
+    if (sl.dataset.sig !== sig) {
+      sl.dataset.sig = sig; sl.innerHTML = '';
+      S.solved.forEach((c) => {
+        const d = mk('div', 'chain-banner'); d.style.setProperty('--gc', groupColor(c.g));
+        d.appendChild(mk('div', 'chain-title', '\u{1F3C6} ' + c.name + ' complete' + (c.by ? ' \u00B7 fused by ' + c.by : '')));
+        d.appendChild(treeEl(c.tree, 0));
+        sl.appendChild(d);
+      });
+    }
+
+    // tile grid: keyed diff so only NEW fused tiles animate and nothing flickers
+    const grid = $('tileGrid'); grid.classList.toggle('live-view', live);
+    if (renderedStart !== S.startedAt) { grid.innerHTML = ''; tileEls.clear(); renderedStart = S.startedAt; }
+    const present = new Set(S.tiles.map((t) => t.n));
+    tileEls.forEach((el, n) => { if (!present.has(n)) { el.remove(); tileEls.delete(n); } });
+    selected = selected.filter((n) => present.has(n));
+    S.tiles.forEach((t, idx) => {
+      let el = tileEls.get(t.n);
+      if (!el) {
+        const fresh = !!(S.lastFusion && S.lastFusion.newN === t.n && (S.now - S.lastFusion.at) < 3000);
+        el = makeTile(t, fresh); tileEls.set(t.n, el);
+      }
+      el.classList.toggle('sel', selected.includes(t.n));
+      el.classList.toggle('wrong', wrongNums.includes(t.n));
+      const peeking = S.peeking && t.g !== undefined;
+      el.classList.toggle('peek', peeking);
+      if (peeking) el.style.setProperty('--gc', groupColor(t.g)); else el.style.removeProperty('--gc');
+      if (grid.children[idx] !== el) grid.insertBefore(el, grid.children[idx] || null);
     });
-    const grid = $('tileGrid'); grid.innerHTML = ''; grid.classList.toggle('live-view', live);
-    selected = selected.filter((n) => S.tiles.some((t) => t.n === n));
-    S.tiles.forEach((t) => {
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'tile'; b.dataset.n = t.n;
-      const i = document.createElement('i'); i.textContent = t.n; b.appendChild(i); b.appendChild(document.createTextNode(t.w));
-      if (selected.includes(t.n)) b.classList.add('sel');
-      if (wrongNums.includes(t.n)) b.classList.add('wrong');
-      if (S.peeking && t.g !== undefined) { b.classList.add('peek'); b.style.setProperty('--gc', groupColor(t.g)); }
-      grid.appendChild(b);
-    });
-    $('pairsCounter').textContent = '\u{1F9E9} ' + S.solved.length + '/' + S.groupsTotal + ' groups \u00B7 ' + S.title;
+
+    let counter = '\u26A1 ' + S.fusionsDone + '/' + S.fusionsTotal + ' fusions \u00B7 ' + S.title + ' \u00B7 ' + S.maxLevels + ' levels';
+    if (S.chainsTotal > 1) counter += ' \u00B7 ' + S.chainsDone + '/' + S.chainsTotal + ' chains';
+    $('pairsCounter').textContent = counter;
     $('solvedBanner').hidden = !S.solvedAt;
     const hl = $('hintLine'); hl.hidden = !S.hint; hl.textContent = S.hint || '';
   }
@@ -172,10 +221,14 @@
   function describe(r) {
     const nums = r.nums ? r.nums.join(' ') : '';
     switch (r.kind) {
-      case 'correct': return { tone: 'correct', text: 'fused ' + r.group, feed: nums + ' \u2014 fused ' + r.group + '! +' + r.gained + (r.streak >= 2 ? ' (\u{1F525}\u00D7' + Math.min(4, r.streak) + ')' : ''), points: '+' + r.gained };
+      case 'correct': {
+        const combo = r.streak >= 2 ? ' (\u{1F525}\u00D7' + Math.min(4, r.streak) + ')' : '';
+        if (r.final) return { tone: 'correct', text: '\u{1F3C6} completed ' + r.group + '!', feed: nums + ' \u2014 completed ' + r.group + '! +' + r.gained + combo, points: '+' + r.gained };
+        return { tone: 'correct', text: 'fused ' + r.group + ' \u2192 new tile ' + r.newN, feed: nums + ' \u2014 fused ' + r.group + ' \u2192 new tile #' + r.newN + ' (level ' + r.height + ') +' + r.gained + combo, points: '+' + r.gained };
+      }
       case 'near': return { tone: 'info', text: nums + ' \u2014 one away!', feed: nums + ' \u2014 one away' };
       case 'wrong': return { tone: 'wrong', text: nums + ' \u2014 not a group', feed: nums + ' \u2014 not a group' };
-      case 'invalid': return { tone: 'wrong', text: 'not on the board', feed: '"' + r.text + '" \u2014 tile not on the board' };
+      case 'invalid': return { tone: 'wrong', text: 'not on the board', feed: '"' + r.text + '" \u2014 tile not on the board (it may already be fused)' };
       case 'busy': return { tone: 'info', text: 'puzzle finished', feed: 'puzzle already finished' };
       default: return { tone: 'format', text: 'send 4 tile numbers', feed: '"' + r.text + '" \u2014 not four tile numbers' };
     }
@@ -292,6 +345,7 @@
     });
     confirmMsg('Saved. These settings are re-applied whenever this page opens on a fresh server.');
   });
+  $('clearDefaultSettingsBtn').addEventListener('click', () => { try { localStorage.removeItem('fusedle-defaults'); } catch (e) { /* ignore */ } confirmMsg('Saved default cleared.'); });
   $('resetTimingBtn').addEventListener('click', () => {
     Object.assign(timingPrefs, TIMING_DEFAULTS); writeJson('fusedle-timing', timingPrefs);
     $('autoNextDelayInput').value = 8; $('mismatchDelayInput').value = 2; $('peekDurationInput').value = 4; $('pointsInput').value = 10; syncTimingInputs(); pushSettings();

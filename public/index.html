@@ -21,18 +21,18 @@
           <span id="difficultyDropdownIcon" class="diff-badge level-2">2</span>
         </button>
         <ul id="difficultyDropdownMenu" class="toolbar-dropdown-menu" role="listbox" aria-label="Difficulty" hidden>
-          <li role="option" data-value="1" aria-selected="false"><span class="diff-badge level-1">1</span><span class="dd-label">Warmup <small>12 tiles</small></span></li>
-          <li role="option" data-value="2" aria-selected="true" class="dd-active"><span class="diff-badge level-2">2</span><span class="dd-label">Easy <small>16 tiles</small></span></li>
-          <li role="option" data-value="3" aria-selected="false"><span class="diff-badge level-3">3</span><span class="dd-label">Medium <small>20 tiles</small></span></li>
-          <li role="option" data-value="4" aria-selected="false"><span class="diff-badge level-4">4</span><span class="dd-label">Hard <small>24 tiles</small></span></li>
-          <li role="option" data-value="5" aria-selected="false"><span class="diff-badge level-5">5</span><span class="dd-label">Chaos <small>32 tiles</small></span></li>
+          <li role="option" data-value="1" aria-selected="false"><span class="diff-badge level-1">1</span><span class="dd-label">Warmup <small>2 levels · 7 tiles</small></span></li>
+          <li role="option" data-value="2" aria-selected="true" class="dd-active"><span class="diff-badge level-2">2</span><span class="dd-label">Easy <small>2 levels · 10 tiles</small></span></li>
+          <li role="option" data-value="3" aria-selected="false"><span class="diff-badge level-3">3</span><span class="dd-label">Medium <small>3 levels · 10 tiles</small></span></li>
+          <li role="option" data-value="4" aria-selected="false"><span class="diff-badge level-4">4</span><span class="dd-label">Hard <small>3-4 levels · 13+ tiles</small></span></li>
+          <li role="option" data-value="5" aria-selected="false"><span class="diff-badge level-5">5</span><span class="dd-label">Chaos <small>2-3 chains mixed</small></span></li>
         </ul>
       </div>
       <button id="newGameTopBtn" class="icon-btn" aria-label="New Game" title="New Game">&#8635;</button>
       <button id="leaderboardTopBtn" class="icon-btn" aria-label="Leaderboard" title="Leaderboard">&#127942;</button>
       <button id="peekTopBtn" class="icon-btn" aria-label="Peek: tint tiles by group" title="Peek: tint tiles by group">&#128065;</button>
-      <button id="hintTopBtn" class="icon-btn" aria-label="Hint" title="Hint: name one group (no points)">&#128161;</button>
-      <button id="revealPairTopBtn" class="icon-btn" aria-label="Reveal 1 Group" title="Reveal 1 Group (no points)">&#10024;</button>
+      <button id="hintTopBtn" class="icon-btn" aria-label="Hint" title="Hint: name one fusable group (no points)">&#128161;</button>
+      <button id="revealPairTopBtn" class="icon-btn" aria-label="Reveal 1 Fusion" title="Reveal 1 Fusion (no points)">&#10024;</button>
       <div class="toolbar-dropdown" id="themeDropdown">
         <button type="button" id="themeDropdownBtn" class="icon-btn toolbar-dropdown-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Theme: Dark" title="Theme: Dark">
           <span id="themeDropdownIcon" class="theme-swatch swatch-dark"></span>
@@ -54,7 +54,7 @@
   </header>
 
   <div class="quick-hint" id="chatFormatHint">
-    Chat format: <span class="mono highlight">2 5 8 12</span> fuses tiles <b>2</b>, <b>5</b>, <b>8</b> and <b>12</b>
+    Chat format: <span class="mono highlight">2 5 8 12</span> fuses tiles <b>2</b>, <b>5</b>, <b>8</b> and <b>12</b> into <b>one new tile</b> &mdash; then fuse that again!
   </div>
 
   <!-- Player Guess Bar: the ongoing way every player enters guesses in
@@ -69,7 +69,7 @@
     </div>
     <div id="teamPlayerChips" class="team-player-chips" hidden></div>
     <p id="teamGuessHint" class="hint player-guess-hint" hidden>Tap your name, then tap two cards on the board.</p>
-    <p id="soloGuessHint" class="hint player-guess-hint">Tap four tiles that share a link, or type their numbers below.</p>
+    <p id="soloGuessHint" class="hint player-guess-hint">Tap four tiles that belong together, or type their numbers below. A fused tile gets a new number and can be fused again.</p>
     <div class="field-row player-guess-input-row">
       <input id="offlineGuessInput" type="text" inputmode="numeric" placeholder="Or type a guess, e.g. 2 5 8 12" autocomplete="off">
       <button id="offlineGuessBtn" class="btn btn-primary">Submit</button>
@@ -261,8 +261,8 @@
         <div class="hints-buttons">
           <button id="peekBtn" class="btn btn-secondary">Peek (tint tiles by group)</button>
           <button id="hintBtn" class="btn btn-secondary">Show a Hint</button>
-          <button id="revealPairBtn" class="btn btn-secondary">Reveal 1 Group</button>
-          <button id="revealThreeBtn" class="btn btn-secondary">Reveal 3 Groups</button>
+          <button id="revealPairBtn" class="btn btn-secondary">Reveal 1 Fusion</button>
+          <button id="revealThreeBtn" class="btn btn-secondary">Reveal 3 Fusions</button>
           <button id="revealBoardBtn" class="btn btn-danger">Reveal Whole Board</button>
         </div>
       </div>
@@ -323,11 +323,11 @@
 
       <div class="puzzle-controls">
         <select id="difficultySelect" aria-label="Difficulty">
-          <option value="1">1 · Warmup (12 tiles)</option>
-          <option value="2" selected>2 · Easy (16 tiles)</option>
-          <option value="3">3 · Medium (20 tiles)</option>
-          <option value="4">4 · Hard (24 tiles)</option>
-          <option value="5">5 · Chaos (32 tiles)</option>
+          <option value="1">1 · Warmup (2 levels, 7 tiles)</option>
+          <option value="2" selected>2 · Easy (2 levels, 10 tiles)</option>
+          <option value="3">3 · Medium (3 levels, 10 tiles)</option>
+          <option value="4">4 · Hard (3-4 levels, 13+ tiles)</option>
+          <option value="5">5 · Chaos (2-3 chains mixed)</option>
         </select>
         <button id="newGameBtn" class="btn btn-secondary">New Game</button>
       </div>
@@ -341,10 +341,11 @@
         <strong class="how-to-play-title">&#128218; How To Play (Live Game)</strong>
         <ol class="how-to-play-list">
           <li><span class="htp-icon">&#9997;&#65039;</span><span>Type <b>four tile numbers</b> in chat, e.g. <span class="mono highlight">2 5 8 12</span></span></li>
-          <li><span class="htp-icon">&#129513;</span><span>If all four share a link, they <b>fuse</b> into a coloured banner that names the group</span></li>
+          <li><span class="htp-icon">&#129513;</span><span>If all four share a link (Ford, Toyota, Honda, BMW), they are <b>destroyed</b> and <b>fuse into one new tile</b> (&ldquo;Car&rdquo;) with a brand-new number</span></li>
+          <li><span class="htp-icon">&#9889;</span><span><b>Fuse again:</b> the new &ldquo;Car&rdquo; tile can now join Boat, Plane and Train to fuse into the final group &ldquo;Transportation&rdquo;. Some puzzles go 3 or 4 levels deep</span></li>
           <li><span class="htp-icon">&#128064;</span><span>Three of four right shows <b>&ldquo;one away&rdquo;</b>. Anything else is marked wrong</span></li>
-          <li><span class="htp-icon">&#11088;</span><span>Each group you fuse earns points. Leaderboards keep count</span></li>
-          <li><span class="htp-icon">&#128293;</span><span>Fuse groups <b>back-to-back</b> for a combo streak: 1x, 2x, 3x, up to 4x. A wrong guess resets it</span></li>
+          <li><span class="htp-icon">&#11088;</span><span>Every fusion earns points &mdash; <b>deeper levels are worth more</b> (x1, x2, x3, x4)</span></li>
+          <li><span class="htp-icon">&#128293;</span><span>Fuse <b>back-to-back</b> for a combo streak: 1x, 2x, 3x, up to 4x. A wrong guess resets it</span></li>
           <li><span class="htp-icon">&#9200;</span><span>No time limit. The clock only shows how long each puzzle takes</span></li>
         </ol>
       </div>
