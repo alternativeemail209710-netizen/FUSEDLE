@@ -1,575 +1,2209 @@
 [
  {
-  "id": "move-it",
+  "id": "transport",
   "title": "Move It",
   "initialBoard": [
    {
-    "id": "ford",
+    "id": "w_sedan",
     "type": "text",
-    "content": "Ford"
+    "content": "Sedan"
    },
    {
-    "id": "toyota",
+    "id": "w_coupe",
     "type": "text",
-    "content": "Toyota"
+    "content": "Coupe"
    },
    {
-    "id": "carimg",
-    "type": "image",
-    "content": "/images/car.svg"
-   },
-   {
-    "id": "suv",
-    "type": "emoji",
-    "content": "🚙"
-   },
-   {
-    "id": "bike",
-    "type": "image",
-    "content": "/images/bicycle.svg"
-   },
-   {
-    "id": "scooter",
+    "id": "w_hatchback",
     "type": "text",
-    "content": "Scooter"
+    "content": "Hatchback"
    },
    {
-    "id": "moto",
-    "type": "emoji",
-    "content": "🏍️"
-   },
-   {
-    "id": "truck",
+    "id": "w_minivan",
     "type": "text",
-    "content": "Truck"
+    "content": "Minivan"
    },
    {
-    "id": "train",
-    "type": "emoji",
-    "content": "🚆"
+    "id": "w_train",
+    "type": "text",
+    "content": "Train"
    },
    {
-    "id": "tram",
+    "id": "w_tram",
     "type": "text",
     "content": "Tram"
    },
    {
-    "id": "plane",
-    "type": "emoji",
-    "content": "✈️"
+    "id": "w_metro",
+    "type": "text",
+    "content": "Metro"
    },
    {
-    "id": "heli",
-    "type": "emoji",
-    "content": "🚁"
+    "id": "w_monorail",
+    "type": "text",
+    "content": "Monorail"
    },
    {
-    "id": "glider",
+    "id": "w_canoe",
+    "type": "text",
+    "content": "Canoe"
+   },
+   {
+    "id": "w_kayak",
+    "type": "text",
+    "content": "Kayak"
+   },
+   {
+    "id": "w_rowboat",
+    "type": "text",
+    "content": "Rowboat"
+   },
+   {
+    "id": "w_dinghy",
+    "type": "text",
+    "content": "Dinghy"
+   },
+   {
+    "id": "w_ferry",
+    "type": "text",
+    "content": "Ferry"
+   },
+   {
+    "id": "w_tanker",
+    "type": "text",
+    "content": "Tanker"
+   },
+   {
+    "id": "w_liner",
+    "type": "text",
+    "content": "Liner"
+   },
+   {
+    "id": "w_cruiser",
+    "type": "text",
+    "content": "Cruiser"
+   },
+   {
+    "id": "w_airplane",
+    "type": "text",
+    "content": "Airplane"
+   },
+   {
+    "id": "w_jet",
+    "type": "text",
+    "content": "Jet"
+   },
+   {
+    "id": "w_glider",
     "type": "text",
     "content": "Glider"
    },
    {
-    "id": "sail",
-    "type": "emoji",
-    "content": "⛵"
-   },
-   {
-    "id": "boatimg",
-    "type": "image",
-    "content": "/images/boat.svg"
-   },
-   {
-    "id": "ferry",
+    "id": "w_biplane",
     "type": "text",
-    "content": "Ferry"
+    "content": "Biplane"
+   },
+   {
+    "id": "w_helicopter",
+    "type": "text",
+    "content": "Helicopter"
+   },
+   {
+    "id": "w_gyrocopter",
+    "type": "text",
+    "content": "Gyrocopter"
+   },
+   {
+    "id": "w_chopper",
+    "type": "text",
+    "content": "Chopper"
+   },
+   {
+    "id": "w_drone",
+    "type": "text",
+    "content": "Drone"
    }
   ],
   "recipes": [
    {
     "id": "r_cars",
     "requires": [
-     "ford",
-     "toyota",
-     "carimg",
-     "suv"
+     "w_sedan",
+     "w_coupe",
+     "w_hatchback",
+     "w_minivan"
     ],
     "kind": "fuse",
     "yields": {
-     "id": "cars",
-     "type": "image",
-     "content": "/images/car.svg",
+     "id": "f_cars",
+     "type": "text",
+     "content": "Cars",
      "label": "Cars"
-    }
-   },
-   {
-    "id": "r_two",
-    "requires": [
-     "bike",
-     "scooter",
-     "moto"
-    ],
-    "kind": "fuse",
-    "yields": {
-     "id": "twowheels",
-     "type": "emoji",
-     "content": "🛵",
-     "label": "Two Wheels"
-    }
-   },
-   {
-    "id": "r_road",
-    "requires": [
-     "cars",
-     "twowheels",
-     "truck"
-    ],
-    "kind": "fuse",
-    "yields": {
-     "id": "road",
-     "type": "emoji",
-     "content": "🛣️",
-     "label": "Road"
     }
    },
    {
     "id": "r_rail",
     "requires": [
-     "train",
-     "tram"
+     "w_train",
+     "w_tram",
+     "w_metro",
+     "w_monorail"
     ],
     "kind": "fuse",
     "yields": {
-     "id": "rail",
-     "type": "emoji",
-     "content": "🚉",
+     "id": "f_rail",
+     "type": "text",
+     "content": "Rail",
      "label": "Rail"
     }
    },
    {
     "id": "r_land",
     "requires": [
-     "road",
-     "rail"
+     "f_cars",
+     "f_rail"
     ],
     "kind": "fuse",
     "yields": {
-     "id": "land",
-     "type": "emoji",
-     "content": "🌍",
+     "id": "f_land",
+     "type": "text",
+     "content": "Land",
      "label": "Land"
+    }
+   },
+   {
+    "id": "r_small_boats",
+    "requires": [
+     "w_canoe",
+     "w_kayak",
+     "w_rowboat",
+     "w_dinghy"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_small_boats",
+     "type": "text",
+     "content": "Small Boats",
+     "label": "Small Boats"
+    }
+   },
+   {
+    "id": "r_big_ships",
+    "requires": [
+     "w_ferry",
+     "w_tanker",
+     "w_liner",
+     "w_cruiser"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_big_ships",
+     "type": "text",
+     "content": "Big Ships",
+     "label": "Big Ships"
+    }
+   },
+   {
+    "id": "r_water",
+    "requires": [
+     "f_small_boats",
+     "f_big_ships"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_water",
+     "type": "text",
+     "content": "Water",
+     "label": "Water"
+    }
+   },
+   {
+    "id": "r_planes",
+    "requires": [
+     "w_airplane",
+     "w_jet",
+     "w_glider",
+     "w_biplane"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_planes",
+     "type": "text",
+     "content": "Planes",
+     "label": "Planes"
+    }
+   },
+   {
+    "id": "r_rotors",
+    "requires": [
+     "w_helicopter",
+     "w_gyrocopter",
+     "w_chopper",
+     "w_drone"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_rotors",
+     "type": "text",
+     "content": "Rotors",
+     "label": "Rotors"
     }
    },
    {
     "id": "r_air",
     "requires": [
-     "plane",
-     "heli",
-     "glider"
+     "f_planes",
+     "f_rotors"
     ],
     "kind": "fuse",
     "yields": {
-     "id": "air",
-     "type": "emoji",
-     "content": "☁️",
+     "id": "f_air",
+     "type": "text",
+     "content": "Air",
      "label": "Air"
     }
    },
    {
-    "id": "r_sea",
+    "id": "r_transportation",
     "requires": [
-     "sail",
-     "boatimg",
-     "ferry"
-    ],
-    "kind": "fuse",
-    "yields": {
-     "id": "sea",
-     "type": "emoji",
-     "content": "🌊",
-     "label": "Sea"
-    }
-   },
-   {
-    "id": "r_transport",
-    "requires": [
-     "land",
-     "air",
-     "sea"
+     "f_land",
+     "f_water",
+     "f_air"
     ],
     "kind": "category_solve",
     "yields": {
-     "id": "transportation",
-     "type": "emoji",
-     "content": "🚦",
+     "id": "f_transportation",
+     "type": "text",
+     "content": "Transportation",
      "label": "Transportation"
     }
    }
   ]
  },
  {
-  "id": "sound-sky",
-  "title": "Sound & Sky",
+  "id": "dinner",
+  "title": "Dinner Time",
   "initialBoard": [
    {
-    "id": "guitar",
+    "id": "w_pepper",
     "type": "text",
-    "content": "Guitar"
+    "content": "Pepper"
    },
    {
-    "id": "violin",
-    "type": "emoji",
-    "content": "🎻"
-   },
-   {
-    "id": "harp",
-    "type": "image",
-    "content": "/images/harp.svg"
-   },
-   {
-    "id": "drum",
-    "type": "emoji",
-    "content": "🥁"
-   },
-   {
-    "id": "cymbal",
+    "id": "w_cumin",
     "type": "text",
-    "content": "Cymbal"
+    "content": "Cumin"
    },
    {
-    "id": "trumpet",
-    "type": "emoji",
-    "content": "🎺"
+    "id": "w_paprika",
+    "type": "text",
+    "content": "Paprika"
    },
    {
-    "id": "trombone",
+    "id": "w_turmeric",
+    "type": "text",
+    "content": "Turmeric"
+   },
+   {
+    "id": "w_basil",
+    "type": "text",
+    "content": "Basil"
+   },
+   {
+    "id": "w_thyme",
+    "type": "text",
+    "content": "Thyme"
+   },
+   {
+    "id": "w_parsley",
+    "type": "text",
+    "content": "Parsley"
+   },
+   {
+    "id": "w_oregano",
+    "type": "text",
+    "content": "Oregano"
+   },
+   {
+    "id": "w_knife",
+    "type": "text",
+    "content": "Knife"
+   },
+   {
+    "id": "w_cleaver",
+    "type": "text",
+    "content": "Cleaver"
+   },
+   {
+    "id": "w_peeler",
+    "type": "text",
+    "content": "Peeler"
+   },
+   {
+    "id": "w_grater",
+    "type": "text",
+    "content": "Grater"
+   },
+   {
+    "id": "w_skillet",
+    "type": "text",
+    "content": "Skillet"
+   },
+   {
+    "id": "w_wok",
+    "type": "text",
+    "content": "Wok"
+   },
+   {
+    "id": "w_saucepan",
+    "type": "text",
+    "content": "Saucepan"
+   },
+   {
+    "id": "w_kettle",
+    "type": "text",
+    "content": "Kettle"
+   },
+   {
+    "id": "w_fork",
+    "type": "text",
+    "content": "Fork"
+   },
+   {
+    "id": "w_spoon",
+    "type": "text",
+    "content": "Spoon"
+   },
+   {
+    "id": "w_spork",
+    "type": "text",
+    "content": "Spork"
+   },
+   {
+    "id": "w_chopsticks",
+    "type": "text",
+    "content": "Chopsticks"
+   },
+   {
+    "id": "w_goblet",
+    "type": "text",
+    "content": "Goblet"
+   },
+   {
+    "id": "w_tumbler",
+    "type": "text",
+    "content": "Tumbler"
+   },
+   {
+    "id": "w_flute",
+    "type": "text",
+    "content": "Flute"
+   },
+   {
+    "id": "w_mug",
+    "type": "text",
+    "content": "Mug"
+   }
+  ],
+  "recipes": [
+   {
+    "id": "r_spices",
+    "requires": [
+     "w_pepper",
+     "w_cumin",
+     "w_paprika",
+     "w_turmeric"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_spices",
+     "type": "text",
+     "content": "Spices",
+     "label": "Spices"
+    }
+   },
+   {
+    "id": "r_herbs",
+    "requires": [
+     "w_basil",
+     "w_thyme",
+     "w_parsley",
+     "w_oregano"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_herbs",
+     "type": "text",
+     "content": "Herbs",
+     "label": "Herbs"
+    }
+   },
+   {
+    "id": "r_ingredients",
+    "requires": [
+     "f_spices",
+     "f_herbs"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_ingredients",
+     "type": "text",
+     "content": "Ingredients",
+     "label": "Ingredients"
+    }
+   },
+   {
+    "id": "r_cutting",
+    "requires": [
+     "w_knife",
+     "w_cleaver",
+     "w_peeler",
+     "w_grater"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_cutting",
+     "type": "text",
+     "content": "Cutting",
+     "label": "Cutting"
+    }
+   },
+   {
+    "id": "r_cookware",
+    "requires": [
+     "w_skillet",
+     "w_wok",
+     "w_saucepan",
+     "w_kettle"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_cookware",
+     "type": "text",
+     "content": "Cookware",
+     "label": "Cookware"
+    }
+   },
+   {
+    "id": "r_tools",
+    "requires": [
+     "f_cutting",
+     "f_cookware"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_tools",
+     "type": "text",
+     "content": "Tools",
+     "label": "Tools"
+    }
+   },
+   {
+    "id": "r_cutlery",
+    "requires": [
+     "w_fork",
+     "w_spoon",
+     "w_spork",
+     "w_chopsticks"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_cutlery",
+     "type": "text",
+     "content": "Cutlery",
+     "label": "Cutlery"
+    }
+   },
+   {
+    "id": "r_glassware",
+    "requires": [
+     "w_goblet",
+     "w_tumbler",
+     "w_flute",
+     "w_mug"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_glassware",
+     "type": "text",
+     "content": "Glassware",
+     "label": "Glassware"
+    }
+   },
+   {
+    "id": "r_table",
+    "requires": [
+     "f_cutlery",
+     "f_glassware"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_table",
+     "type": "text",
+     "content": "Table",
+     "label": "Table"
+    }
+   },
+   {
+    "id": "r_dinner",
+    "requires": [
+     "f_ingredients",
+     "f_tools",
+     "f_table"
+    ],
+    "kind": "category_solve",
+    "yields": {
+     "id": "f_dinner",
+     "type": "text",
+     "content": "Dinner",
+     "label": "Dinner"
+    }
+   }
+  ]
+ },
+ {
+  "id": "nature",
+  "title": "Nature Walk",
+  "initialBoard": [
+   {
+    "id": "w_cumulus",
+    "type": "text",
+    "content": "Cumulus"
+   },
+   {
+    "id": "w_cirrus",
+    "type": "text",
+    "content": "Cirrus"
+   },
+   {
+    "id": "w_stratus",
+    "type": "text",
+    "content": "Stratus"
+   },
+   {
+    "id": "w_nimbus",
+    "type": "text",
+    "content": "Nimbus"
+   },
+   {
+    "id": "w_thunder",
+    "type": "text",
+    "content": "Thunder"
+   },
+   {
+    "id": "w_lightning",
+    "type": "text",
+    "content": "Lightning"
+   },
+   {
+    "id": "w_hail",
+    "type": "text",
+    "content": "Hail"
+   },
+   {
+    "id": "w_gale",
+    "type": "text",
+    "content": "Gale"
+   },
+   {
+    "id": "w_comet",
+    "type": "text",
+    "content": "Comet"
+   },
+   {
+    "id": "w_meteor",
+    "type": "text",
+    "content": "Meteor"
+   },
+   {
+    "id": "w_galaxy",
+    "type": "text",
+    "content": "Galaxy"
+   },
+   {
+    "id": "w_nebula",
+    "type": "text",
+    "content": "Nebula"
+   },
+   {
+    "id": "w_tide",
+    "type": "text",
+    "content": "Tide"
+   },
+   {
+    "id": "w_wave",
+    "type": "text",
+    "content": "Wave"
+   },
+   {
+    "id": "w_reef",
+    "type": "text",
+    "content": "Reef"
+   },
+   {
+    "id": "w_coral",
+    "type": "text",
+    "content": "Coral"
+   },
+   {
+    "id": "w_stream",
+    "type": "text",
+    "content": "Stream"
+   },
+   {
+    "id": "w_pond",
+    "type": "text",
+    "content": "Pond"
+   },
+   {
+    "id": "w_brook",
+    "type": "text",
+    "content": "Brook"
+   },
+   {
+    "id": "w_creek",
+    "type": "text",
+    "content": "Creek"
+   },
+   {
+    "id": "w_glacier",
+    "type": "text",
+    "content": "Glacier"
+   },
+   {
+    "id": "w_iceberg",
+    "type": "text",
+    "content": "Iceberg"
+   },
+   {
+    "id": "w_frost",
+    "type": "text",
+    "content": "Frost"
+   },
+   {
+    "id": "w_snowflake",
+    "type": "text",
+    "content": "Snowflake"
+   }
+  ],
+  "recipes": [
+   {
+    "id": "r_clouds",
+    "requires": [
+     "w_cumulus",
+     "w_cirrus",
+     "w_stratus",
+     "w_nimbus"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_clouds",
+     "type": "text",
+     "content": "Clouds",
+     "label": "Clouds"
+    }
+   },
+   {
+    "id": "r_storms",
+    "requires": [
+     "w_thunder",
+     "w_lightning",
+     "w_hail",
+     "w_gale"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_storms",
+     "type": "text",
+     "content": "Storms",
+     "label": "Storms"
+    }
+   },
+   {
+    "id": "r_space",
+    "requires": [
+     "w_comet",
+     "w_meteor",
+     "w_galaxy",
+     "w_nebula"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_space",
+     "type": "text",
+     "content": "Space",
+     "label": "Space"
+    }
+   },
+   {
+    "id": "r_sky",
+    "requires": [
+     "f_clouds",
+     "f_storms",
+     "f_space"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_sky",
+     "type": "text",
+     "content": "Sky",
+     "label": "Sky"
+    }
+   },
+   {
+    "id": "r_ocean",
+    "requires": [
+     "w_tide",
+     "w_wave",
+     "w_reef",
+     "w_coral"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_ocean",
+     "type": "text",
+     "content": "Ocean",
+     "label": "Ocean"
+    }
+   },
+   {
+    "id": "r_fresh",
+    "requires": [
+     "w_stream",
+     "w_pond",
+     "w_brook",
+     "w_creek"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_fresh",
+     "type": "text",
+     "content": "Fresh",
+     "label": "Fresh"
+    }
+   },
+   {
+    "id": "r_frozen",
+    "requires": [
+     "w_glacier",
+     "w_iceberg",
+     "w_frost",
+     "w_snowflake"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_frozen",
+     "type": "text",
+     "content": "Frozen",
+     "label": "Frozen"
+    }
+   },
+   {
+    "id": "r_water",
+    "requires": [
+     "f_ocean",
+     "f_fresh",
+     "f_frozen"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_water",
+     "type": "text",
+     "content": "Water",
+     "label": "Water"
+    }
+   },
+   {
+    "id": "r_nature",
+    "requires": [
+     "f_sky",
+     "f_water"
+    ],
+    "kind": "category_solve",
+    "yields": {
+     "id": "f_nature",
+     "type": "text",
+     "content": "Nature",
+     "label": "Nature"
+    }
+   }
+  ]
+ },
+ {
+  "id": "music",
+  "title": "Music Hall",
+  "initialBoard": [
+   {
+    "id": "w_violin",
+    "type": "text",
+    "content": "Violin"
+   },
+   {
+    "id": "w_cello",
+    "type": "text",
+    "content": "Cello"
+   },
+   {
+    "id": "w_harp",
+    "type": "text",
+    "content": "Harp"
+   },
+   {
+    "id": "w_banjo",
+    "type": "text",
+    "content": "Banjo"
+   },
+   {
+    "id": "w_trumpet",
+    "type": "text",
+    "content": "Trumpet"
+   },
+   {
+    "id": "w_trombone",
     "type": "text",
     "content": "Trombone"
    },
    {
-    "id": "mic",
-    "type": "emoji",
-    "content": "🎤"
-   },
-   {
-    "id": "choir",
+    "id": "w_tuba",
     "type": "text",
-    "content": "Choir"
+    "content": "Tuba"
    },
    {
-    "id": "sun",
-    "type": "image",
-    "content": "/images/sun.svg"
-   },
-   {
-    "id": "cloud",
-    "type": "image",
-    "content": "/images/cloud.svg"
-   },
-   {
-    "id": "bolt",
-    "type": "emoji",
-    "content": "⚡"
-   },
-   {
-    "id": "red",
+    "id": "w_horn",
     "type": "text",
-    "content": "Red"
+    "content": "Horn"
    },
    {
-    "id": "blue",
-    "type": "emoji",
-    "content": "🟦"
-   },
-   {
-    "id": "green",
+    "id": "w_drums",
     "type": "text",
-    "content": "Green"
+    "content": "Drums"
    },
    {
-    "id": "yellow",
-    "type": "image",
-    "content": "/images/yellow.svg"
+    "id": "w_bongo",
+    "type": "text",
+    "content": "Bongo"
+   },
+   {
+    "id": "w_maracas",
+    "type": "text",
+    "content": "Maracas"
+   },
+   {
+    "id": "w_cymbal",
+    "type": "text",
+    "content": "Cymbal"
+   },
+   {
+    "id": "w_piano",
+    "type": "text",
+    "content": "Piano"
+   },
+   {
+    "id": "w_organ",
+    "type": "text",
+    "content": "Organ"
+   },
+   {
+    "id": "w_synth",
+    "type": "text",
+    "content": "Synth"
+   },
+   {
+    "id": "w_accordion",
+    "type": "text",
+    "content": "Accordion"
+   },
+   {
+    "id": "w_metal",
+    "type": "text",
+    "content": "Metal"
+   },
+   {
+    "id": "w_punk",
+    "type": "text",
+    "content": "Punk"
+   },
+   {
+    "id": "w_grunge",
+    "type": "text",
+    "content": "Grunge"
+   },
+   {
+    "id": "w_indie",
+    "type": "text",
+    "content": "Indie"
+   },
+   {
+    "id": "w_disco",
+    "type": "text",
+    "content": "Disco"
+   },
+   {
+    "id": "w_techno",
+    "type": "text",
+    "content": "Techno"
+   },
+   {
+    "id": "w_house",
+    "type": "text",
+    "content": "House"
+   },
+   {
+    "id": "w_trance",
+    "type": "text",
+    "content": "Trance"
    }
   ],
   "recipes": [
    {
     "id": "r_strings",
     "requires": [
-     "guitar",
-     "violin",
-     "harp"
+     "w_violin",
+     "w_cello",
+     "w_harp",
+     "w_banjo"
     ],
     "kind": "fuse",
     "yields": {
-     "id": "strings",
-     "type": "emoji",
-     "content": "🪕",
+     "id": "f_strings",
+     "type": "text",
+     "content": "Strings",
      "label": "Strings"
-    }
-   },
-   {
-    "id": "r_perc",
-    "requires": [
-     "drum",
-     "cymbal"
-    ],
-    "kind": "fuse",
-    "yields": {
-     "id": "percussion",
-     "type": "emoji",
-     "content": "🪘",
-     "label": "Percussion"
     }
    },
    {
     "id": "r_brass",
     "requires": [
-     "trumpet",
-     "trombone"
+     "w_trumpet",
+     "w_trombone",
+     "w_tuba",
+     "w_horn"
     ],
     "kind": "fuse",
     "yields": {
-     "id": "brass",
-     "type": "emoji",
-     "content": "🎷",
+     "id": "f_brass",
+     "type": "text",
+     "content": "Brass",
      "label": "Brass"
     }
    },
    {
-    "id": "r_instr",
+    "id": "r_orchestra",
     "requires": [
-     "strings",
-     "percussion",
-     "brass"
+     "f_strings",
+     "f_brass"
     ],
     "kind": "fuse",
     "yields": {
-     "id": "instruments",
-     "type": "emoji",
-     "content": "🎼",
-     "label": "Instruments"
+     "id": "f_orchestra",
+     "type": "text",
+     "content": "Orchestra",
+     "label": "Orchestra"
+    }
+   },
+   {
+    "id": "r_percussion",
+    "requires": [
+     "w_drums",
+     "w_bongo",
+     "w_maracas",
+     "w_cymbal"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_percussion",
+     "type": "text",
+     "content": "Percussion",
+     "label": "Percussion"
+    }
+   },
+   {
+    "id": "r_keys",
+    "requires": [
+     "w_piano",
+     "w_organ",
+     "w_synth",
+     "w_accordion"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_keys",
+     "type": "text",
+     "content": "Keys",
+     "label": "Keys"
+    }
+   },
+   {
+    "id": "r_band",
+    "requires": [
+     "f_percussion",
+     "f_keys"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_band",
+     "type": "text",
+     "content": "Band",
+     "label": "Band"
+    }
+   },
+   {
+    "id": "r_rock",
+    "requires": [
+     "w_metal",
+     "w_punk",
+     "w_grunge",
+     "w_indie"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_rock",
+     "type": "text",
+     "content": "Rock",
+     "label": "Rock"
+    }
+   },
+   {
+    "id": "r_dance",
+    "requires": [
+     "w_disco",
+     "w_techno",
+     "w_house",
+     "w_trance"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_dance",
+     "type": "text",
+     "content": "Dance",
+     "label": "Dance"
+    }
+   },
+   {
+    "id": "r_genres",
+    "requires": [
+     "f_rock",
+     "f_dance"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_genres",
+     "type": "text",
+     "content": "Genres",
+     "label": "Genres"
     }
    },
    {
     "id": "r_music",
     "requires": [
-     "instruments",
-     "mic",
-     "choir"
+     "f_orchestra",
+     "f_band",
+     "f_genres"
     ],
     "kind": "category_solve",
     "yields": {
-     "id": "music",
-     "type": "emoji",
-     "content": "🎶",
+     "id": "f_music",
+     "type": "text",
+     "content": "Music",
      "label": "Music"
-    }
-   },
-   {
-    "id": "r_weather",
-    "requires": [
-     "sun",
-     "cloud",
-     "bolt"
-    ],
-    "kind": "category_solve",
-    "yields": {
-     "id": "weather",
-     "type": "emoji",
-     "content": "🌦️",
-     "label": "Weather"
-    }
-   },
-   {
-    "id": "r_colors",
-    "requires": [
-     "red",
-     "blue",
-     "green",
-     "yellow"
-    ],
-    "kind": "category_solve",
-    "yields": {
-     "id": "colors",
-     "type": "emoji",
-     "content": "🎨",
-     "label": "Colors"
     }
    }
   ]
  },
  {
-  "id": "dinner-table",
-  "title": "Dinner Table",
+  "id": "school",
+  "title": "School Day",
   "initialBoard": [
    {
-    "id": "apple",
-    "type": "emoji",
-    "content": "🍎"
-   },
-   {
-    "id": "banana",
-    "type": "image",
-    "content": "/images/banana.svg"
-   },
-   {
-    "id": "grape",
+    "id": "w_pencil",
     "type": "text",
-    "content": "Grapes"
+    "content": "Pencil"
    },
    {
-    "id": "carrot",
-    "type": "emoji",
-    "content": "🥕"
-   },
-   {
-    "id": "spinach",
+    "id": "w_eraser",
     "type": "text",
-    "content": "Spinach"
+    "content": "Eraser"
    },
    {
-    "id": "corn",
-    "type": "emoji",
-    "content": "🌽"
-   },
-   {
-    "id": "milk",
-    "type": "emoji",
-    "content": "🥛"
-   },
-   {
-    "id": "cheese",
-    "type": "image",
-    "content": "/images/cheese.svg"
-   },
-   {
-    "id": "butter",
+    "id": "w_ruler",
     "type": "text",
-    "content": "Butter"
+    "content": "Ruler"
    },
    {
-    "id": "bread",
-    "type": "emoji",
-    "content": "🍞"
-   },
-   {
-    "id": "choc",
-    "type": "emoji",
-    "content": "🍫"
-   },
-   {
-    "id": "cookie",
+    "id": "w_stapler",
     "type": "text",
-    "content": "Cookie"
+    "content": "Stapler"
    },
    {
-    "id": "donut",
-    "type": "emoji",
-    "content": "🍩"
+    "id": "w_desk",
+    "type": "text",
+    "content": "Desk"
+   },
+   {
+    "id": "w_blackboard",
+    "type": "text",
+    "content": "Blackboard"
+   },
+   {
+    "id": "w_locker",
+    "type": "text",
+    "content": "Locker"
+   },
+   {
+    "id": "w_bench",
+    "type": "text",
+    "content": "Bench"
+   },
+   {
+    "id": "w_algebra",
+    "type": "text",
+    "content": "Algebra"
+   },
+   {
+    "id": "w_biology",
+    "type": "text",
+    "content": "Biology"
+   },
+   {
+    "id": "w_history",
+    "type": "text",
+    "content": "History"
+   },
+   {
+    "id": "w_geography",
+    "type": "text",
+    "content": "Geography"
+   },
+   {
+    "id": "w_tag",
+    "type": "text",
+    "content": "Tag"
+   },
+   {
+    "id": "w_hopscotch",
+    "type": "text",
+    "content": "Hopscotch"
+   },
+   {
+    "id": "w_dodgeball",
+    "type": "text",
+    "content": "Dodgeball"
+   },
+   {
+    "id": "w_marbles",
+    "type": "text",
+    "content": "Marbles"
+   },
+   {
+    "id": "w_swing",
+    "type": "text",
+    "content": "Swing"
+   },
+   {
+    "id": "w_slide",
+    "type": "text",
+    "content": "Slide"
+   },
+   {
+    "id": "w_seesaw",
+    "type": "text",
+    "content": "Seesaw"
+   },
+   {
+    "id": "w_sandbox",
+    "type": "text",
+    "content": "Sandbox"
+   },
+   {
+    "id": "w_sprint",
+    "type": "text",
+    "content": "Sprint"
+   },
+   {
+    "id": "w_relay",
+    "type": "text",
+    "content": "Relay"
+   },
+   {
+    "id": "w_hurdles",
+    "type": "text",
+    "content": "Hurdles"
+   },
+   {
+    "id": "w_marathon",
+    "type": "text",
+    "content": "Marathon"
    }
   ],
   "recipes": [
    {
-    "id": "r_fruit",
+    "id": "r_stationery",
     "requires": [
-     "apple",
-     "banana",
-     "grape"
+     "w_pencil",
+     "w_eraser",
+     "w_ruler",
+     "w_stapler"
     ],
     "kind": "fuse",
     "yields": {
-     "id": "fruit",
-     "type": "emoji",
-     "content": "🧺",
-     "label": "Fruit"
+     "id": "f_stationery",
+     "type": "text",
+     "content": "Stationery",
+     "label": "Stationery"
     }
    },
    {
-    "id": "r_veg",
+    "id": "r_furniture",
     "requires": [
-     "carrot",
-     "spinach",
-     "corn"
+     "w_desk",
+     "w_blackboard",
+     "w_locker",
+     "w_bench"
     ],
     "kind": "fuse",
     "yields": {
-     "id": "veg",
-     "type": "emoji",
-     "content": "🥬",
-     "label": "Veg"
+     "id": "f_furniture",
+     "type": "text",
+     "content": "Furniture",
+     "label": "Furniture"
     }
    },
    {
-    "id": "r_produce",
+    "id": "r_subjects",
     "requires": [
-     "fruit",
-     "veg"
+     "w_algebra",
+     "w_biology",
+     "w_history",
+     "w_geography"
     ],
     "kind": "fuse",
     "yields": {
-     "id": "produce",
-     "type": "emoji",
-     "content": "🛒",
-     "label": "Produce"
+     "id": "f_subjects",
+     "type": "text",
+     "content": "Subjects",
+     "label": "Subjects"
     }
    },
    {
-    "id": "r_dairy",
+    "id": "r_classroom",
     "requires": [
-     "milk",
-     "cheese",
-     "butter"
+     "f_stationery",
+     "f_furniture",
+     "f_subjects"
     ],
     "kind": "fuse",
     "yields": {
-     "id": "dairy",
-     "type": "emoji",
-     "content": "🐄",
-     "label": "Dairy"
+     "id": "f_classroom",
+     "type": "text",
+     "content": "Classroom",
+     "label": "Classroom"
     }
    },
    {
-    "id": "r_grocer",
+    "id": "r_games",
     "requires": [
-     "produce",
-     "dairy",
-     "bread"
+     "w_tag",
+     "w_hopscotch",
+     "w_dodgeball",
+     "w_marbles"
     ],
     "kind": "fuse",
     "yields": {
-     "id": "groceries",
-     "type": "emoji",
-     "content": "🛍️",
-     "label": "Groceries"
+     "id": "f_games",
+     "type": "text",
+     "content": "Games",
+     "label": "Games"
+    }
+   },
+   {
+    "id": "r_equipment",
+    "requires": [
+     "w_swing",
+     "w_slide",
+     "w_seesaw",
+     "w_sandbox"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_equipment",
+     "type": "text",
+     "content": "Equipment",
+     "label": "Equipment"
+    }
+   },
+   {
+    "id": "r_athletics",
+    "requires": [
+     "w_sprint",
+     "w_relay",
+     "w_hurdles",
+     "w_marathon"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_athletics",
+     "type": "text",
+     "content": "Athletics",
+     "label": "Athletics"
+    }
+   },
+   {
+    "id": "r_playground",
+    "requires": [
+     "f_games",
+     "f_equipment",
+     "f_athletics"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_playground",
+     "type": "text",
+     "content": "Playground",
+     "label": "Playground"
+    }
+   },
+   {
+    "id": "r_school",
+    "requires": [
+     "f_classroom",
+     "f_playground"
+    ],
+    "kind": "category_solve",
+    "yields": {
+     "id": "f_school",
+     "type": "text",
+     "content": "School",
+     "label": "School"
+    }
+   }
+  ]
+ },
+ {
+  "id": "animals",
+  "title": "Animal Kingdom",
+  "initialBoard": [
+   {
+    "id": "w_cow",
+    "type": "text",
+    "content": "Cow"
+   },
+   {
+    "id": "w_pig",
+    "type": "text",
+    "content": "Pig"
+   },
+   {
+    "id": "w_sheep",
+    "type": "text",
+    "content": "Sheep"
+   },
+   {
+    "id": "w_goat",
+    "type": "text",
+    "content": "Goat"
+   },
+   {
+    "id": "w_chicken",
+    "type": "text",
+    "content": "Chicken"
+   },
+   {
+    "id": "w_duck",
+    "type": "text",
+    "content": "Duck"
+   },
+   {
+    "id": "w_turkey",
+    "type": "text",
+    "content": "Turkey"
+   },
+   {
+    "id": "w_goose",
+    "type": "text",
+    "content": "Goose"
+   },
+   {
+    "id": "w_lion",
+    "type": "text",
+    "content": "Lion"
+   },
+   {
+    "id": "w_tiger",
+    "type": "text",
+    "content": "Tiger"
+   },
+   {
+    "id": "w_leopard",
+    "type": "text",
+    "content": "Leopard"
+   },
+   {
+    "id": "w_cheetah",
+    "type": "text",
+    "content": "Cheetah"
+   },
+   {
+    "id": "w_gorilla",
+    "type": "text",
+    "content": "Gorilla"
+   },
+   {
+    "id": "w_monkey",
+    "type": "text",
+    "content": "Monkey"
+   },
+   {
+    "id": "w_chimp",
+    "type": "text",
+    "content": "Chimp"
+   },
+   {
+    "id": "w_orangutan",
+    "type": "text",
+    "content": "Orangutan"
+   },
+   {
+    "id": "w_whale",
+    "type": "text",
+    "content": "Whale"
+   },
+   {
+    "id": "w_dolphin",
+    "type": "text",
+    "content": "Dolphin"
+   },
+   {
+    "id": "w_seal",
+    "type": "text",
+    "content": "Seal"
+   },
+   {
+    "id": "w_walrus",
+    "type": "text",
+    "content": "Walrus"
+   },
+   {
+    "id": "w_salmon",
+    "type": "text",
+    "content": "Salmon"
+   },
+   {
+    "id": "w_tuna",
+    "type": "text",
+    "content": "Tuna"
+   },
+   {
+    "id": "w_trout",
+    "type": "text",
+    "content": "Trout"
+   },
+   {
+    "id": "w_shark",
+    "type": "text",
+    "content": "Shark"
+   }
+  ],
+  "recipes": [
+   {
+    "id": "r_livestock",
+    "requires": [
+     "w_cow",
+     "w_pig",
+     "w_sheep",
+     "w_goat"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_livestock",
+     "type": "text",
+     "content": "Livestock",
+     "label": "Livestock"
+    }
+   },
+   {
+    "id": "r_poultry",
+    "requires": [
+     "w_chicken",
+     "w_duck",
+     "w_turkey",
+     "w_goose"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_poultry",
+     "type": "text",
+     "content": "Poultry",
+     "label": "Poultry"
+    }
+   },
+   {
+    "id": "r_farm",
+    "requires": [
+     "f_livestock",
+     "f_poultry"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_farm",
+     "type": "text",
+     "content": "Farm",
+     "label": "Farm"
+    }
+   },
+   {
+    "id": "r_big_cats",
+    "requires": [
+     "w_lion",
+     "w_tiger",
+     "w_leopard",
+     "w_cheetah"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_big_cats",
+     "type": "text",
+     "content": "Big Cats",
+     "label": "Big Cats"
+    }
+   },
+   {
+    "id": "r_primates",
+    "requires": [
+     "w_gorilla",
+     "w_monkey",
+     "w_chimp",
+     "w_orangutan"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_primates",
+     "type": "text",
+     "content": "Primates",
+     "label": "Primates"
+    }
+   },
+   {
+    "id": "r_wild",
+    "requires": [
+     "f_big_cats",
+     "f_primates"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_wild",
+     "type": "text",
+     "content": "Wild",
+     "label": "Wild"
+    }
+   },
+   {
+    "id": "r_sea_mammals",
+    "requires": [
+     "w_whale",
+     "w_dolphin",
+     "w_seal",
+     "w_walrus"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_sea_mammals",
+     "type": "text",
+     "content": "Sea Mammals",
+     "label": "Sea Mammals"
+    }
+   },
+   {
+    "id": "r_fish",
+    "requires": [
+     "w_salmon",
+     "w_tuna",
+     "w_trout",
+     "w_shark"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_fish",
+     "type": "text",
+     "content": "Fish",
+     "label": "Fish"
+    }
+   },
+   {
+    "id": "r_sea",
+    "requires": [
+     "f_sea_mammals",
+     "f_fish"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_sea",
+     "type": "text",
+     "content": "Sea",
+     "label": "Sea"
+    }
+   },
+   {
+    "id": "r_animals",
+    "requires": [
+     "f_farm",
+     "f_wild",
+     "f_sea"
+    ],
+    "kind": "category_solve",
+    "yields": {
+     "id": "f_animals",
+     "type": "text",
+     "content": "Animals",
+     "label": "Animals"
+    }
+   }
+  ]
+ },
+ {
+  "id": "tech",
+  "title": "Tech Talk",
+  "initialBoard": [
+   {
+    "id": "w_keyboard",
+    "type": "text",
+    "content": "Keyboard"
+   },
+   {
+    "id": "w_monitor",
+    "type": "text",
+    "content": "Monitor"
+   },
+   {
+    "id": "w_mouse",
+    "type": "text",
+    "content": "Mouse"
+   },
+   {
+    "id": "w_webcam",
+    "type": "text",
+    "content": "Webcam"
+   },
+   {
+    "id": "w_memory",
+    "type": "text",
+    "content": "Memory"
+   },
+   {
+    "id": "w_flash",
+    "type": "text",
+    "content": "Flash"
+   },
+   {
+    "id": "w_cache",
+    "type": "text",
+    "content": "Cache"
+   },
+   {
+    "id": "w_disk",
+    "type": "text",
+    "content": "Disk"
+   },
+   {
+    "id": "w_chrome",
+    "type": "text",
+    "content": "Chrome"
+   },
+   {
+    "id": "w_firefox",
+    "type": "text",
+    "content": "Firefox"
+   },
+   {
+    "id": "w_safari",
+    "type": "text",
+    "content": "Safari"
+   },
+   {
+    "id": "w_opera",
+    "type": "text",
+    "content": "Opera"
+   },
+   {
+    "id": "w_python",
+    "type": "text",
+    "content": "Python"
+   },
+   {
+    "id": "w_java",
+    "type": "text",
+    "content": "Java"
+   },
+   {
+    "id": "w_swift",
+    "type": "text",
+    "content": "Swift"
+   },
+   {
+    "id": "w_ruby",
+    "type": "text",
+    "content": "Ruby"
+   },
+   {
+    "id": "w_post",
+    "type": "text",
+    "content": "Post"
+   },
+   {
+    "id": "w_like",
+    "type": "text",
+    "content": "Like"
+   },
+   {
+    "id": "w_share",
+    "type": "text",
+    "content": "Share"
+   },
+   {
+    "id": "w_follow",
+    "type": "text",
+    "content": "Follow"
+   },
+   {
+    "id": "w_firewall",
+    "type": "text",
+    "content": "Firewall"
+   },
+   {
+    "id": "w_password",
+    "type": "text",
+    "content": "Password"
+   },
+   {
+    "id": "w_virus",
+    "type": "text",
+    "content": "Virus"
+   },
+   {
+    "id": "w_phishing",
+    "type": "text",
+    "content": "Phishing"
+   }
+  ],
+  "recipes": [
+   {
+    "id": "r_parts",
+    "requires": [
+     "w_keyboard",
+     "w_monitor",
+     "w_mouse",
+     "w_webcam"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_parts",
+     "type": "text",
+     "content": "Parts",
+     "label": "Parts"
+    }
+   },
+   {
+    "id": "r_storage",
+    "requires": [
+     "w_memory",
+     "w_flash",
+     "w_cache",
+     "w_disk"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_storage",
+     "type": "text",
+     "content": "Storage",
+     "label": "Storage"
+    }
+   },
+   {
+    "id": "r_hardware",
+    "requires": [
+     "f_parts",
+     "f_storage"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_hardware",
+     "type": "text",
+     "content": "Hardware",
+     "label": "Hardware"
+    }
+   },
+   {
+    "id": "r_browsers",
+    "requires": [
+     "w_chrome",
+     "w_firefox",
+     "w_safari",
+     "w_opera"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_browsers",
+     "type": "text",
+     "content": "Browsers",
+     "label": "Browsers"
+    }
+   },
+   {
+    "id": "r_code",
+    "requires": [
+     "w_python",
+     "w_java",
+     "w_swift",
+     "w_ruby"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_code",
+     "type": "text",
+     "content": "Code",
+     "label": "Code"
+    }
+   },
+   {
+    "id": "r_software",
+    "requires": [
+     "f_browsers",
+     "f_code"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_software",
+     "type": "text",
+     "content": "Software",
+     "label": "Software"
+    }
+   },
+   {
+    "id": "r_social",
+    "requires": [
+     "w_post",
+     "w_like",
+     "w_share",
+     "w_follow"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_social",
+     "type": "text",
+     "content": "Social",
+     "label": "Social"
+    }
+   },
+   {
+    "id": "r_security",
+    "requires": [
+     "w_firewall",
+     "w_password",
+     "w_virus",
+     "w_phishing"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_security",
+     "type": "text",
+     "content": "Security",
+     "label": "Security"
+    }
+   },
+   {
+    "id": "r_online",
+    "requires": [
+     "f_social",
+     "f_security"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_online",
+     "type": "text",
+     "content": "Online",
+     "label": "Online"
+    }
+   },
+   {
+    "id": "r_technology",
+    "requires": [
+     "f_hardware",
+     "f_software",
+     "f_online"
+    ],
+    "kind": "category_solve",
+    "yields": {
+     "id": "f_technology",
+     "type": "text",
+     "content": "Technology",
+     "label": "Technology"
+    }
+   }
+  ]
+ },
+ {
+  "id": "holiday",
+  "title": "Holiday Time",
+  "initialBoard": [
+   {
+    "id": "w_sand",
+    "type": "text",
+    "content": "Sand"
+   },
+   {
+    "id": "w_shell",
+    "type": "text",
+    "content": "Shell"
+   },
+   {
+    "id": "w_dune",
+    "type": "text",
+    "content": "Dune"
+   },
+   {
+    "id": "w_shore",
+    "type": "text",
+    "content": "Shore"
+   },
+   {
+    "id": "w_towel",
+    "type": "text",
+    "content": "Towel"
+   },
+   {
+    "id": "w_sunscreen",
+    "type": "text",
+    "content": "Sunscreen"
+   },
+   {
+    "id": "w_snorkel",
+    "type": "text",
+    "content": "Snorkel"
+   },
+   {
+    "id": "w_sandals",
+    "type": "text",
+    "content": "Sandals"
+   },
+   {
+    "id": "w_ice_cream",
+    "type": "text",
+    "content": "Ice Cream"
+   },
+   {
+    "id": "w_cocktail",
+    "type": "text",
+    "content": "Cocktail"
+   },
+   {
+    "id": "w_lemonade",
+    "type": "text",
+    "content": "Lemonade"
+   },
+   {
+    "id": "w_coconut",
+    "type": "text",
+    "content": "Coconut"
+   },
+   {
+    "id": "w_ski",
+    "type": "text",
+    "content": "Ski"
+   },
+   {
+    "id": "w_sled",
+    "type": "text",
+    "content": "Sled"
+   },
+   {
+    "id": "w_snowboard",
+    "type": "text",
+    "content": "Snowboard"
+   },
+   {
+    "id": "w_toboggan",
+    "type": "text",
+    "content": "Toboggan"
+   },
+   {
+    "id": "w_trail",
+    "type": "text",
+    "content": "Trail"
+   },
+   {
+    "id": "w_backpack",
+    "type": "text",
+    "content": "Backpack"
+   },
+   {
+    "id": "w_compass",
+    "type": "text",
+    "content": "Compass"
+   },
+   {
+    "id": "w_summit",
+    "type": "text",
+    "content": "Summit"
+   },
+   {
+    "id": "w_fireplace",
+    "type": "text",
+    "content": "Fireplace"
+   },
+   {
+    "id": "w_blanket",
+    "type": "text",
+    "content": "Blanket"
+   },
+   {
+    "id": "w_cocoa",
+    "type": "text",
+    "content": "Cocoa"
+   },
+   {
+    "id": "w_lodge",
+    "type": "text",
+    "content": "Lodge"
+   }
+  ],
+  "recipes": [
+   {
+    "id": "r_seaside",
+    "requires": [
+     "w_sand",
+     "w_shell",
+     "w_dune",
+     "w_shore"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_seaside",
+     "type": "text",
+     "content": "Seaside",
+     "label": "Seaside"
+    }
+   },
+   {
+    "id": "r_beach_gear",
+    "requires": [
+     "w_towel",
+     "w_sunscreen",
+     "w_snorkel",
+     "w_sandals"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_beach_gear",
+     "type": "text",
+     "content": "Beach Gear",
+     "label": "Beach Gear"
     }
    },
    {
     "id": "r_treats",
     "requires": [
-     "choc",
-     "cookie",
-     "donut"
+     "w_ice_cream",
+     "w_cocktail",
+     "w_lemonade",
+     "w_coconut"
     ],
     "kind": "fuse",
     "yields": {
-     "id": "treats",
-     "type": "emoji",
-     "content": "🍬",
+     "id": "f_treats",
+     "type": "text",
+     "content": "Treats",
      "label": "Treats"
     }
    },
    {
-    "id": "r_food",
+    "id": "r_beach",
     "requires": [
-     "groceries",
-     "treats"
+     "f_seaside",
+     "f_beach_gear",
+     "f_treats"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_beach",
+     "type": "text",
+     "content": "Beach",
+     "label": "Beach"
+    }
+   },
+   {
+    "id": "r_snow_fun",
+    "requires": [
+     "w_ski",
+     "w_sled",
+     "w_snowboard",
+     "w_toboggan"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_snow_fun",
+     "type": "text",
+     "content": "Snow Fun",
+     "label": "Snow Fun"
+    }
+   },
+   {
+    "id": "r_hiking",
+    "requires": [
+     "w_trail",
+     "w_backpack",
+     "w_compass",
+     "w_summit"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_hiking",
+     "type": "text",
+     "content": "Hiking",
+     "label": "Hiking"
+    }
+   },
+   {
+    "id": "r_cabin",
+    "requires": [
+     "w_fireplace",
+     "w_blanket",
+     "w_cocoa",
+     "w_lodge"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_cabin",
+     "type": "text",
+     "content": "Cabin",
+     "label": "Cabin"
+    }
+   },
+   {
+    "id": "r_mountain",
+    "requires": [
+     "f_snow_fun",
+     "f_hiking",
+     "f_cabin"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "f_mountain",
+     "type": "text",
+     "content": "Mountain",
+     "label": "Mountain"
+    }
+   },
+   {
+    "id": "r_holiday",
+    "requires": [
+     "f_beach",
+     "f_mountain"
     ],
     "kind": "category_solve",
     "yields": {
-     "id": "food",
-     "type": "emoji",
-     "content": "🍽️",
-     "label": "Food"
+     "id": "f_holiday",
+     "type": "text",
+     "content": "Holiday",
+     "label": "Holiday"
     }
    }
   ]

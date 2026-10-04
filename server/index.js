@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url';
 import { Server } from 'socket.io';
 import { GameManager, MODES, selfTest } from './gameManager.js';
 import { connectTikTok } from './tiktok.js';
+import { createSettings } from './settings.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST = path.join(__dirname, '..', 'dist');
@@ -26,7 +27,9 @@ const startMode = (process.env.MODE || 'test').toLowerCase();
 if (!MODES.includes(startMode)) console.warn(`[config] MODE="${process.env.MODE}" is not one of ${MODES.join('/')} - using "test"`);
 let mode = MODES.includes(startMode) ? startMode : 'test';
 
-const username = (process.env.TIKTOK_USERNAME || '').replace(/^@/, '').trim();
+// Host settings: defaults < environment variables < what the host saved in the panel (data/settings.json)
+const settings = createSettings({ dataDir: process.env.DATA_DIR || path.join(__dirname, '..', 'data') });
+const cfg = settings.values;
 
 const ADMIN_KEY = process.env.ADMIN_KEY || crypto.randomBytes(6).toString('hex');
 if (!process.env.ADMIN_KEY) console.warn(`[config] ADMIN_KEY not set - temporary control-panel key for this run: ${ADMIN_KEY}`);
@@ -43,7 +46,7 @@ const io = new Server(server, { cors: { origin: '*' } });
 
 let tiktokStatus = 'off';
 let tiktok = null;
-const game = new GameManager({ emit: (event, payload) => io.emit(event, payload), mode });
+const game = new GameManager({ emit: (event, payload) => io.emit(event, payload), mode, settings });
 
 const setStatus = (s) => {
   tiktokStatus = s;
@@ -53,14 +56,16 @@ const setStatus = (s) => {
 /* ---- Live mode: TikTok chat ---- */
 function startTikTok() {
   if (tiktok) return;
+  const username = cfg.tiktokUsername;
   if (!username) {
-    console.warn('[tiktok] TIKTOK_USERNAME is not set - Live mode has no chat to read');
+    console.warn('[tiktok] no TikTok username set - Live mode has no chat to read (add it in Settings)');
     setStatus('no-username');
     return;
   }
   tiktok = connectTikTok({
     username,
     onChat: (m) => mode === 'live' && game.handleChat(m),
+    sessionId: cfg.tiktokSessionId || undefined,
     onStatus: setStatus
   });
 }
@@ -71,21 +76,18 @@ function stopTikTok() {
 }
 
 /* ---- Test mode: simulated viewers (correct, "so close" and wrong guesses) ---- */
-const bot = {
-  enabled: process.env.TEST_BOT !== 'false',
-  intervalMs: Number(process.env.TEST_BOT_MS || 4500),
-  timer: null
-};
 const BOT_NAMES = ['Ava', 'Ben', 'Cleo', 'Dax', 'Eli', 'Fay'];
 function botTurn() {
   const who = BOT_NAMES[Math.floor(Math.random() * BOT_NAMES.length)];
   const roll = Math.random();
-  const nums = roll < 0.6 ? game.suggestGuess() : roll < 0.78 ? game.suggestGuess({ close: true }) : game.randomGuess();
+  const right = cfg.botAccuracy / 100;
+  const nums = roll < right ? game.suggestGuess() : roll < right + (1 - right) * 0.45 ? game.suggestGuess({ close: true }) : game.randomGuess();
   if (nums) game.handleChat({ uniqueId: `bot_${who}`, nickname: who, comment: nums.join(' ') });
 }
+let botTimer = null;
 function syncBot() {
-  clearInterval(bot.timer);
-  bot.timer = mode === 'test' && bot.enabled ? setInterval(botTurn, bot.intervalMs) : null;
+  clearInterval(botTimer);
+  botTimer = mode === 'test' && cfg.botEnabled ? setInterval(botTurn, cfg.botIntervalMs) : null;
 }
 
 /** Start/stop everything that belongs to the current mode. */
@@ -100,6 +102,18 @@ function applyMode(next) {
   console.log(`[mode] now "${mode}"`);
 }
 
+/** Apply side effects of changed settings (reconnect chat, restart bot, refresh the screen). */
+function onSettingsChanged(changed) {
+  if (!changed.length) return;
+  if (mode === 'live' && changed.some((k) => k === 'tiktokUsername' || k === 'tiktokSessionId')) {
+    stopTikTok();
+    startTikTok();
+  }
+  if (changed.some((k) => k.startsWith('bot'))) syncBot();
+  game.pushState();
+  console.log(`[settings] changed: ${changed.join(', ')}`);
+}
+
 /* ------------------------------ HTTP ------------------------------ */
 app.get('/healthz', (_req, res) => res.json({ ok: true, mode, tiktok: tiktokStatus, puzzle: game.puzzle.id }));
 
@@ -110,19 +124,23 @@ app.post('/admin/skip', (req, res) => {
   res.json({ ok: true });
 });
 
-// Control panel API (the page is /control)
+// Host API used by the toolbar on the game page (every call needs the ADMIN_KEY)
 const api = express.Router();
 api.use(express.json());
 api.use((req, res, next) => (keyOk(req.get('x-admin-key')) ? next() : res.status(403).json({ error: 'Wrong or missing admin key' })));
 
-const status = () => ({
-  mode,
-  modes: MODES,
-  tiktok: tiktokStatus,
-  username: username || null,
-  bot: { enabled: bot.enabled, intervalMs: bot.intervalMs },
-  game: game.adminState()
-});
+const status = () => {
+  const { values, secretSet } = settings.adminView();
+  return {
+    mode,
+    modes: MODES,
+    tiktok: tiktokStatus,
+    schema: settings.schema,
+    settings: values,
+    secretSet,
+    game: game.adminState()
+  };
+};
 const testOnly = (res) => mode !== 'test' && (res.status(409).json({ error: 'Only available in Test mode' }), true);
 
 api.get('/status', (_req, res) => res.json(status()));
@@ -143,11 +161,12 @@ api.post('/puzzles/reload', (_req, res) => {
   }
 });
 api.get('/selftest', (_req, res) => res.json(selfTest()));
-api.post('/bot', (req, res) => {
-  if (typeof req.body?.enabled === 'boolean') bot.enabled = req.body.enabled;
-  const ms = Number(req.body?.intervalMs);
-  if (ms >= 1000 && ms <= 30000) bot.intervalMs = ms;
-  syncBot();
+api.post('/settings', (req, res) => {
+  onSettingsChanged(settings.update(req.body?.values));
+  res.json(status());
+});
+api.post('/settings/reset', (_req, res) => {
+  onSettingsChanged(settings.reset());
   res.json(status());
 });
 api.post('/solve-step', (_req, res) => {
@@ -162,13 +181,12 @@ api.post('/guess', (req, res) => {
 });
 app.use('/api/control', api);
 
-// Built React app: / = the game screen, /control = the control panel
+// Built React app: / = the game screen (the host toolbar appears after unlocking with ADMIN_KEY)
 const sendBuilt = (res, file) => {
   const f = path.join(DIST, file);
   if (!fs.existsSync(f)) return res.status(503).send('Frontend build missing - the build step (vite build) did not run.');
   res.sendFile(f);
 };
-app.get('/control', (_req, res) => sendBuilt(res, 'control.html'));
 app.use(express.static(DIST));
 app.use((_req, res) => sendBuilt(res, 'index.html'));
 
@@ -180,7 +198,7 @@ io.on('connection', (socket) => {
   // Offline mode only: your own guesses typed on the game screen. Ignored in Live and Test.
   socket.on('player_guess', ({ text } = {}) => {
     if (mode !== 'offline') return;
-    game.handleChat({ uniqueId: 'local_player', nickname: 'You', comment: String(text || '') });
+    game.handleChat({ uniqueId: 'local_player', nickname: cfg.playerName || 'You', comment: String(text || '') });
   });
   socket.on('player_skip', () => {
     if (mode === 'offline') game.nextPuzzle();

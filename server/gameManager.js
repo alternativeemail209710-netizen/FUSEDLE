@@ -4,10 +4,10 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUZZLES_FILE = path.join(__dirname, 'puzzles.json');
-const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 
 export const MODES = ['test', 'live', 'offline'];
-const GUESS_COOLDOWN_MS = 300;
+export const BOARD_SIZE = 24; // every round starts with exactly 24 tiles: 4 columns x 6 rows
+const WORD_ONLY = true; // this version plays with words only (no images / emoji)
 const MAX_GROUP = 12; // chat parser accepts at most 12 numbers per guess
 
 const shuffle = (arr) => {
@@ -38,9 +38,21 @@ export function validatePuzzle(p) {
   }
   const producible = new Set();
   const solvedIds = new Set();
+  const words = new Set();
+  if (p.initialBoard.length !== BOARD_SIZE) {
+    errors.push(`has ${p.initialBoard.length} starting tiles, a round needs exactly ${BOARD_SIZE}`);
+  }
+  const checkWord = (t, where) => {
+    if (WORD_ONLY && t.type !== 'text') errors.push(`${where} "${t.id}" is type "${t.type}" - this version is word-only`);
+    const w = String(t.content || '').trim().toLowerCase();
+    if (!w) errors.push(`${where} "${t.id}" has no word`);
+    else if (words.has(w)) errors.push(`word "${t.content}" appears twice`);
+    words.add(w);
+  };
   for (const t of p.initialBoard) {
     if (producible.has(t.id)) errors.push(`duplicate tile id "${t.id}"`);
     producible.add(t.id);
+    checkWord(t, 'tile');
   }
   for (const r of p.recipes) {
     if (!r.yields?.id) {
@@ -50,9 +62,11 @@ export function validatePuzzle(p) {
     if (r.kind === 'fuse') {
       if (producible.has(r.yields.id)) errors.push(`recipe ${r.id} yields duplicate id "${r.yields.id}"`);
       producible.add(r.yields.id);
+      checkWord(r.yields, 'fused tile');
     } else if (r.kind === 'category_solve') {
       if (solvedIds.has(r.yields.id)) errors.push(`recipe ${r.id}: duplicate solved id "${r.yields.id}"`);
       solvedIds.add(r.yields.id);
+      if (WORD_ONLY && r.yields.type !== 'text') errors.push(`solved category "${r.yields.id}" is type "${r.yields.type}" - this version is word-only`);
     }
   }
   const consumed = new Map();
@@ -92,14 +106,9 @@ export function selfTest() {
     if (!p?.title) warnings.push('no title');
 
     if (!errors.length) {
-      // images: local files must exist in public/, remote URLs cannot be checked here
-      const defs = [...p.initialBoard, ...p.recipes.map((r) => r.yields)];
-      for (const d of defs) {
-        if (d.type !== 'image') continue;
-        if (/^https?:\/\//i.test(d.content)) warnings.push(`remote image not checked: ${d.content}`);
-        else if (!fs.existsSync(path.join(PUBLIC_DIR, String(d.content)))) errors.push(`image file missing: public${d.content}`);
-      }
-      if (p.initialBoard.length > 20) warnings.push(`${p.initialBoard.length} starting tiles - they will look small on screen`);
+      // long words get a small font on a 4-column board
+      const longWords = [...p.initialBoard, ...p.recipes.filter((r) => r.kind === 'fuse').map((r) => r.yields)].filter((t) => String(t.content).length > 11);
+      if (longWords.length) warnings.push(`long words (hard to read): ${longWords.map((t) => t.content).join(', ')}`);
 
       // headless play-through
       const have = new Set(p.initialBoard.map((t) => t.id));
@@ -135,10 +144,13 @@ export function selfTest() {
 }
 
 export class GameManager {
-  constructor({ emit, mode = 'test' }) {
+  constructor({ emit, mode = 'test', settings }) {
     this.emit = emit;
+    this.cfg = settings.values; // live reference: host changes apply immediately
     this.mode = MODES.includes(mode) ? mode : 'test';
-    this.victoryMs = Number(process.env.VICTORY_MS || 11000);
+    this.ui = () => settings.ui();
+    this.lastProgress = Date.now();
+    this.tickTimer = setInterval(() => this.tick(), 5000);
     this.loadPuzzles();
 
     this.order = [];
@@ -179,8 +191,8 @@ export class GameManager {
 
   refillOrder() {
     const idx = this.puzzles.map((_, i) => i);
-    if (this.mode === 'test') {
-      this.order = idx; // test mode walks through every puzzle in file order
+    if (this.mode === 'test' || this.cfg.puzzleOrder === 'sequential') {
+      this.order = idx; // file order (test mode always, so every puzzle gets checked)
       return;
     }
     const o = shuffle(idx);
@@ -215,6 +227,7 @@ export class GameManager {
     this.solved = [];
     this.status = 'playing';
     this.puzzleScores = new Map();
+    this.lastProgress = Date.now();
     this.emit('state', this.getState());
     console.log(`[game] (${this.mode}) puzzle "${puzzle.id}" started with ${this.tiles.length} tiles`);
   }
@@ -250,7 +263,7 @@ export class GameManager {
     if (!nums) return;
     const key = uniqueId || nickname || 'viewer';
     const now = Date.now();
-    if (now - (this.lastGuessAt.get(key) || 0) < GUESS_COOLDOWN_MS) return;
+    if (now - (this.lastGuessAt.get(key) || 0) < this.cfg.guessCooldownMs) return;
     this.lastGuessAt.set(key, now);
     this.submitGuess({ key, user: nickname || uniqueId || 'viewer', nums });
   }
@@ -278,7 +291,7 @@ export class GameManager {
     if (exact) return { result: 'correct', recipe: exact, picked };
 
     // "so close": right number of tiles, exactly one wrong
-    const close = open.some(
+    const close = this.cfg.closeFeedback && open.some(
       (r) => r.requires.length === ids.length && ids.filter((id) => r.requires.includes(id)).length === ids.length - 1
     );
     return { result: close ? 'close' : 'wrong' };
@@ -292,12 +305,12 @@ export class GameManager {
 
     let newTile = null;
     let solvedEntry = null;
-    let points = picked.length * 10;
+    let points = picked.length * this.cfg.pointsPerTile;
 
     if (recipe.kind === 'category_solve') {
       solvedEntry = { ...recipe.yields, defId: recipe.yields.id, by: who.user };
       this.solved.push(solvedEntry);
-      points += 25;
+      points += this.cfg.categoryBonus;
     } else {
       newTile = this.makeTile(recipe.yields, true);
       this.tiles.push(newTile);
@@ -310,6 +323,7 @@ export class GameManager {
     this.leaderboard.set(who.key, row);
     this.puzzleScores.set(who.key, (this.puzzleScores.get(who.key) || 0) + points);
 
+    this.lastProgress = Date.now();
     const won = this.tiles.length === 0;
     if (won) this.status = 'victory';
 
@@ -327,11 +341,26 @@ export class GameManager {
     console.log(`[game] ${who.user} fused ${consumedNums.join(' ')} -> ${recipe.yields.label || recipe.yields.id}`);
 
     if (won) {
-      this.victoryTimer = setTimeout(() => this.nextPuzzle(), this.victoryMs);
+      this.victoryTimer = setTimeout(() => this.nextPuzzle(), this.cfg.victorySec * 1000);
     }
   }
 
-  /* ------------------------------ helpers for the test bot / control panel ------------------------------ */
+  /** Optional anti-stall: in Live mode, move on if nobody has solved a group for autoSkipMin minutes. */
+  tick() {
+    const lim = this.cfg.autoSkipMin;
+    if (this.mode !== 'live' || !lim || this.status !== 'playing') return;
+    if (Date.now() - this.lastProgress > lim * 60000) {
+      console.log(`[game] no progress for ${lim} min - skipping puzzle`);
+      this.nextPuzzle();
+    }
+  }
+
+  /** Re-send the state (used after the host changes a display setting). */
+  pushState() {
+    this.emit('state', this.getState());
+  }
+
+  /* ------------------------------ helpers for the test bot / host panel ------------------------------ */
   availableRecipes() {
     const have = new Set(this.tiles.map((t) => t.defId));
     return this.recipes.filter((r) => !r.done && r.requires.every((id) => have.has(id)));
@@ -399,6 +428,7 @@ export class GameManager {
     const best = [...this.puzzleScores.entries()].sort((a, b) => b[1] - a[1])[0];
     return {
       mode: this.mode,
+      ui: this.ui(),
       puzzleId: this.puzzle.id,
       title: this.puzzle.title,
       puzzleNo: this.puzzles.indexOf(this.puzzle) + 1,

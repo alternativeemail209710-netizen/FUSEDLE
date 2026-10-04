@@ -11,7 +11,7 @@ export default function Header({ game, tiktok, online }) {
     <section className="zone zone-top">
       <div className="title-row">
         <h1 className="title">
-          Fusion Associations <span className={`live-pill ${mode}`}>{pill}</span>
+          {game.ui.gameName} <span className={`live-pill ${mode}`}>{pill}</span>
         </h1>
         {mode !== 'offline' && <span className={`dot ${ok ? 'ok' : 'bad'}`} title={`chat: ${tiktok}`} />}
       </div>
@@ -38,7 +38,7 @@ export default function Header({ game, tiktok, online }) {
               animate={{ scale: 1, rotate: 0, opacity: 1 }}
               transition={{ type: 'spring', stiffness: 380, damping: 18 }}
             >
-              <span className="solved-icon"><TileFace tile={s} /></span>
+              {s.type !== 'text' && <span className="solved-icon"><TileFace tile={s} /></span>}
               <span className="solved-name">{s.label}</span>
               <span className="solved-by">{s.by}</span>
             </motion.div>

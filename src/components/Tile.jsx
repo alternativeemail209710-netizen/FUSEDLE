@@ -7,12 +7,14 @@ export function TileFace({ tile }) {
     return <img className="face-img" src={tile.content} alt={tile.label || ''} draggable={false} />;
   }
   if (tile.type === 'emoji') return <span className="face-emoji">{tile.content}</span>;
+  // font size steps by word length so every word fits on one 4-column tile
   const len = String(tile.content).length;
-  const cls = len <= 6 ? 'face-text t-lg' : len <= 9 ? 'face-text t-md' : 'face-text t-sm';
+  const step = len <= 5 ? 'xl' : len <= 7 ? 'lg' : len <= 9 ? 'md' : len <= 11 ? 'sm' : len <= 13 ? 'xs' : 'xxs';
+  const cls = `face-text t-${step}`;
   return <span className={cls}>{tile.content}</span>;
 }
 
-export default function Tile({ tile, size, anim, registerTile, selected, onTap }) {
+export default function Tile({ tile, anim, registerTile, selected, onTap }) {
   const fly = anim?.offsets?.[tile.uid];
   let animate = { x: 0, y: 0, scale: 1, rotate: 0, opacity: 1 };
   let transition = { type: 'spring', stiffness: 300, damping: 22 };
@@ -37,7 +39,6 @@ export default function Tile({ tile, size, anim, registerTile, selected, onTap }
       layout="position"
       ref={(el) => registerTile(tile.uid, el)}
       className="tile-slot"
-      style={{ width: size, height: size }}
       initial={{ scale: 0.2, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.01 } }}

@@ -4,10 +4,11 @@ import { AnimatePresence, motion } from 'framer-motion';
 const ICON = { correct: '✅', close: '🔥', wrong: '✖️' };
 const MEDALS = ['🥇', '🥈', '🥉'];
 
-export default function Feed({ feed, leaderboard }) {
-  const recent = feed.slice(-7);
+export default function Feed({ feed, leaderboard, rows = 5, showLeaders = true }) {
+  const recent = feed.slice(-rows);
   return (
     <section className="zone zone-feed">
+      {showLeaders && (
       <div className="leaders">
         {leaderboard.length === 0 && <span className="leader-empty">Be the first to fuse!</span>}
         {leaderboard.slice(0, 3).map((l, i) => (
@@ -18,6 +19,7 @@ export default function Feed({ feed, leaderboard }) {
           </motion.div>
         ))}
       </div>
+      )}
 
       <div className="feed">
         <AnimatePresence initial={false}>

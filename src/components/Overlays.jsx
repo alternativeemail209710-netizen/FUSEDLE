@@ -33,8 +33,9 @@ export function FusionOverlay({ anim }) {
               animate={{ scale: [0.2, 1.4, 1.15], rotate: [-25, 8, 0] }}
               transition={{ duration: 0.8, times: [0, 0.6, 1] }}
             >
-              <div className="burst-face"><TileFace tile={result} /></div>
-              {result.label && <div className="burst-label">{solvedCategory ? `${result.label} solved!` : result.label}</div>}
+              <div className={`burst-face ${result.type === 'text' ? 'word' : ''}`}><TileFace tile={result} /></div>
+              {solvedCategory && <div className="burst-label">{result.type === 'text' ? 'Category solved!' : `${result.label} solved!`}</div>}
+              {!solvedCategory && result.type !== 'text' && result.label && <div className="burst-label">{result.label}</div>}
             </motion.div>
             <motion.div
               className="burst-user"

@@ -5,7 +5,7 @@ import { WebcastPushConnection } from 'tiktok-live-connector';
  * so the game keeps running even if the connection drops or the stream starts later.
  * Returns { stop() } so the server can disconnect when leaving Live mode.
  */
-export function connectTikTok({ username, onChat, onStatus }) {
+export function connectTikTok({ username, onChat, onStatus, sessionId }) {
   let delay = 5000;
   let timer = null;
   let stopped = false;
@@ -29,7 +29,7 @@ export function connectTikTok({ username, onChat, onStatus }) {
     const conn = new WebcastPushConnection(username, {
       processInitialData: false,
       enableExtendedGiftInfo: false,
-      sessionId: process.env.TIKTOK_SESSION_ID || undefined
+      sessionId: sessionId || undefined
     });
     current = conn;
 

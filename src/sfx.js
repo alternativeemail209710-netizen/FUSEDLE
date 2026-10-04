@@ -1,5 +1,7 @@
-// Tiny WebAudio synth - no audio files needed. Starts after the Start button (browser gesture rule).
+// Tiny WebAudio synth - no audio files needed. Starts on the first touch/click (browser gesture rule).
 let ctx;
+let volume = 0.7;
+export const setVolume = (pct) => { volume = Math.max(0, Math.min(1, pct / 100)); };
 export function initAudio() {
   try {
     ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
@@ -7,13 +9,13 @@ export function initAudio() {
   } catch { /* audio unavailable */ }
 }
 function tone(freq, at, dur, type = 'triangle', vol = 0.16) {
-  if (!ctx) return;
+  if (!ctx || volume === 0) return;
   const o = ctx.createOscillator();
   const g = ctx.createGain();
   const t = ctx.currentTime + at;
   o.type = type;
   o.frequency.setValueAtTime(freq, t);
-  g.gain.setValueAtTime(vol, t);
+  g.gain.setValueAtTime(vol * volume / 0.7, t);
   g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
   o.connect(g).connect(ctx.destination);
   o.start(t);

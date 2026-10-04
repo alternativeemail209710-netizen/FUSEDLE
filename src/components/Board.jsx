@@ -1,35 +1,11 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AnimatePresence, LayoutGroup } from 'framer-motion';
 import Tile from './Tile.jsx';
 import { FusionOverlay } from './Overlays.jsx';
 
-const GAP = 12;
-
-/** Largest square tile size so that n tiles fit inside w x h (tries every column count). */
-function fitSize(n, w, h) {
-  if (!n || !w || !h) return 0;
-  let best = 0;
-  for (let cols = 1; cols <= n; cols++) {
-    const rows = Math.ceil(n / cols);
-    const s = Math.min((w - GAP * (cols - 1)) / cols, (h - GAP * (rows - 1)) / rows);
-    if (s > best) best = s;
-  }
-  return Math.floor(Math.min(best, 190));
-}
-
+/** Fixed 4 columns x 6 rows (24 tiles). Tiles keep their size; when some leave, the rest slide up. */
 export default function Board({ game, anim, boardEl, registerTile, pulse, selected = [], onTap }) {
-  const [box, setBox] = useState({ w: 0, h: 0 });
   const [fx, setFx] = useState(false);
-
-  useLayoutEffect(() => {
-    const el = boardEl.current;
-    if (!el) return;
-    const measure = () => setBox({ w: el.clientWidth, h: el.clientHeight });
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [boardEl]);
 
   // a "so close" guess makes the whole board glow amber for a moment
   useEffect(() => {
@@ -38,8 +14,6 @@ export default function Board({ game, anim, boardEl, registerTile, pulse, select
     const t = setTimeout(() => setFx(false), 700);
     return () => clearTimeout(t);
   }, [pulse]);
-
-  const size = fitSize(game.tiles.length, box.w, box.h);
 
   return (
     <section className="zone zone-board">
@@ -50,7 +24,6 @@ export default function Board({ game, anim, boardEl, registerTile, pulse, select
               <Tile
                 key={t.uid}
                 tile={t}
-                size={size}
                 anim={anim}
                 registerTile={registerTile}
                 selected={selected.includes(t.num)}

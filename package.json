@@ -1,9 +1,9 @@
 {
   "name": "fusion-associations-live",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "private": true,
   "type": "module",
-  "description": "Fusion Associations Live - multi-level association game with Test, Live (TikTok) and Offline modes.",
+  "description": "Fusion Associations Live - word-only 4x6 association game with Test, Live (TikTok) and Offline modes and a host toolbar.",
   "engines": {
     "node": "20.x"
   },

@@ -13,23 +13,28 @@
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body, #root { height: 100%; margin: 0; background: #fff; overflow: hidden; }
+.app { height: 100dvh; display: flex; flex-direction: column; --tb: 0px; --avail: calc(100dvh - var(--tb)); }
+.app.has-toolbar { --tb: 46px; }
+.stage-wrap { flex: 1; min-height: 0; }
 body { font-family: var(--body); font-weight: 700; color: var(--ink); user-select: none; }
 
 /* ---------- 9:16 stage, letterboxed on any screen ---------- */
 .stage {
   position: relative;
   margin: 0 auto;
-  width: min(100vw, calc(100dvh * 9 / 16));
-  height: min(100dvh, calc(100vw * 16 / 9));
+  width: min(100vw, calc(var(--avail, 100dvh) * 9 / 16));
+  height: min(var(--avail, 100dvh), calc(100vw * 16 / 9));
+  --safe: 15cqw; /* right strip kept clear of TikTok's side icons */
   container-type: size;
   overflow: hidden;
   background: #fff;
 }
-.zones { position: absolute; inset: 0; display: grid; grid-template-rows: 20% 45% 20% 15%; }
+.stage.nosafe { --safe: 0cqw; }
+.zones { position: absolute; inset: 0; display: grid; grid-template-rows: 16% 53% 18% 13%; }
 .zone { min-height: 0; position: relative; padding: 0 4cqw; }
 
 /* ---------- Zone 1: header + solved ---------- */
-.zone-top { padding-top: 2cqh; display: flex; flex-direction: column; gap: 0.6cqh; padding-right: 15cqw; }
+.zone-top { padding-top: 2cqh; display: flex; flex-direction: column; gap: 0.6cqh; padding-right: var(--safe); }
 .title-row { display: flex; align-items: center; gap: 2cqw; }
 .title { font: 400 6.4cqw/1 var(--display); margin: 0; letter-spacing: 0.01em; color: var(--ink); }
 .live-pill { display: inline-block; background: var(--pink); color: #fff; font: 400 3.4cqw/1 var(--display); padding: 0.7cqw 1.8cqw; border-radius: 2cqw; vertical-align: 0.4cqw; margin-left: 1cqw; animation: pulse 1.6s ease-in-out infinite; }
@@ -54,42 +59,44 @@ body { font-family: var(--body); font-weight: 700; color: var(--ink); user-selec
 
 /* ---------- Zone 2: board ---------- */
 .zone-board { padding: 0 3cqw; }
-.board { position: absolute; inset: 0 3cqw; display: flex; flex-wrap: wrap; justify-content: center; align-content: center; gap: 12px; }
-.tile-slot { flex: 0 0 auto; position: relative; }
+.board { position: absolute; inset: 0 3cqw; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(6, 1fr); gap: 2.4cqw; align-content: stretch; }
+.tile-slot { position: relative; min-width: 0; min-height: 0; }
 .tile {
   position: relative; width: 100%; height: 100%;
   container-type: size;
   display: grid; place-items: center; text-align: center;
-  border-radius: 16%;
+  border-radius: 20cqh;
   background: #fff;
-  border: 0.7cqw solid var(--line);
-  box-shadow: 0 1.6cqw 0 var(--line);
+  border: 1.6cqw solid var(--line);
+  box-shadow: 0 6cqh 0 var(--line);
 }
-.tile.fused { border-color: var(--gold); box-shadow: 0 1.6cqw 0 #ffd77a, 0 0 6cqw #ffb30055; background: linear-gradient(180deg, #fff, #fff8e3); }
-.face-emoji { font-size: 52cqw; line-height: 1; }
+.tile.fused { border-color: var(--gold); box-shadow: 0 6cqh 0 #ffd77a, 0 0 20cqw #ffb30055; background: linear-gradient(180deg, #fff, #fff8e3); }
+.face-emoji { font-size: 52cqh; line-height: 1; }
 .face-img { width: 68%; height: 68%; object-fit: contain; pointer-events: none; }
-.face-text { font-family: var(--body); font-weight: 900; line-height: 1.02; padding: 0 6%; overflow-wrap: anywhere; color: var(--ink); }
-.face-text.t-lg { font-size: 23cqw; }
-.face-text.t-md { font-size: 18cqw; }
-.face-text.t-sm { font-size: 13.5cqw; }
+.face-text { font-family: var(--body); font-weight: 900; line-height: 1.02; padding: 0 5%; overflow-wrap: anywhere; color: var(--ink); text-wrap: balance; }
+/* sizes are % of the tile width: short words big, long words smaller */
+.face-text.t-xl { font-size: 22cqw; }
+.face-text.t-lg { font-size: 19cqw; }
+.face-text.t-md { font-size: 16.5cqw; }
+.face-text.t-sm { font-size: 14.5cqw; }
+.face-text.t-xs { font-size: 12.5cqw; }
+.face-text.t-xxs { font-size: 11cqw; }
 
 /* tiles that carry a caption (fused results) */
-.tile.has-label .face-emoji { font-size: 42cqw; transform: translateY(-9cqw); }
-.tile.has-label .face-img { width: 56%; height: 56%; transform: translateY(-9cqw); }
 .tile-label { position: absolute; bottom: 7%; left: 4%; right: 4%; font: 900 15cqw/1 var(--body); color: var(--ink); }
 .tile.lbl-md .tile-label { font-size: 12.5cqw; }
 .tile.lbl-sm .tile-label { font-size: 10.5cqw; }
 
 /* the number badge: the thing viewers actually type */
 .badge {
-  position: absolute; top: -10%; left: -10%;
-  min-width: 42cqw; height: 42cqw; padding: 0 6cqw;
+  position: absolute; top: -12cqh; left: -3cqw;
+  min-width: 38cqh; height: 38cqh; padding: 0 5cqh;
   display: grid; place-items: center;
   background: var(--ink); color: #fff;
-  font: 400 30cqw/1 var(--display);
-  border: 2.2cqw solid #fff;
+  font: 400 26cqh/1 var(--display);
+  border: 2.4cqh solid #fff;
   border-radius: 999px;
-  box-shadow: 0 0 0 0.7cqw var(--ink), 0 2cqw 0 rgba(20,22,58,.25);
+  box-shadow: 0 0 0 0.8cqh var(--ink), 0 2cqh 0 rgba(20,22,58,.25);
 }
 .tile.fused .badge { background: var(--gold); color: var(--ink); }
 
@@ -104,11 +111,13 @@ body { font-family: var(--body); font-weight: 700; color: var(--ink); user-selec
 .burst-face .face-emoji { font-size: 80cqw; }
 .burst-face .face-img { width: 100%; height: 100%; }
 .burst-face .face-text { font-size: 24cqw; }
+.burst-face.word { width: auto; height: auto; container-type: normal; padding: 0 2cqw; }
+.burst-face.word .face-text { font: 400 9cqw/1.05 var(--display); padding: 0; text-wrap: balance; text-align: center; }
 .burst-label { font: 400 6cqw/1 var(--display); }
 .burst-user { position: absolute; bottom: 2cqh; font: 400 4.2cqw/1 var(--display); color: #fff; background: var(--ink); padding: 1.2cqw 3cqw; border-radius: 3cqw; }
 
 /* ---------- Zone 3: leaderboard + live feed ---------- */
-.zone-feed { padding-right: 15cqw; display: flex; flex-direction: column; gap: 1cqh; padding-top: 1cqh; }
+.zone-feed { padding-right: var(--safe); display: flex; flex-direction: column; gap: 1cqh; padding-top: 1cqh; }
 .leaders { display: flex; gap: 1.6cqw; min-height: 4.6cqh; }
 .leader { display: flex; align-items: center; gap: 1.2cqw; background: var(--soft); border: 0.4cqw solid var(--line); border-radius: 3cqw; padding: 0.8cqw 2.2cqw; font-size: 3.2cqw; max-width: 32cqw; }
 .leader-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 14cqw; }
@@ -123,7 +132,7 @@ body { font-family: var(--body); font-weight: 700; color: var(--ink); user-selec
 .guess.wrong { opacity: 0.55; }
 
 /* ---------- Zone 4: instructions (sits above TikTok's comment bar) ---------- */
-.zone-footer { display: flex; flex-direction: column; justify-content: flex-start; align-items: center; gap: 1cqh; padding-top: 1cqh; padding-right: 15cqw; }
+.zone-footer { display: flex; flex-direction: column; justify-content: flex-start; align-items: center; gap: 1cqh; padding-top: 1cqh; padding-right: var(--safe); }
 .how { margin: 0; text-align: center; font-size: 4cqw; line-height: 1.25; background: var(--soft); color: var(--ink); padding: 1.6cqh 4cqw; border-radius: 4cqw; border: 0.5cqw solid var(--line); }
 .how b { font-family: var(--display); font-weight: 400; background: var(--gold); padding: 0 1.6cqw; border-radius: 1.6cqw; letter-spacing: 0.08em; }
 
@@ -138,7 +147,7 @@ body { font-family: var(--body); font-weight: 700; color: var(--ink); user-selec
 
 /* ---------- selection (Offline tap-to-guess) ---------- */
 .tile.tappable { cursor: pointer; }
-.tile.selected { border-color: var(--blue); box-shadow: 0 0 0 1.4cqw #3b5bff55, 0 1.6cqw 0 #aebcff; }
+.tile.selected { border-color: var(--blue); box-shadow: 0 0 0 6cqh #3b5bff55, 0 6cqh 0 #aebcff; }
 .board.close::after { content: ''; position: absolute; inset: -2cqw; border-radius: 6cqw; box-shadow: inset 0 0 8cqw #ffb300; animation: closeglow 0.7s ease-out forwards; pointer-events: none; }
 @keyframes closeglow { from { opacity: 1; } to { opacity: 0; } }
 
