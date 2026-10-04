@@ -1227,7 +1227,7 @@ html, body {
    Two cards per row on a phone, so five finished groups use about three short rows. */
 #solvedList{display:grid;grid-template-columns:1fr;gap:5px}   /* one finished group per row */
 #solvedList:empty{display:none}
-.solved-card{display:flex;align-items:center;gap:6px;min-width:0;padding:4px 7px;border-radius:11px;background:var(--gc,#F4B6C2);color:#2a2231;border:1px solid rgba(42,34,49,.14)}
+.solved-card{display:flex;align-items:center;gap:6px;min-width:0;padding:4px 7px;border-radius:11px;background:var(--gc,#F4B6C2);color:var(--gc-tx,#2a2231);border:1px solid rgba(42,34,49,.14)}
 .solved-card.is-new{animation:fusePop .5s ease-out both}
 .solved-card .avatar-circle{flex:0 0 26px;width:26px;height:26px;border:2px solid #fff;box-sizing:border-box}
 .solved-host{flex:0 0 26px;width:26px;height:26px;border-radius:50%;background:#2a2231;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px}
@@ -1789,3 +1789,17 @@ html.noanim .live-status-box .live-status-icon, html.noanim .live-modal { animat
   .top-bar-actions .icon-btn { width: 25px; height: 25px; font-size: 12px; }
   .top-bar h1 { font-size: 12.5px; }
 }
+
+
+/* ---- Finished group colours box (Settings) ---- */
+.gc-label { font-weight: 800; font-size: 12px; color: var(--text); margin: 10px 0 5px; }
+.gc-modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 6px; }
+.gc-mode { box-sizing: border-box; padding: 7px 8px; border-radius: 10px; border: 2px dashed var(--border); background: var(--bg-input); color: var(--text); font-weight: 800; font-size: 12px; cursor: pointer; line-height: 1.2; }
+.gc-mode small { display: block; font-weight: 600; color: var(--text-dim); font-size: 10.5px; }
+.gc-mode.active { border-style: solid; background: linear-gradient(var(--pink), color-mix(in srgb, var(--pink) 82%, #000)); color: var(--on-pink); }
+.gc-mode.active small { color: var(--on-pink); opacity: .85; }
+.gc-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 6px; }
+.gc-chip { box-sizing: border-box; min-height: 34px; padding: 0 4px; border-radius: 10px; border: 2px solid rgba(42,34,49,.25); font-weight: 900; font-size: 13px; cursor: pointer; box-shadow: 0 2px 0 rgba(0,0,0,.15); }
+.gc-chip:disabled { cursor: default; opacity: .95; }
+.gc-chip.active { box-shadow: 0 0 0 2px var(--bg-panel), 0 0 0 4px var(--text); }
+.gc-editor[hidden], #gcNote[hidden] { display: none !important; }

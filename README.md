@@ -2,6 +2,14 @@
 
 This folder is the complete, finished app. You do not need to edit any code.
 
+> **v8.0 - finished group colours (new Settings box)**
+> - Settings now has a **Finished group colours** box, right under *Fused tile colours*. It controls the cards that appear when a group is completely fused.
+> - **Colour mode:** *Automatic* (the 8 soft pastels in order, as before), *Pick each card* (choose a colour for finished group 1 to 8 separately), or *One colour* (every card the same).
+> - Tap a numbered chip, then tap one of 24 colours (soft pastels and stronger shades) or use **Custom colour** for any shade. Cards already on the screen change at once.
+> - **Letters on the cards:** *Automatic* picks dark or white, whichever reads better on the colour; *Dark* and *White* force one.
+> - Saved on this device, included in **Export / Import settings**, and **Reset finished group colours** brings the pastels back. The Peek tint is unchanged.
+> - Files changed: `public/client.js`, `public/index.html`, `public/style.css` (server and puzzles untouched).
+
 > **v7.9 - tiles stay put, mode button, TikTok connection window**
 > - **Tiles no longer disappear after a wrong guess.** A tile that had dropped in or been fused kept its "arrive" animation for the whole round; when the red wrong-guess mark
 >   ended, that animation played again from invisible, so the tile vanished for about a second. The arrive animation now plays once and is switched off.
@@ -101,7 +109,7 @@ Render updates the game by itself in a minute or two.
 
 ## Using it
 - **Mode button (toolbar):** switch **Offline**, **Test** or **Live**; Live opens the TikTok connection window.
-- **Settings (gear):** theme (8 looks), Tile & display options, Game rules, mode (**Offline**, **Test**, **Live**), TikTok connection window, Puzzle Pack,
+- **Settings (gear):** theme (8 looks), Fused tile colours, Finished group colours, Tile & display options, Game rules, mode (**Offline**, **Test**, **Live**), TikTok connection window, Puzzle Pack,
   Hints and Reveals, Reset Scores, Auto Next Game, Timing, and Save & Apply as Default.
 - **Modes:** *Offline* = you play alone with the Player Guess Bar (tap 4 tiles or type them). *Test* = fake
   viewers (turn on **Auto-Play Bots**) so you can rehearse. *Live* = real TikTok chat counts.

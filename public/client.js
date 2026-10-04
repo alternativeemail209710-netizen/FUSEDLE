@@ -120,6 +120,91 @@
   }
   buildFusedPickers();
 
+  // ---- Finished-group card colours (each finished group card can get its own colour) ----
+  // Modes: auto = the 8 soft pastels in order (default) | custom = pick a colour for each of the 8 cards | single = one colour for every card.
+  const CARD_DEFAULT_COLORS = ['#F4B6C2', '#B7D9B0', '#CDB4E6', '#FFE29A', '#FFC4A3', '#A9D4EE', '#D9C3A5', '#B9BEF2'];
+  const CARD_PALETTE = [
+    ['Rose', '#F4B6C2'], ['Sage', '#B7D9B0'], ['Lavender', '#CDB4E6'], ['Butter', '#FFE29A'], ['Peach', '#FFC4A3'], ['Sky', '#A9D4EE'], ['Latte', '#D9C3A5'], ['Periwinkle', '#B9BEF2'],
+    ['Mint', '#B8EBD0'], ['Coral', '#FF9E9E'], ['Lemon', '#FFF3A3'], ['Aqua', '#A6E6E3'], ['Blush', '#F7C6E0'], ['Silver', '#CBD2D9'],
+    ['Teal', '#1F7A72'], ['Burgundy', '#9B2C4F'], ['Royal Blue', '#2F5DA8'], ['Forest', '#2F6B3A'], ['Gold', '#E8B100'], ['Orange', '#E8731A'],
+    ['Violet', '#5B3A9E'], ['Charcoal', '#3A3F47'], ['Chocolate', '#5B3A21'], ['White', '#FFFFFF']
+  ];
+  const CARD_DARK_INK = '#2a2231';
+  function cardCleanPrefs(p) {
+    p = p || {};
+    return {
+      mode: ['auto', 'custom', 'single'].indexOf(p.mode) >= 0 ? p.mode : 'auto',
+      slots: CARD_DEFAULT_COLORS.map((d, i) => (p.slots && hexOk(p.slots[i])) ? p.slots[i] : d),
+      single: hexOk(p.single) ? p.single : CARD_DEFAULT_COLORS[0],
+      text: ['auto', 'dark', 'white'].indexOf(p.text) >= 0 ? p.text : 'auto'
+    };
+  }
+  let cardPrefs = cardCleanPrefs(readJson('fusedle-cards'));
+  let cardSel = 0;
+  function cardColorFor(idx) {
+    const i = Math.abs(Number(idx) || 0) % CARD_DEFAULT_COLORS.length;
+    if (cardPrefs.mode === 'single') return cardPrefs.single;
+    if (cardPrefs.mode === 'custom') return cardPrefs.slots[i];
+    return CARD_DEFAULT_COLORS[i];
+  }
+  // Letters on a card: dark or white (whichever reads better) unless the host forces one.
+  function cardInk(hex) {
+    if (cardPrefs.text === 'dark') return CARD_DARK_INK;
+    if (cardPrefs.text === 'white') return '#FFFFFF';
+    const c = hexToRgb(hex);
+    return contrast(c, [42, 34, 49]) >= contrast(c, [255, 255, 255]) ? CARD_DARK_INK : '#FFFFFF';
+  }
+  function styleCard(el, idx) { const c = cardColorFor(idx); el.style.setProperty('--gc', c); el.style.setProperty('--gc-tx', cardInk(c)); }
+  function renderCardUi() {
+    const m = cardPrefs.mode;
+    document.querySelectorAll('#gcModes .gc-mode').forEach((b) => { const on = b.dataset.mode === m; b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
+    document.querySelectorAll('#gcText .gc-mode').forEach((b) => { const on = b.dataset.text === cardPrefs.text; b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
+    if (m === 'single') cardSel = 0;
+    const box = $('gcSlots'); if (!box) return;
+    box.innerHTML = '';
+    const n = m === 'single' ? 1 : CARD_DEFAULT_COLORS.length;
+    for (let i = 0; i < n; i++) {
+      const c = cardColorFor(i), b = mk('button', 'gc-chip' + (m !== 'auto' && i === cardSel ? ' active' : ''), m === 'single' ? 'All' : String(i + 1));
+      b.type = 'button'; b.style.background = c; b.style.color = cardInk(c); b.disabled = (m === 'auto');
+      b.title = m === 'single' ? 'All finished groups' : 'Finished group ' + (i + 1);
+      b.addEventListener('click', () => { cardSel = i; renderCardUi(); });
+      box.appendChild(b);
+    }
+    $('gcEditor').hidden = (m === 'auto');
+    if (m !== 'auto') {
+      const cur = m === 'single' ? cardPrefs.single : cardPrefs.slots[cardSel];
+      $('gcEditing').textContent = m === 'single' ? 'Colour for every finished group' : 'Colour for finished group ' + (cardSel + 1);
+      document.querySelectorAll('#gcSwatches .fc-sw').forEach((b) => { const on = b.dataset.c.toLowerCase() === cur.toLowerCase(); b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
+      $('gcCustom').value = cur.toLowerCase();
+    }
+    const note = $('gcNote'); if (note) note.hidden = (m !== 'custom');
+  }
+  function applyCardColors() {
+    document.querySelectorAll('#solvedList .solved-card').forEach((el, i) => styleCard(el, i));   // cards already on screen change at once
+    renderCardUi();
+    writeJson('fusedle-cards', cardPrefs);
+  }
+  function setCardColor(c) {
+    if (!hexOk(c)) return;
+    if (cardPrefs.mode === 'single') cardPrefs.single = c; else if (cardPrefs.mode === 'custom') cardPrefs.slots[cardSel] = c;
+    applyCardColors();
+  }
+  function buildCardPickers() {
+    const sw = $('gcSwatches'); if (!sw) return;
+    CARD_PALETTE.forEach((p) => {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'fc-sw'; b.dataset.c = p[1]; b.title = p[0];
+      b.setAttribute('role', 'radio'); b.setAttribute('aria-label', p[0]); b.style.background = p[1];
+      b.addEventListener('click', () => setCardColor(p[1]));
+      sw.appendChild(b);
+    });
+    $('gcCustom').addEventListener('input', (e) => setCardColor(e.target.value));
+    document.querySelectorAll('#gcModes .gc-mode').forEach((b) => b.addEventListener('click', () => { cardPrefs.mode = b.dataset.mode; applyCardColors(); }));
+    document.querySelectorAll('#gcText .gc-mode').forEach((b) => b.addEventListener('click', () => { cardPrefs.text = b.dataset.text; applyCardColors(); }));
+    $('gcResetBtn').addEventListener('click', () => { cardPrefs = cardCleanPrefs({}); cardSel = 0; applyCardColors(); });
+    applyCardColors();
+  }
+  buildCardPickers();
+
   // ---- Tile & display options (saved on this device) ------------------------
   // Every option is a class or a variable on <html>; style.css (PART 19) does the rest.
   const DISPLAY_DEFAULTS = {
@@ -283,7 +368,7 @@
   // ---- Backup / reset of the look settings ----
   function backupMsg(t) { const c = $('backupMsg'); c.textContent = t; c.hidden = false; setTimeout(() => { c.hidden = true; }, 4000); }
   $('exportSettingsBtn').addEventListener('click', () => {
-    const data = { app: 'fusedle-live', version: 1, display: displayPrefs, fusedColours: fusedPrefs, timing: timingPrefs, theme: currentTheme(), yarn: document.documentElement.classList.contains('yarn'), rules: rulesPayload() };
+    const data = { app: 'fusedle-live', version: 1, display: displayPrefs, fusedColours: fusedPrefs, cardColours: cardPrefs, timing: timingPrefs, theme: currentTheme(), yarn: document.documentElement.classList.contains('yarn'), rules: rulesPayload() };
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
     a.download = 'fusedle-settings.json'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
     backupMsg('Settings file created.');
@@ -298,10 +383,11 @@
         if (!d || d.app !== 'fusedle-live') throw new Error('not a FUSEDLE settings file');
         if (d.display) { displayPrefs = cleanDisplay(d.display); }
         if (d.fusedColours) [1, 2].forEach((k) => { const v = d.fusedColours[k]; if (v === 'none' || hexOk(v)) fusedPrefs[k] = v; });
+        if (d.cardColours) cardPrefs = cardCleanPrefs(d.cardColours);
         if (d.timing) { ['toastSeconds', 'roundWindowSeconds', 'allTimeWindowSeconds'].forEach((k) => { const n = Number(d.timing[k]); if (Number.isFinite(n) && n > 0 && n <= 60) timingPrefs[k] = n; }); writeJson('fusedle-timing', timingPrefs); syncTimingInputs(); }
         if (typeof d.theme === 'string') applyTheme(d.theme);
         if (typeof d.yarn === 'boolean') applyYarn(d.yarn);
-        applyFusedColors(); applyDisplay();
+        applyFusedColors(); applyCardColors(); applyDisplay();
         if (d.rules) { fillRules(Object.assign({}, RULE_DEFAULTS, d.rules)); socket.emit('host:setRules', rulesPayload()); }
         backupMsg('Settings loaded.');
       } catch (err) { backupMsg('That file could not be read: ' + err.message); }
@@ -507,7 +593,7 @@
   // ---- Board -------------------------------------------------------------
   // Colour per group (peek tint + finished-group cards) and per fusion level (fused tiles).
   // Soft, cute-but-mature pastel colours for finished groups (all used with dark text, so letters stay easy to read).
-  const GROUP_COLORS = ['#F4B6C2', '#B7D9B0', '#CDB4E6', '#FFE29A', '#FFC4A3', '#A9D4EE', '#D9C3A5', '#B9BEF2'];
+  const GROUP_COLORS = CARD_DEFAULT_COLORS;   // peek tint keeps the pastels; finished-group cards use cardColorFor() (Settings > Finished group colours)
   const groupColor = (g) => GROUP_COLORS[Math.abs(Number(g) || 0) % GROUP_COLORS.length];
   let wrongNums = [], wrongTimer = null;
   const tileEls = new Map();      // tile number -> button element (kept between renders so animations play once)
@@ -539,7 +625,7 @@
   // A finished group is one small card: category name, the viewer who fused it (round TikTok photo + name)
   // and only the 4 latest words that made it. It stays compact so tiles and scores never leave the screen.
   function solvedCard(g, isNew, idx) {
-    const d = mk('div', 'solved-card' + (isNew ? ' is-new' : '')); d.style.setProperty('--gc', GROUP_COLORS[(idx || 0) % GROUP_COLORS.length]);   // each finished group gets the next colour, so no two cards look alike
+    const d = mk('div', 'solved-card' + (isNew ? ' is-new' : '')); styleCard(d, idx || 0);   // each finished group gets the next colour (or the colour the host chose in Settings)
     const by = g.by || null;
     d.appendChild(by ? avatarImg(by.avatar, by.uniqueId, by.name, 'sm') : mk('span', 'solved-host', '\u2728'));
     const t = mk('div', 'solved-text');

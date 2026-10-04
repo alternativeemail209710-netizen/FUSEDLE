@@ -283,6 +283,32 @@
         <button id="fcResetBtn" type="button" class="btn btn-secondary timing-reset-btn">Reset fused colours</button>
       </div>
 
+      <div class="fc-box" id="cardColorBox">
+        <h3 class="hints-title">&#127942; Finished group colours</h3>
+        <p class="hint">Choose the colour of the cards that appear when a group is completely fused. Changes show at once, also on cards already on the screen. Saved on this device.</p>
+        <div class="gc-label">Colour mode</div>
+        <div class="gc-modes" id="gcModes" role="radiogroup" aria-label="Finished group colour mode">
+          <button type="button" class="gc-mode" data-mode="auto" role="radio">Automatic <small>8 soft pastels</small></button>
+          <button type="button" class="gc-mode" data-mode="custom" role="radio">Pick each card <small>1 to 8</small></button>
+          <button type="button" class="gc-mode" data-mode="single" role="radio">One colour <small>for all</small></button>
+        </div>
+        <div class="gc-label">Cards in order (1 = first finished group)</div>
+        <div class="gc-slots" id="gcSlots"></div>
+        <div class="gc-editor" id="gcEditor" hidden>
+          <div class="gc-label" id="gcEditing">Colour</div>
+          <div class="fc-swatches" id="gcSwatches" role="radiogroup" aria-label="Finished group card colour"></div>
+          <label class="fc-custom">Custom colour <input type="color" id="gcCustom" value="#f4b6c2"></label>
+        </div>
+        <p class="hint" id="gcNote" hidden>A round with fewer than 8 groups uses the first cards only. Cards 1 to 8 repeat if a round ever has more.</p>
+        <div class="gc-label">Letters on the cards</div>
+        <div class="gc-modes" id="gcText" role="radiogroup" aria-label="Finished group letter colour">
+          <button type="button" class="gc-mode" data-text="auto" role="radio">Automatic <small>best contrast</small></button>
+          <button type="button" class="gc-mode" data-text="dark" role="radio">Dark</button>
+          <button type="button" class="gc-mode" data-text="white" role="radio">White</button>
+        </div>
+        <button id="gcResetBtn" type="button" class="btn btn-secondary timing-reset-btn">Reset finished group colours</button>
+      </div>
+
       <div class="opt-wrap" id="displayOptions">
         <h3 class="hints-title">&#127899;&#65039; Tile &amp; display options</h3>
         <p class="hint">These are saved on <b>this device</b> and change at once. The three sample tiles show exactly how your tiles will look.</p>
