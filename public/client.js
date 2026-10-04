@@ -215,6 +215,7 @@
     cardWords: true, cardPlayer: true, cardAvatar: true,
     showChatFmt: true, showCounter: true, showTimer: true, showScores: true, sbRows: 5, showToasts: true, showStreak: true, anim: true,
     sound: false, volume: 60,
+    title: '', hintText: '', accent: '', selColor: '', wake: false, blocked: '',   // host branding, colours, screen-awake, hidden viewer names
   };
   const FONT_STACKS = {
     system: 'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif',
@@ -257,7 +258,21 @@
     if (!FONT_STACKS[o.font]) o.font = 'system';
     if (['square', 'soft', 'round'].indexOf(o.corner) < 0) o.corner = 'soft';
     if (['small', 'normal', 'large'].indexOf(o.badge) < 0) o.badge = 'normal';
+    o.title = String(o.title || '').slice(0, 24); o.hintText = String(o.hintText || '').slice(0, 90);
+    o.blocked = String(o.blocked || '').slice(0, 600);
+    if (!hexOk(o.accent)) o.accent = ''; if (!hexOk(o.selColor)) o.selColor = '';
     return o;
+  }
+  // Viewer names the host chose to hide: any name that contains one of the blocked words shows as "Viewer".
+  let blockedCache = { src: null, list: [] };
+  const squash = (t) => String(t || '').toLowerCase().replace(/[^a-z0-9\u00C0-\uFFFF]+/g, '');
+  function dn(name) {
+    const src = displayPrefs.blocked || '';
+    if (!src) return name;
+    if (blockedCache.src !== src) blockedCache = { src, list: src.split(/[,\n;]+/).map((w) => squash(w)).filter((w) => w.length >= 2).slice(0, 60) };
+    if (!blockedCache.list.length) return name;
+    const n = squash(name);
+    return blockedCache.list.some((w) => n.indexOf(w) >= 0) ? 'Viewer' : name;
   }
   let displayPrefs = cleanDisplay(readJson('fusedle-display'));
 
@@ -268,6 +283,16 @@
      { n: 25, w: 'Car', f: 1, sub: 'Ford \u00B7 Toyota \u00B7 Honda \u00B7 BMW' },
      { n: 41, w: 'Land Transport', f: 2, sub: 'Car \u00B7 Bus \u00B7 Tram \u00B7 Bicycle' }].forEach((t) => box.appendChild(makeTile(t, false)));
   }
+  var H1_DEFAULT = null, HINT_DEFAULT = null, DOC_TITLE_DEFAULT = document.title, lastBlocked = null, wakeLock = null;
+  // keep the phone screen on while the game is open (needs a browser that supports it)
+  function syncWake() {
+    const note = $('wakeNote'); if (note) note.hidden = !!(navigator.wakeLock);
+    if (!navigator.wakeLock) return;
+    if (displayPrefs.wake && !wakeLock && document.visibilityState === 'visible') {
+      navigator.wakeLock.request('screen').then((l) => { wakeLock = l; l.addEventListener('release', () => { wakeLock = null; }); }).catch(() => { wakeLock = null; });
+    } else if (!displayPrefs.wake && wakeLock) { try { wakeLock.release(); } catch (e) { /* ignore */ } wakeLock = null; }
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncWake(); });
   function applyDisplay(save) {
     const d = displayPrefs, root = document.documentElement, st = root.style;
     const tg = (c, on) => root.classList.toggle(c, !!on);
@@ -281,6 +306,26 @@
     if (d.corner === 'soft') st.removeProperty('--tile-r'); else st.setProperty('--tile-r', d.corner === 'square' ? '4px' : '20px');
     const bdSizes = d.center ? { small: 12, normal: 15, large: 18 } : { small: 13, normal: 17, large: 21 };
     if (d.badge === 'normal') { st.removeProperty('--bd'); tg('bdset', false); } else { st.setProperty('--bd', bdSizes[d.badge] + 'px'); tg('bdset', true); }
+    // host branding: own title and own instruction line (empty = the built-in text)
+    const h1 = document.querySelector('.top-bar h1');
+    if (h1) { if (H1_DEFAULT === null) H1_DEFAULT = h1.innerHTML; const t = d.title.trim(); if (t) h1.textContent = t; else h1.innerHTML = H1_DEFAULT; }
+    document.title = d.title.trim() || DOC_TITLE_DEFAULT;
+    const hint = $('chatFormatHint');
+    if (hint) { if (HINT_DEFAULT === null) HINT_DEFAULT = hint.innerHTML; const t = d.hintText.trim(); if (t) hint.textContent = t; else hint.innerHTML = HINT_DEFAULT; }
+    // accent colour (buttons, active choices) and tapped-tile highlight colour
+    if (d.accent) {
+      const a = hexToRgb(d.accent), ink = contrast(a, [255, 255, 255]) >= contrast(a, [27, 10, 16]) ? '#FFFFFF' : '#1B0A10';
+      st.setProperty('--pink', d.accent); st.setProperty('--on-pink', ink);
+    } else { st.removeProperty('--pink'); st.removeProperty('--on-pink'); }
+    if (d.selColor) st.setProperty('--sel-c', d.selColor); else st.removeProperty('--sel-c');
+    document.querySelectorAll('#accentSwatches .fc-sw').forEach((b) => { const on = (b.dataset.c || '').toLowerCase() === d.accent.toLowerCase(); b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
+    document.querySelectorAll('#selSwatches .fc-sw').forEach((b) => { const on = (b.dataset.c || '').toLowerCase() === d.selColor.toLowerCase(); b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); });
+    syncWake();
+    if (lastBlocked !== d.blocked) {   // hidden-name list changed: redraw the finished-group cards
+      lastBlocked = d.blocked;
+      const sl0 = $('solvedList'); if (sl0) sl0.dataset.sig = '';
+      if (S && S.solved && typeof renderBoard === 'function') { try { renderBoard(); } catch (e) { /* ignore */ } }
+    }
     // sync the controls in Settings
     document.querySelectorAll('[data-pref]').forEach((el) => {
       const k = el.dataset.pref, v = d[k];
@@ -307,6 +352,33 @@
     };
     el.addEventListener('input', onChange); el.addEventListener('change', onChange);
   });
+
+  // ---- Host branding colours + quick styles ----
+  const ACCENT_PALETTE = [['Teal', '#1F7A72'], ['Royal Blue', '#2F5DA8'], ['Navy', '#1F3A5F'], ['Forest', '#2F6B3A'], ['Burgundy', '#9B2C4F'], ['Red', '#C0392B'], ['Orange', '#C25E0E'], ['Violet', '#5B3A9E'], ['Hot Pink', '#C2185B'], ['Chocolate', '#5B3A21'], ['Charcoal', '#3A3F47']];
+  const SEL_PALETTE = [['Amber', '#B45309'], ['Red', '#D13438'], ['Blue', '#2F5DA8'], ['Green', '#2F6B3A'], ['Violet', '#5B3A9E'], ['Hot Pink', '#E0457B'], ['Black', '#111111'], ['White', '#FFFFFF']];
+  function buildBrandPickers() {
+    const mkAll = (boxId, palette, key) => {
+      const box = $(boxId); if (!box) return;
+      const add = (name, c) => {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'fc-sw' + (c === '' ? ' fc-none' : ''); b.dataset.c = c; b.title = name;
+        b.setAttribute('role', 'radio'); b.setAttribute('aria-label', name); if (c) b.style.background = c;
+        b.addEventListener('click', () => { displayPrefs[key] = c; displayPrefs = cleanDisplay(displayPrefs); applyDisplay(); });
+        box.appendChild(b);
+      };
+      add('Theme default', ''); palette.forEach((p) => add(p[0], p[1]));
+    };
+    mkAll('accentSwatches', ACCENT_PALETTE, 'accent'); mkAll('selSwatches', SEL_PALETTE, 'selColor');
+    const PRESETS = {
+      standard: { tsize: 100, font: 'system', upper: false, corner: 'soft', badge: 'normal', sub1: false, sub2: false, showChatFmt: true, showCounter: true, showTimer: true, showScores: true, sbRows: 5, showToasts: true, showStreak: true, anim: true, cardWords: true, cardPlayer: true, cardAvatar: true },
+      clean: { showChatFmt: false, showCounter: false, showTimer: true, showScores: true, sbRows: 3, showToasts: true, showStreak: false, cardWords: false },
+      bold: { tsize: 115, font: 'rounded', upper: true, corner: 'round', badge: 'large', sbRows: 3 },
+      detail: { tsize: 90, sub1: true, sub2: true, cardWords: true, cardPlayer: true, sbRows: 5 }
+    };
+    document.querySelectorAll('#presetBtns [data-preset]').forEach((b) => b.addEventListener('click', () => {
+      displayPrefs = cleanDisplay(Object.assign({}, displayPrefs, PRESETS[b.dataset.preset] || {}));
+      applyDisplay(); backupMsg('Style applied: ' + b.textContent.trim().split('\n')[0] + '.');
+    }));
+  }
 
   // ---- Sound effects (little tones made in the browser, no files needed) ----
   let audioCtx = null;
@@ -577,8 +649,8 @@
       const rank = document.createElement('span');
       rank.className = (big ? 'round-end-rank' : 'inline-rank') + (i < 3 ? (big ? ' round-end-rank-medal' : ' inline-rank-medal') : '');
       rank.textContent = medal(i); li.appendChild(rank);
-      li.appendChild(avatarImg(r.avatar, r.uniqueId, r.name, big ? 'lg' : ''));
-      const nm = document.createElement('span'); nm.className = big ? 'round-end-name' : 'lb-name'; nm.textContent = r.name; li.appendChild(nm);
+      li.appendChild(avatarImg(r.avatar, r.uniqueId, dn(r.name), big ? 'lg' : ''));
+      const nm = document.createElement('span'); nm.className = big ? 'round-end-name' : 'lb-name'; nm.textContent = dn(r.name); li.appendChild(nm);
       if (r.streak >= 2) { const b = document.createElement('span'); b.className = 'streak-badge'; b.textContent = '\u{1F525}\u00D7' + r.streak; li.appendChild(b); }
       const pts = document.createElement('span'); pts.className = big ? 'round-end-points' : 'lb-points'; pts.textContent = big ? r.points + (r.points === 1 ? ' pt' : ' pts') : r.points; li.appendChild(pts);
       el.appendChild(li);
@@ -627,11 +699,11 @@
   function solvedCard(g, isNew, idx) {
     const d = mk('div', 'solved-card' + (isNew ? ' is-new' : '')); styleCard(d, idx || 0);   // each finished group gets the next colour (or the colour the host chose in Settings)
     const by = g.by || null;
-    d.appendChild(by ? avatarImg(by.avatar, by.uniqueId, by.name, 'sm') : mk('span', 'solved-host', '\u2728'));
+    d.appendChild(by ? avatarImg(by.avatar, by.uniqueId, dn(by.name), 'sm') : mk('span', 'solved-host', '\u2728'));
     const t = mk('div', 'solved-text');
     t.appendChild(mk('b', 'solved-cat', '\u{1F3C6} ' + g.name));
     const sub = mk('span', 'solved-sub');
-    sub.appendChild(mk('span', 'solved-by', by ? by.name : 'Host reveal'));
+    sub.appendChild(mk('span', 'solved-by', by ? dn(by.name) : 'Host reveal'));
     sub.appendChild(mk('span', 'solved-words', (g.words || []).join(' \u00B7 ')));
     t.appendChild(sub);
     d.appendChild(t);
@@ -841,8 +913,8 @@
   function guessToast(r, d) {
     clearToast(); if (!displayPrefs.showToasts) return;
     const t = document.createElement('div'); t.className = 'guess-toast toast-' + d.tone;
-    t.appendChild(avatarImg(r.avatar, r.uniqueId, r.name));
-    const n = document.createElement('span'); n.className = 'guess-name'; n.textContent = r.name; t.appendChild(n);
+    t.appendChild(avatarImg(r.avatar, r.uniqueId, dn(r.name)));
+    const n = document.createElement('span'); n.className = 'guess-name'; n.textContent = dn(r.name); t.appendChild(n);
     if (r.kind === 'correct' && r.streak >= 2) { const b = document.createElement('span'); b.className = 'streak-badge'; b.textContent = '\u{1F525}\u00D7' + r.streak; t.appendChild(b); }
     const dt = document.createElement('span'); dt.className = 'guess-detail'; dt.textContent = d.text; t.appendChild(dt);
     if (d.points) { const p = document.createElement('span'); p.className = 'guess-points'; p.textContent = d.points; t.appendChild(p); }
@@ -855,9 +927,9 @@
   }
   function feedItem(r, d) {
     const li = document.createElement('li'); li.className = 'feed-row ' + (d.tone === 'correct' ? 'feed-correct' : d.tone === 'wrong' ? 'feed-wrong' : 'feed-info');
-    li.appendChild(avatarImg(r.avatar, r.uniqueId, r.name, 'sm'));
+    li.appendChild(avatarImg(r.avatar, r.uniqueId, dn(r.name), 'sm'));
     const sp = document.createElement('span'); sp.className = 'feed-text';
-    const who = document.createElement('span'); who.className = 'feed-user'; who.textContent = r.name + ': '; sp.appendChild(who); sp.appendChild(document.createTextNode(d.feed));
+    const who = document.createElement('span'); who.className = 'feed-user'; who.textContent = dn(r.name) + ': '; sp.appendChild(who); sp.appendChild(document.createTextNode(d.feed));
     li.appendChild(sp); const f = $('feedList'); f.insertBefore(li, f.firstChild); while (f.children.length > 40) f.removeChild(f.lastChild);
   }
   socket.on('guessResult', (r) => {
@@ -1022,6 +1094,7 @@
       if (d && d.mode) { if (d.theme) applyTheme(d.theme); socket.emit('host:applyDefaults', d); }
     }
   });
+  buildBrandPickers();
   applyDisplay(false);
   let panelsMode = null;
   function showPanelsOnce() { if (panelsMode !== S.mode) { panelsMode = S.mode; showPanels(S.mode); } }

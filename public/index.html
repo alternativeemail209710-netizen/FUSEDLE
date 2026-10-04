@@ -431,6 +431,46 @@
         </details>
 
         <details class="opt-box">
+          <summary>Quick styles</summary>
+          <p class="hint">One tap sets several look options at once. You can still change each one afterwards.</p>
+          <div class="gc-modes" id="presetBtns">
+            <button type="button" class="gc-mode" data-preset="standard">Standard <small>all defaults</small></button>
+            <button type="button" class="gc-mode" data-preset="clean">Clean stream <small>fewer extras</small></button>
+            <button type="button" class="gc-mode" data-preset="bold">Big &amp; bold <small>large text</small></button>
+            <button type="button" class="gc-mode" data-preset="detail">Show details <small>words in fused tiles</small></button>
+          </div>
+        </details>
+
+        <details class="opt-box">
+          <summary>Branding &amp; colours</summary>
+          <label class="opt-row opt-col">Game title at the top
+            <input type="text" data-pref="title" maxlength="24" placeholder="FUSEDLE Live" autocomplete="off">
+          </label>
+          <label class="opt-row opt-col">Instruction line under the title
+            <input type="text" data-pref="hintText" maxlength="90" placeholder="Chat format: 2 5 8 12 fuses tiles 2, 5, 8 and 12 ..." autocomplete="off">
+          </label>
+          <p class="hint">Leave a box empty to keep the built-in text.</p>
+          <div class="gc-label">Accent colour <small>(buttons and chosen options)</small></div>
+          <div class="fc-swatches" id="accentSwatches" role="radiogroup" aria-label="Accent colour"></div>
+          <div class="gc-label">Highlight colour of a tapped tile</div>
+          <div class="fc-swatches" id="selSwatches" role="radiogroup" aria-label="Tapped tile highlight colour"></div>
+        </details>
+
+        <details class="opt-box">
+          <summary>Viewer names &amp; screen</summary>
+          <label class="opt-row opt-col">Hide these words in viewer names
+            <textarea data-pref="blocked" rows="2" maxlength="600" placeholder="word1, word2, word3" autocomplete="off" spellcheck="false"></textarea>
+          </label>
+          <p class="hint">A name that contains one of these words is shown as &ldquo;Viewer&rdquo; on this screen (leaderboards, pop-ups, chat feed, finished cards). Separate words with commas. Capitals, spaces and symbols are ignored.</p>
+          <label class="auto-next-toggle">
+            <input type="checkbox" data-pref="wake">
+            <span class="toggle-switch" aria-hidden="true"></span>
+            <span class="toggle-label">Keep the screen on<small>Stops the phone from dimming or locking while you stream.</small></span>
+          </label>
+          <p class="hint" id="wakeNote" hidden>This browser cannot keep the screen on. Turn off auto-lock in the phone&rsquo;s own settings instead.</p>
+        </details>
+
+        <details class="opt-box">
           <summary>Sound effects</summary>
           <label class="auto-next-toggle">
             <input type="checkbox" data-pref="sound">

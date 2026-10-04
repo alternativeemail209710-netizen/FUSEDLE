@@ -2,6 +2,13 @@
 
 This folder is the complete, finished app. You do not need to edit any code.
 
+> **v8.1 - more host customisation (new Settings boxes, all under Tile & display options)**
+> - **Quick styles:** one tap sets many look options at once: *Standard* (all defaults), *Clean stream* (hides the chat-format line and counter, 3 leaderboard rows, no flames, no word line on cards), *Big & bold* (large rounded capital text, big number circles) and *Show details* (words inside fused tiles). Every option can still be changed afterwards.
+> - **Branding & colours:** your own **game title** (up to 24 letters, also used as the browser tab title), your own **instruction line** under the title (up to 90 letters), an **accent colour** for buttons and chosen options (letters on it switch between dark and white by themselves), and the **highlight colour of a tapped tile**. Empty box / "theme default" = the built-in look.
+> - **Hide viewer names:** type words separated by commas. Any viewer name that contains one of them shows as "Viewer" on your screen (leaderboards, guess pop-ups, chat feed, finished-group cards, round-end list). Capitals, spaces and symbols are ignored. It only changes what is shown; scores still count.
+> - **Keep the screen on:** stops the phone from dimming or locking while you stream (needs a browser that supports it; a note appears if it does not).
+> - All of these are saved on the device, included in **Export / Import settings**, and cleared by **Reset tile & display options**. Only `public/client.js`, `public/index.html` and `public/style.css` changed; server and puzzles are untouched.
+
 > **v8.0 - finished group colours (new Settings box)**
 > - Settings now has a **Finished group colours** box, right under *Fused tile colours*. It controls the cards that appear when a group is completely fused.
 > - **Colour mode:** *Automatic* (the 8 soft pastels in order, as before), *Pick each card* (choose a colour for finished group 1 to 8 separately), or *One colour* (every card the same).
@@ -109,7 +116,7 @@ Render updates the game by itself in a minute or two.
 
 ## Using it
 - **Mode button (toolbar):** switch **Offline**, **Test** or **Live**; Live opens the TikTok connection window.
-- **Settings (gear):** theme (8 looks), Fused tile colours, Finished group colours, Tile & display options, Game rules, mode (**Offline**, **Test**, **Live**), TikTok connection window, Puzzle Pack,
+- **Settings (gear):** theme (8 looks), Fused tile colours, Finished group colours, Tile & display options (Quick styles, Branding & colours, Viewer names & screen), Game rules, mode (**Offline**, **Test**, **Live**), TikTok connection window, Puzzle Pack,
   Hints and Reveals, Reset Scores, Auto Next Game, Timing, and Save & Apply as Default.
 - **Modes:** *Offline* = you play alone with the Player Guess Bar (tap 4 tiles or type them). *Test* = fake
   viewers (turn on **Auto-Play Bots**) so you can rehearse. *Live* = real TikTok chat counts.
