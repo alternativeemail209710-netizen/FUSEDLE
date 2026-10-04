@@ -40,16 +40,14 @@ app.use(express.static(path.join(__dirname, 'public'), {
 // ---------------------------------------------------------------------------
 // Settings tables
 // ---------------------------------------------------------------------------
-// Difficulty = how many of the 4 groups are fusion chains, how deep they go, and how many tiles start on the board.
-//   Every board has 4 top-level groups. Level 1 is the classic game (4 groups of 4 words, 16 tiles).
-//   From level 2 up, some groups are fusion chains: a found group becomes a NEW tile that fuses again.
-//   (The exact recipe for each level lives in puzzles.js, LEVEL_SPECS.)
+// Difficulty = a FIXED number of starting tiles (4 columns x N rows). Every level has at least one fusion chain
+// that is 4 levels deep; higher levels add more tiles and more groups. The exact recipe lives in puzzles.js (LEVEL_SPECS).
 const LEVELS = {
-  1: { name: 'Classic', desc: '4 groups, 16 tiles' },
-  2: { name: 'Easy',    desc: '1 fusion chain (2 levels) + 3 groups, 19 tiles' },
-  3: { name: 'Medium',  desc: '2 fusion chains (2 levels) + 2 groups, 22-25 tiles' },
-  4: { name: 'Hard',    desc: 'chains up to 3 levels deep, 28 tiles' },
-  5: { name: 'Chaos',   desc: 'chains up to 4 levels deep, 31-34 tiles' },
+  1: { name: 'Warmup', desc: '4 x 4 = 16 tiles', rows: 4 },
+  2: { name: 'Easy',   desc: '4 x 5 = 20 tiles', rows: 5 },
+  3: { name: 'Medium', desc: '4 x 6 = 24 tiles', rows: 6 },
+  4: { name: 'Hard',   desc: '4 x 7 = 28 tiles', rows: 7 },
+  5: { name: 'Chaos',  desc: '4 x 8 = 32 tiles', rows: 8 },
 };
 const TIMING = {
   autoNext: { min: 3, max: 300, def: 8 },
@@ -172,7 +170,7 @@ function doFuse(node, picked, by) {
   state.tiles.push(tile);
   state.fusionsDone += 1;
   state.lastFusion = { newN: tile.n, at: Date.now() };
-  if (isRoot) state.completed.push({ id: node.id, name: node.name, tree: node.nested, by: by || null });
+  if (isRoot) state.completed.push({ id: node.id, name: node.name, words: picked.map((t) => t.w), by: by || null });
   state.hint = '';
   return { tile, isRoot, from: picked.map((t) => t.n) };
 }
@@ -190,7 +188,8 @@ function publicState() {
       if (state.peeking) o.g = t.parent;                        // peek: tile's group id
       return o;
     }),
-    solved: state.completed.map((c) => ({ g: c.id, name: c.name, tree: c.tree, by: c.by })),
+    solved: state.completed.map((c) => ({ g: c.id, name: c.name, words: c.words, by: c.by })),   // only the 4 latest words, no nested tree
+    rows: LEVELS[state.level].rows,
     lastFusion: state.lastFusion,
     hint: state.hint, peeking: state.peeking,
     startedAt: state.startedAt, solvedAt: state.solvedAt, now: Date.now(),
@@ -274,7 +273,7 @@ function attemptFuse(nums, player) {
     const all = ensurePlayer(state.allTimeScores, player);
     all.points += gained;
     saveAllTimeSoon();
-    const f = doFuse(node, picked, player.name);
+    const f = doFuse(node, picked, { name: player.name, uniqueId: player.uniqueId, avatar: player.avatar || null });
     const result = { kind: 'correct', streak: row.streak, gained, group: node.name, newN: f.tile.n, height: node.height, final: f.isRoot, nums };
     if (state.completed.length >= state.rootsTotal) finishGame();
     return result;

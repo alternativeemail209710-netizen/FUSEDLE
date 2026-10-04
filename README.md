@@ -2,21 +2,22 @@
 
 This folder is the complete, finished app. You do not need to edit any code.
 
-**How the game works:** every round is a board of numbered word tiles hiding **4 groups**. Viewers type **four tile numbers**
-in chat, like `2 5 8 12`. If all four belong together, those tiles are **destroyed and fuse into ONE brand-new tile** with a **new number**.
+**How the game works:** a board of numbered word tiles. Viewers type **four tile numbers** in chat, like `2 5 8 12`.
+If all four belong together they are **destroyed and fuse into ONE brand-new tile** with a **new number**. That is the classic game.
 
-That is the classic game. On top of it, **some groups are fusion chains**: the new tile is a real tile and can be used again
-in the next fusion, up to 4 levels deep. Harder boards mix ordinary groups of 4 with deeper chains.
+On top of it, the new tile is a real tile that can be used again in the next fusion, so **chains go 4 levels deep on every difficulty**.
 
-> **Example (2 levels)**
+> **Example**
 > - Level 1: viewers type the numbers of **Ford, Toyota, Honda, BMW**. Those 4 tiles vanish and one new tile **"Car"** appears with the next free number (for example 17).
-> - Level 2: viewers now fuse **Car (17) + Boat + Plane + Train** into the final group **"Transportation"**.
+> - Level 2: **Car (17) + Bus + Truck + Motorbike** fuse into **"Road Vehicle"**.
+> - Level 3: **Road Vehicle + Train + Tram + Bicycle** fuse into **"Land Transport"**.
+> - Level 4: **Land Transport + Boat + Plane + Rocket** fuse into the final group **"Transportation"**.
 >
 > You cannot skip ahead: "Car" does not exist until the car brands are fused. Trying it early shows "one away" or "not on the board".
 
-A deeper chain looks like **Mammal -> Vertebrate -> Animal -> Life on Earth** (4 levels), sitting on the same board as other groups.
-When a group is finished it is shown as nested boxes, with the final group on the outside and the original words in the middle.
-The round ends when all 4 groups are done.
+**When a group is completely finished** it shows as one small card: the category name, the viewer who fused it (their round TikTok
+photo and name) and only the **4 latest words** that made it. The cards stay small (two per row on a phone), so the unsolved tiles and
+the leaderboards stay on the screen. If the host used Reveal, the card says "Host reveal".
 
 > **Before you go live:** in the TikTok app open LIVE settings, then **Comments > Filtered**, and turn **OFF**
 > the **Spam filter** and **Potentially unkind words**. TikTok can quietly hide short number comments.
@@ -44,20 +45,23 @@ Render updates the game by itself in a minute or two.
   Hints and Reveals, Reset Scores, Auto Next Game, Timing, difficulty, and Save & Apply as Default.
 - **Modes:** *Offline* = you play alone with the Player Guess Bar (tap 4 tiles or type them). *Test* = fake
   viewers (turn on **Auto-Play Bots**) so you can rehearse. *Live* = real TikTok chat counts.
-- **Difficulty** (pick a level from the toolbar badge, then tap the refresh button to start a new game). Every board has 4 groups:
+- **Difficulty** (pick a level from the toolbar badge, then tap the refresh button to start a new game). Every level has a FIXED
+  number of starting tiles in 4 columns, and every board contains at least one chain that is **4 levels deep**:
 
-  | Level | Name    | What is on the board                                   | Tiles at the start |
-  |-------|---------|--------------------------------------------------------|--------------------|
-  | 1     | Classic | 4 ordinary groups of 4 (the original game)             | 16                 |
-  | 2     | Easy    | 1 fusion chain (2 levels) + 3 ordinary groups          | 19                 |
-  | 3     | Medium  | 2 fusion chains (2 levels) + 2 ordinary groups         | 22 to 25           |
-  | 4     | Hard    | chains up to 3 levels deep + ordinary groups           | 28                 |
-  | 5     | Chaos   | chains up to 4 levels deep, 4 groups on a huge board   | 31 to 34           |
+  | Level | Name    | Board                   | Tiles at the start | Top-level groups on the board |
+  |-------|---------|-------------------------|--------------------|-------------------------------|
+  | 1     | Warmup  | 4 columns x 4 rows      | 16                 | 1 (one big chain)             |
+  | 2     | Easy    | 4 columns x 5 rows      | 20                 | 2                             |
+  | 3     | Medium  | 4 columns x 6 rows      | 24                 | 3                             |
+  | 4     | Hard    | 4 columns x 7 rows      | 28                 | 4                             |
+  | 5     | Chaos   | 4 columns x 8 rows      | 32                 | 2 huge chains, or 5 groups    |
 
-- **Fused tiles** are coloured by level (L1 teal, L2 violet, L3 gold, L4 pink), show their new number and what is inside them.
+  The round ends when every top-level group is finished. Groups that are not part of the 4-level chain are shorter chains or plain groups of 4.
+
+- **Fused tiles** are coloured by level (L1 teal, L2 violet, L3 gold), show their new number and what is inside them. The last fusion of a group becomes its finished card.
 - **Toolbar:** difficulty, new game, leaderboard, **Hint** (names one group you can fuse right now), **Peek** (tints tiles by group for
   a few seconds), **Reveal 1 Fusion**, theme, full screen, settings. Nobody earns points from hints or reveals.
-- **Scoring:** points per fusion = **10 x fusion level x combo**. A level-1 fusion is worth 10, level 2 is worth 20, level 3 is worth 30.
+- **Scoring:** points per fusion = **10 x fusion level x combo**. A level-1 fusion is worth 10, level 2 is worth 20, level 3 is worth 30, level 4 is worth 40.
   Fuse back-to-back for a combo: 1x, 2x, 3x, then 4x. A wrong guess resets the streak. There is a This Round and an All-Time board.
   (Change the base 10 in Settings > Timing.)
 - **Viewer photos:** real TikTok profile pictures show in circles next to names in Live mode.
@@ -67,23 +71,30 @@ Render updates the game by itself in a minute or two.
 
 ## Adding your own puzzles
 Open `puzzles.js`. Everything is a group of **exactly 4 children**, and a child is either a word or another group.
-Add lines inside a pack's `trees: [ ... ]` list. The game builds each board from 4 of these, so more lines means more variety.
+Add lines inside a pack's `trees: [ ... ]` list. More lines means more variety.
 
-**Ordinary group (classic, level 1):**
+**Plain group of 4 (4 tiles):**
 ```js
 N('Fuels', 'Petrol', 'Diesel', 'Kerosene', 'Ethanol')
 ```
 
-**Fusion chain (2 or more levels):**
+**Fusion chain (the nesting depth is the number of levels):**
 ```js
-N('Transportation',
-  N('Car', 'Ford', 'Toyota', 'Honda', 'BMW'),   // level 1: these 4 words fuse into "Car"
-  'Boat', 'Plane', 'Train')                      // level 2: Car + these 3 words fuse into "Transportation"
+N('Transportation',                                   // level 4
+  N('Land Transport',                                 // level 3
+    N('Road Vehicle',                                 // level 2
+      N('Car', 'Ford', 'Toyota', 'Honda', 'BMW'),     // level 1
+      'Bus', 'Truck', 'Motorbike'),
+    'Train', 'Tram', 'Bicycle'),
+  'Boat', 'Plane', 'Rocket')
 ```
 
-Nest groups inside groups to go deeper. The board builder never puts the same word or group name on a board twice.
+**The tile count must add up.** A chain with G groups in total has 3 x G + 1 words (a chain 4 levels deep with one group per level has 13,
+with one extra plain group inside it 16, with two extra groups 19). The board builder combines trees so the total is exactly
+16, 20, 24, 28 or 32 tiles, never repeats a word or group name on a board, and always includes at least one chain 4 levels deep.
+To make sure all difficulties keep working, keep some 4-level chains of 13, 16 and 19 words in the list (the file has 21 of them).
 The game checks `puzzles.js` when it starts and tells you in the log if a group does not have exactly 4 children or a word is repeated.
-How many ordinary groups and chains each difficulty uses is set in `LEVEL_SPECS` near the bottom of `puzzles.js`.
+The tile counts and group counts per difficulty are in `LEVEL_SPECS` near the bottom of `puzzles.js`.
 
 ## Keep it awake while you stream
 Render's free plan sleeps after about 15 minutes with no visitors, which drops the TikTok connection.

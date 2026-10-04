@@ -50,7 +50,7 @@
   wireDropdown('difficultyDropdown', (v) => setPendingLevel(Number(v)));
   document.querySelectorAll('.theme-choice-btn').forEach((b) => b.addEventListener('click', () => applyTheme(b.dataset.themeChoice)));
 
-  const LEVEL_NAMES = { 1: 'Classic', 2: 'Easy', 3: 'Medium', 4: 'Hard', 5: 'Chaos' };
+  const LEVEL_NAMES = { 1: 'Warmup', 2: 'Easy', 3: 'Medium', 4: 'Hard', 5: 'Chaos' };
   function setPendingLevel(n) {
     pendingLevel = n;
     const icon = $('difficultyDropdownIcon');
@@ -115,15 +115,18 @@
 
   function mk(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
 
-  // A finished chain is drawn as nested boxes: the final group on the outside, every
-  // group that was fused on the way inside it, the original words at the core.
-  function treeEl(node, depth) {
-    const box = mk('div', 'ct-node ct-d' + Math.min(depth, 3));
-    box.appendChild(mk('b', 'ct-name', node.name));
-    const row = mk('div', 'ct-row');
-    node.kids.forEach((k) => { row.appendChild(typeof k === 'string' ? mk('span', 'ct-chip', k) : treeEl(k, depth + 1)); });
-    box.appendChild(row);
-    return box;
+  // A finished group is one small card: category name, the viewer who fused it (round TikTok photo + name)
+  // and only the 4 latest words that made it. It stays compact so tiles and scores never leave the screen.
+  function solvedCard(g, isNew) {
+    const d = mk('div', 'solved-card' + (isNew ? ' is-new' : '')); d.style.setProperty('--gc', groupColor(g.g));
+    const by = g.by || null;
+    d.appendChild(by ? avatarImg(by.avatar, by.uniqueId, by.name, 'sm') : mk('span', 'solved-host', '\u2728'));
+    const t = mk('div', 'solved-text');
+    t.appendChild(mk('b', 'solved-cat', '\u{1F3C6} ' + g.name));
+    t.appendChild(mk('span', 'solved-by', by ? by.name : 'Host reveal'));
+    t.appendChild(mk('span', 'solved-words', (g.words || []).join(' \u00B7 ')));
+    d.appendChild(t);
+    return d;
   }
 
   function makeTile(t, fresh) {
@@ -144,17 +147,13 @@
   function renderBoard() {
     const live = S.mode === 'live';
 
-    // finished chains (rebuild only when the list changes)
-    const sig = S.startedAt + '|' + S.solved.map((x) => x.name + x.by).join(',');
+    // finished groups (rebuild only when the list changes; only the newest card animates)
+    const sig = S.startedAt + '|' + S.solved.map((x) => x.name + (x.by ? x.by.uniqueId : '')).join(',');
     const sl = $('solvedList');
     if (sl.dataset.sig !== sig) {
-      sl.dataset.sig = sig; sl.innerHTML = '';
-      S.solved.forEach((c) => {
-        const d = mk('div', 'chain-banner'); d.style.setProperty('--gc', groupColor(c.g));
-        d.appendChild(mk('div', 'chain-title', '\u{1F3C6} ' + c.name + ' complete' + (c.by ? ' \u00B7 fused by ' + c.by : '')));
-        d.appendChild(treeEl(c.tree, 0));
-        sl.appendChild(d);
-      });
+      const prev = sl.dataset.start === String(S.startedAt) ? Number(sl.dataset.count || 0) : 0;
+      sl.dataset.sig = sig; sl.dataset.start = String(S.startedAt); sl.dataset.count = String(S.solved.length); sl.innerHTML = '';
+      S.solved.forEach((g, i) => sl.appendChild(solvedCard(g, i >= prev)));
     }
 
     // tile grid: keyed diff so only NEW fused tiles animate and nothing flickers
@@ -178,7 +177,7 @@
     });
 
     // big boards (many tiles): slightly shorter rows so the whole board stays on screen
-    grid.style.gridAutoRows = S.tiles.length > 28 ? 'minmax(38px,46px)' : S.tiles.length > 20 ? 'minmax(40px,52px)' : '';
+    grid.style.setProperty('--row-h', ({ 4: 58, 5: 52, 6: 47, 7: 43, 8: 40 })[S.rows || 5] + 'px');
     let counter = '\u26A1 ' + S.fusionsDone + '/' + S.fusionsTotal + ' fusions \u00B7 ' + S.title + ' \u00B7 ' + (S.maxLevels > 1 ? 'up to ' + S.maxLevels + ' fusion levels' : 'classic');
     if (S.chainsTotal > 1) counter += ' \u00B7 ' + S.chainsDone + '/' + S.chainsTotal + ' groups';
     $('pairsCounter').textContent = counter;
