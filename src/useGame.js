@@ -16,6 +16,8 @@ export function useGame() {
   const [feed, setFeed] = useState([]);
   const [tiktok, setTiktok] = useState('idle');
   const [online, setOnline] = useState(socket.connected);
+  const [pulse, setPulse] = useState(null);
+  const lastPulse = useRef(0);
 
   const boardEl = useRef(null);
   const tileEls = useRef(new Map());
@@ -61,7 +63,13 @@ export function useGame() {
         if (p.state.status === 'victory') sfx.victory();
       });
 
-    const onGuess = (g) => setFeed((f) => [...f.slice(-24), g]);
+    const onGuess = (g) => {
+      setFeed((f) => [...f.slice(-24), g]);
+      if (g.result === 'close' && Date.now() - lastPulse.current > 1500) {
+        lastPulse.current = Date.now();
+        setPulse({ id: g.id });
+      }
+    };
 
     socket.on('state', onState);
     socket.on('fusion_success', onFusion);
@@ -77,5 +85,5 @@ export function useGame() {
     };
   }, []);
 
-  return { game, anim, feed, tiktok, online, boardEl, registerTile };
+  return { game, anim, feed, tiktok, online, pulse, boardEl, registerTile };
 }

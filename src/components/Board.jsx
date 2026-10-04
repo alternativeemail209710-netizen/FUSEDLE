@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { AnimatePresence, LayoutGroup } from 'framer-motion';
 import Tile from './Tile.jsx';
 import { FusionOverlay } from './Overlays.jsx';
@@ -17,8 +17,9 @@ function fitSize(n, w, h) {
   return Math.floor(Math.min(best, 190));
 }
 
-export default function Board({ game, anim, boardEl, registerTile }) {
+export default function Board({ game, anim, boardEl, registerTile, pulse, selected = [], onTap }) {
   const [box, setBox] = useState({ w: 0, h: 0 });
+  const [fx, setFx] = useState(false);
 
   useLayoutEffect(() => {
     const el = boardEl.current;
@@ -30,16 +31,32 @@ export default function Board({ game, anim, boardEl, registerTile }) {
     return () => ro.disconnect();
   }, [boardEl]);
 
-  // Reserve room for the +1 tile while a fusion is mid-flight so the grid doesn't thrash.
+  // a "so close" guess makes the whole board glow amber for a moment
+  useEffect(() => {
+    if (!pulse) return;
+    setFx(true);
+    const t = setTimeout(() => setFx(false), 700);
+    return () => clearTimeout(t);
+  }, [pulse]);
+
   const size = fitSize(game.tiles.length, box.w, box.h);
 
   return (
     <section className="zone zone-board">
-      <div className="board" ref={boardEl}>
+      <div className={`board ${fx ? 'close' : ''}`} ref={boardEl}>
         <LayoutGroup>
           <AnimatePresence>
             {game.tiles.map((t) => (
-              <Tile key={t.uid} tile={t} size={size} anim={anim} registerTile={registerTile} />
+              <Tile
+                key={t.uid}
+                tile={t}
+                size={size}
+                anim={anim}
+                registerTile={registerTile}
+                selected={selected.includes(t.num)}
+                hinted={game.hintNum === t.num}
+                onTap={onTap}
+              />
             ))}
           </AnimatePresence>
         </LayoutGroup>

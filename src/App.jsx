@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useGame } from './useGame.js';
 import { initAudio } from './sfx.js';
 import { socket } from './socket.js';
@@ -12,15 +12,31 @@ import { VictoryOverlay } from './components/Overlays.jsx';
 const params = new URLSearchParams(window.location.search);
 const AUTOSTART = params.get('autostart') === '1';
 const DEBUG = params.get('debug') === '1';
+const PLAY = params.get('play') === '1'; // tap-to-play on this device (needs DEBUG_MODE=true on the server)
 
 export default function App() {
   const [started, setStarted] = useState(AUTOSTART);
+  const [sel, setSel] = useState([]);
   const g = useGame();
+
+  const playable = PLAY && !!g.game?.playEnabled && g.game?.status === 'playing' && !g.anim;
+
+  // drop selections for tiles that no longer exist
+  useEffect(() => {
+    if (g.game) setSel((s) => s.filter((n) => g.game.tiles.some((t) => t.num === n)));
+  }, [g.game]);
 
   const start = () => {
     initAudio();
     setStarted(true);
     document.documentElement.requestFullscreen?.().catch(() => {});
+  };
+
+  const toggle = (num) => setSel((s) => (s.includes(num) ? s.filter((n) => n !== num) : [...s, num]));
+  const submit = () => {
+    if (sel.length < 2) return;
+    socket.emit('debug_guess', { user: 'You', text: sel.join(' ') });
+    setSel([]);
   };
 
   return (
@@ -44,9 +60,28 @@ export default function App() {
       {started && g.game && (
         <div className="zones">
           <Header game={g.game} tiktok={g.tiktok} online={g.online} />
-          <Board game={g.game} anim={g.anim} boardEl={g.boardEl} registerTile={g.registerTile} />
+          <Board
+            game={g.game}
+            anim={g.anim}
+            boardEl={g.boardEl}
+            registerTile={g.registerTile}
+            pulse={g.pulse}
+            selected={sel}
+            onTap={playable ? toggle : undefined}
+          />
           <Feed feed={g.feed} leaderboard={g.game.leaderboard} />
           <Footer hint={g.game.hint} />
+
+          <AnimatePresence>
+            {playable && sel.length > 0 && (
+              <motion.div className="playbar" initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }}>
+                <span className="playbar-nums">{sel.join(' ')}</span>
+                <button className="pb-clear" onClick={() => setSel([])}>Clear</button>
+                <button className="pb-fuse" disabled={sel.length < 2} onClick={submit}>Fuse!</button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <VictoryOverlay game={g.game} />
         </div>
       )}

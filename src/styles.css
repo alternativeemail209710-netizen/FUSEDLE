@@ -149,3 +149,22 @@ body { font-family: var(--body); font-weight: 700; color: var(--paper); user-sel
 .debug input { flex: 1; font-size: 16px; padding: 6px; }
 
 @media (prefers-reduced-motion: reduce) { .live-pill { animation: none; } }
+
+/* ---------- progress, selection, hints, tap-play ---------- */
+.progress { position: relative; height: 3.4cqw; border-radius: 2cqw; background: #00000055; overflow: hidden; flex: none; margin-top: 0.4cqh; }
+.progress-fill { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, var(--cyan), var(--mint)); border-radius: 2cqw; }
+.progress-text { position: absolute; inset: 0; display: grid; place-items: center; font-size: 2.4cqw; color: #fff; text-shadow: 0 0 1cqw #000; }
+
+.tile.tappable { cursor: pointer; }
+.tile.selected { border-color: var(--cyan); box-shadow: 0 0 0 1.4cqw var(--cyan), 0 0 7cqw var(--cyan); }
+.tile.hinted { animation: hintpulse 0.9s ease-in-out infinite; }
+@keyframes hintpulse { 50% { box-shadow: 0 0 0 1.6cqw var(--sun), 0 0 8cqw var(--sun); } }
+.board.close::after { content: ''; position: absolute; inset: -2cqw; border-radius: 6cqw; box-shadow: inset 0 0 8cqw var(--sun); animation: closeglow 0.7s ease-out forwards; pointer-events: none; }
+@keyframes closeglow { from { opacity: 1; } to { opacity: 0; } }
+
+.playbar { position: absolute; left: 4cqw; right: 4cqw; bottom: 16.5cqh; z-index: 40; display: flex; align-items: center; gap: 2cqw; background: var(--ink); border: 0.8cqw solid var(--cyan); border-radius: 4cqw; padding: 1.2cqh 3cqw; }
+.playbar-nums { flex: 1; font: 400 6cqw/1 var(--display); letter-spacing: 0.08em; overflow: hidden; text-overflow: ellipsis; }
+.playbar button { font: 400 4.6cqw/1 var(--display); border: 0.6cqw solid #fff; border-radius: 3cqw; padding: 1.2cqh 4cqw; cursor: pointer; }
+.pb-clear { background: #ffffff22; color: #fff; }
+.pb-fuse { background: var(--mint); color: var(--ink); }
+.pb-fuse:disabled { opacity: 0.4; }

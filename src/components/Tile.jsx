@@ -12,7 +12,7 @@ export function TileFace({ tile }) {
   return <span className={cls}>{tile.content}</span>;
 }
 
-export default function Tile({ tile, size, anim, registerTile }) {
+export default function Tile({ tile, size, anim, registerTile, selected, hinted, onTap }) {
   const fly = anim?.offsets?.[tile.uid];
   let animate = { x: 0, y: 0, scale: 1, rotate: 0, opacity: 1 };
   let transition = { type: 'spring', stiffness: 300, damping: 22 };
@@ -26,6 +26,9 @@ export default function Tile({ tile, size, anim, registerTile }) {
   }
 
   const hue = (tile.num * 47) % 360;
+  const cls = ['tile', tile.type, tile.fused && 'fused', selected && 'selected', hinted && 'hinted', onTap && 'tappable']
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <motion.div
@@ -34,13 +37,15 @@ export default function Tile({ tile, size, anim, registerTile }) {
       className="tile-slot"
       style={{ width: size, height: size }}
       initial={{ scale: 0.2, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.01 } }}
-      transition={{ type: 'spring', stiffness: 260, damping: 24 }}
+      transition={{ type: 'spring', stiffness: 260, damping: 22 }}
     >
       <motion.div
-        className={`tile ${tile.fused ? 'fused' : ''} ${tile.type}`}
+        className={cls}
         style={{ '--h': hue }}
-        initial={tile.fused ? { scale: 1.7, opacity: 0, rotate: -8 } : { scale: 1, opacity: 1 }}
+        onClick={onTap ? () => onTap(tile.num) : undefined}
+        initial={tile.fused ? { scale: 1.7, opacity: 0, rotate: -8 } : false}
         animate={animate}
         transition={transition}
       >

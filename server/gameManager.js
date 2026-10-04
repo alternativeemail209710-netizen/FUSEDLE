@@ -214,18 +214,22 @@ export class GameManager {
     this.emit('state', this.getState());
   }
 
-  buildHint() {
+  hintInfo() {
     if (this.hintLevel < 1) return null;
     const avail = this.availableRecipes();
     if (!avail.length) return null;
     const r = avail[0];
     const label = r.yields.label || r.yields.id;
     let text = `Hint: find the ${r.requires.length} tiles that make "${label}"`;
+    let num = null;
     if (this.hintLevel >= 2) {
       const t = this.tiles.find((x) => x.defId === r.requires[(this.hintLevel - 2) % r.requires.length]);
-      if (t) text += ` - tile #${t.num} is one of them`;
+      if (t) {
+        num = t.num;
+        text += ` - tile #${t.num} is one of them`;
+      }
     }
-    return text;
+    return { text, num };
   }
 
   /** Used by the demo bot: numbers of a currently solvable recipe. */
@@ -239,6 +243,7 @@ export class GameManager {
   /* ------------------------------ state ------------------------------ */
   getState() {
     const top = [...this.leaderboard.values()].sort((a, b) => b.score - a.score).slice(0, 5);
+    const hint = this.hintInfo();
     const best = [...this.puzzleScores.entries()].sort((a, b) => b[1] - a[1])[0];
     return {
       puzzleId: this.puzzle.id,
@@ -250,7 +255,10 @@ export class GameManager {
       solved: this.solved,
       leaderboard: top.map(({ nickname, score, fusions }) => ({ nickname, score, fusions })),
       mvp: this.status === 'victory' && best ? this.leaderboard.get(best[0])?.nickname : null,
-      hint: this.buildHint()
+      hint: hint?.text || null,
+      hintNum: hint?.num ?? null,
+      progress: { done: this.recipes.filter((r) => r.done).length, total: this.recipes.length },
+      playEnabled: process.env.DEBUG_MODE === 'true'
     };
   }
 }

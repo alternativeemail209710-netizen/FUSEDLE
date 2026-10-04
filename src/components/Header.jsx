@@ -15,6 +15,14 @@ export default function Header({ game, tiktok, online }) {
       <div className="theme">
         Puzzle {game.puzzleNo}/{game.totalPuzzles} - {game.title}
       </div>
+      <div className="progress" aria-label="progress">
+        <motion.div
+          className="progress-fill"
+          animate={{ width: `${(game.progress.done / game.progress.total) * 100}%` }}
+          transition={{ type: 'spring', stiffness: 160, damping: 20 }}
+        />
+        <span className="progress-text">{game.progress.done}/{game.progress.total} groups</span>
+      </div>
 
       <div className="solved">
         <AnimatePresence>

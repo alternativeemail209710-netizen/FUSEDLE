@@ -36,3 +36,7 @@ npm run dev              # open http://localhost:5173/?debug=1
 - `tiktok-live-connector` is an unofficial library. If TikTok rate-limits or blocks it, set `TIKTOK_SESSION_ID` and check the library's docs for signing options.
 - `POST /admin/skip?key=ADMIN_KEY` skips the current puzzle. `/healthz` reports chat connection status.
 - Layout zones: top 20% / board 45% / feed 20% / instructions 15%; the right 15% of the text zones is kept clear of TikTok's side icons.
+
+## Play it yourself (tap mode)
+Set `DEBUG_MODE=true` on the server, then open `/?play=1`. Tap tiles to select them and press **Fuse!**.
+It uses the same engine as chat guesses. Turn `DEBUG_MODE` off for real streams.
