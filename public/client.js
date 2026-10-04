@@ -126,12 +126,26 @@
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const open = menu.hidden; closeMenus(); menu.hidden = !open; btn.setAttribute('aria-expanded', String(open));
+      if (open) placeMenu(btn, menu);
     });
     menu.addEventListener('click', (e) => {
       const li = e.target.closest('li'); if (!li) return;
       onPick(li.dataset.value); closeMenus();
     });
   }
+  // The menu is position:fixed, so it must be placed by hand: right edge under the button, never past the screen edge,
+  // never taller than the space below the toolbar (it scrolls inside itself instead).
+  function placeMenu(btn, menu) {
+    const vv = window.visualViewport, vw = Math.round(vv ? vv.width : window.innerWidth), vh = Math.round(vv ? vv.height : window.innerHeight);
+    const pad = 8, r = btn.getBoundingClientRect();
+    menu.style.maxWidth = (vw - pad * 2) + 'px';
+    const top = Math.round(r.bottom + 6);
+    menu.style.top = top + 'px'; menu.style.bottom = 'auto'; menu.style.right = 'auto';
+    menu.style.maxHeight = Math.max(120, vh - top - pad) + 'px';
+    const w = menu.offsetWidth;
+    menu.style.left = Math.round(Math.max(pad, Math.min(r.right - w, vw - w - pad))) + 'px';
+  }
+  window.addEventListener('resize', () => closeMenus());
   function closeMenus() { document.querySelectorAll('.toolbar-dropdown-menu').forEach((m) => { m.hidden = true; }); }
   document.addEventListener('click', closeMenus);
   wireDropdown('themeDropdown', applyTheme);

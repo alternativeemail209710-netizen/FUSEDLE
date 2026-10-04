@@ -2,6 +2,10 @@
 
 This folder is the complete, finished app. You do not need to edit any code.
 
+> **v7.7.1 - theme menu fix:** the theme (round colour button) menu was opening partly off the right edge of the phone, so names were cut off and it covered
+> the right side of the board. It is now placed under the button, always fully inside the screen, and scrolls inside itself on short phones.
+> The numbers in the "Chat format" line also use the phone's own monospace font, so they are no longer tiny on Android.
+
 > **v7.7 - fused tile colours:** Settings has a new **Fused tile colours** box. Level 1 fused tiles (e.g. "Car") and level 2 fused tiles
 > (e.g. "Land Transport") each get their own colour, chosen from 18 shades or any custom colour, or "same as other tiles" to switch it off.
 > Defaults are Teal (level 1) and Burgundy (level 2), so fused tiles stand out from tiles that are still waiting. Level 2 also has a thin inner ring,

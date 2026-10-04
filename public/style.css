@@ -1623,3 +1623,19 @@ html.fc2 .tile.fused[data-f="2"]:not(.sel):not(.wrong):not(.peek):active { box-s
 .fc-custom { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 12px; font-weight: 700; color: var(--text); }
 .fc-custom input[type="color"] { width: 44px; height: 28px; padding: 0; border: 2px solid var(--border); border-radius: 8px; background: var(--bg-input); cursor: pointer; }
 .fc-box .timing-reset-btn { margin-top: 6px; }
+
+
+/* =====================================================================
+   PART 18 - THEME MENU + CHAT-FORMAT LINE FIXES
+   The theme menu is placed by client.js (placeMenu): always fully on screen,
+   scrolls inside itself when the phone is short. Menu text never runs off.
+   ===================================================================== */
+.toolbar-dropdown-menu { max-width: calc(100vw - 16px); box-sizing: border-box; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; z-index: 95; }
+.toolbar-dropdown-menu li { min-height: 36px; }
+.toolbar-dropdown-menu .dd-label { white-space: normal; min-width: 0; }
+.toolbar-dropdown-menu .theme-swatch { flex: 0 0 auto; }
+/* Android has no real "Courier New": use the phone's own monospace so the numbers are not tiny */
+.quick-hint .mono { font-family: ui-monospace, "Roboto Mono", "SF Mono", Menlo, Consolas, monospace; font-size: 1.05em; font-weight: 800; letter-spacing: 0; }
+.toolbar-dropdown-menu { padding: 4px; }
+.toolbar-dropdown-menu li { min-height: 32px; padding: 5px 8px; gap: 9px; font-size: 13px; }
+.toolbar-dropdown-menu .dd-head { padding: 5px 8px 1px; }
