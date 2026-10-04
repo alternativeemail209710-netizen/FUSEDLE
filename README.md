@@ -19,6 +19,11 @@ Each group is either a **2-level fusion** (7 starting tiles) or a **3-level fusi
 >
 > You cannot skip ahead: "Car" does not exist until the car brands are fused. Trying it early shows "one away" or "not on the board".
 
+> **Phone screen fit:** the page is exactly one phone screen tall. The "Chat format" line stays at the top, and both leaderboards (top 5 each) stay
+> under the game, with the host console at the very bottom. **Tiles always keep their full size.** When tiles fuse, the remaining tiles move up to fill
+> the empty spaces, so the board only uses the rows it needs. Every finished group has its own row. If a phone is too short to show everything at once,
+> only the game area (finished groups + tiles) scrolls inside its own box; the top line and leaderboards never move.
+
 **When a group is completely finished** it shows as one small card: the category name, the viewer who fused it (their round TikTok
 photo and name) and only the **4 latest words** that made it. Each card takes one row of its own and stays small, so the unsolved tiles and
 the leaderboards stay on the screen. If the host used Reveal, the card says "Host reveal".

@@ -159,6 +159,7 @@
     });
     const merging = removed.length > 0 && removed.length <= 12 && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     selected = selected.filter((n) => present.has(n));
+    const rank = new Map(); S.tiles.slice().sort((a, b) => a.s - b.s).forEach((t, i) => rank.set(t.n, i));
     S.tiles.forEach((t) => {
       let el = tileEls.get(t.n);
       if (!el) {
@@ -168,7 +169,8 @@
         if (merging) el.style.animationDelay = t.f ? '.5s' : '.6s';   // wait until the merging tiles have arrived
         grid.appendChild(el);
       }
-      el.style.gridColumn = String((t.s % (S.cols || 4)) + 1); el.style.gridRow = String(Math.floor(t.s / (S.cols || 4)) + 1);
+      const pos = rank.get(t.n);   // tiles are packed upward: they fill every space the earlier tiles left behind
+      el.style.gridColumn = String((pos % (S.cols || 4)) + 1); el.style.gridRow = String(Math.floor(pos / (S.cols || 4)) + 1);
       el.classList.toggle('sel', selected.includes(t.n));
       el.classList.toggle('wrong', wrongNums.includes(t.n));
       const peeking = S.peeking && t.g !== undefined;
@@ -178,15 +180,34 @@
 
     if (merging) playMerge(removed);
 
-    // always 4 columns x 6 rows while tiles are still waiting; once the last tile has appeared the grid shrinks to what is left
-    const cols = S.cols || 4, maxSlot = S.tiles.reduce((m, t) => Math.max(m, t.s), 0);
-    const rowsShown = S.waiting > 0 ? (S.rows || 6) : Math.max(1, Math.ceil((maxSlot + 1) / cols));
-    grid.style.setProperty('--row-h', '54px');
+    // only as many rows as the packed tiles need (full-size rows, never smaller)
+    const cols = S.cols || 4;
+    const rowsShown = Math.max(1, Math.ceil(S.tiles.length / cols));
     grid.style.gridTemplateRows = 'repeat(' + rowsShown + ', var(--row-h))';
     $('pairsCounter').textContent = '\u26A1 ' + S.fusionsDone + '/' + S.fusionsTotal + ' fusions \u00B7 \u{1F9E9} ' + S.chainsDone + '/' + S.chainsTotal + ' groups' + (S.waiting > 0 ? ' \u00B7 \u23EC ' + S.waiting + ' more to come' : '');
     $('solvedBanner').hidden = !S.solvedAt;
     const hl = $('hintLine'); hl.hidden = !S.hint; hl.textContent = S.hint || '';
+    fitLayout();
   }
+
+  // ---- Keep the page exactly one phone screen tall ---------------------------
+  // The top line, leaderboards and console never leave the screen. Tiles keep
+  // their full size; if a very short phone cannot show every row, only the game
+  // area scrolls (kept scrolled so the tiles stay in view).
+  function fitLayout() {
+    const shell = document.querySelector('.app-shell'), fb = $('fusedBoard');
+    if (!shell || !fb) return;
+    if (!document.fullscreenElement) shell.style.setProperty('--app-h', Math.round(window.innerHeight) + 'px');
+    if (fb.scrollHeight > fb.clientHeight + 1) fb.scrollTop = fb.scrollHeight;
+  }
+  let fitQueued = false;
+  function queueFit() { if (fitQueued) return; fitQueued = true; requestAnimationFrame(() => { fitQueued = false; if (S) fitLayout(); }); }
+  window.addEventListener('resize', queueFit);
+  window.addEventListener('orientationchange', () => setTimeout(queueFit, 200));
+  document.addEventListener('fullscreenchange', () => { setTimeout(queueFit, 50); setTimeout(queueFit, 400); });
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', queueFit);
+  window.addEventListener('load', () => { queueFit(); setTimeout(queueFit, 300); });
+
   // Merge animation: the 4 fused tiles slide together into the new tile (or into the finished-group card).
   function playMerge(removed) {
     const fresh = S.lastFusion && tileEls.get(S.lastFusion.newN);
@@ -417,6 +438,8 @@
   $('hostConsoleInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendHost(); });
   $('hostConsoleToggle').addEventListener('click', () => { $('hostConsoleBar').hidden = true; $('hostConsoleShowBtn').hidden = false; });
   $('hostConsoleShowBtn').addEventListener('click', () => { $('hostConsoleBar').hidden = false; $('hostConsoleShowBtn').hidden = true; });
+  document.querySelector('.live-scoreboard').addEventListener('click', () => { if ($('detailsPanel').hidden) $('detailsToggle').click(); });
+  $('detailsCloseBtn').addEventListener('click', () => $('detailsToggle').click());
   $('detailsToggle').addEventListener('click', () => { const p = $('detailsPanel'); p.hidden = !p.hidden; $('detailsToggle').innerHTML = (p.hidden ? '&#9660;' : '&#9650;') + ' Leaderboard &amp; Activity'; });
 
   // ---- Full screen -----------------------------------------------------------------

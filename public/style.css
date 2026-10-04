@@ -1255,3 +1255,60 @@ html, body {
 .tile.ghost { position: fixed; margin: 0; z-index: 70; pointer-events: none; animation: none; outline: 0;
   transition: transform .5s cubic-bezier(.55,0,.35,1), opacity .5s ease-in; will-change: transform, opacity; }
 @media (prefers-reduced-motion: reduce) { .tile.ghost { display: none; } }
+
+
+/* =====================================================================
+   PART 14 - MOBILE LAYOUT: tiles keep their full size, nothing is pushed away
+   The page is exactly one phone screen tall:
+     top bar -> "Chat format" line -> status row -> [ finished groups + tiles ]
+     -> both leaderboards -> host console
+   Tiles are always full size (54px rows). The tiles move up into any free
+   space (client.js), so the board only takes the rows it really needs.
+   The top line, the leaderboards and the console never move off screen: if a
+   very short phone cannot show every tile row, ONLY the game area (finished
+   groups + tiles) scrolls inside its own box.
+   ===================================================================== */
+:root { --grid-max: 520px; }
+html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+.app-shell { height: var(--app-h, 100dvh); min-height: 0; overflow: hidden; padding-bottom: 0; }
+.top-bar { position: relative; flex: 0 0 auto; }
+.quick-hint, .player-guess-bar { flex: 0 0 auto; }
+.board-stage { flex: 1 1 0; min-height: 0; overflow: hidden; padding: 8px 10px 6px 10px; }
+.board-stage > * { flex-shrink: 0; }
+.tile-grid { --row-h: 54px; gap: 5px; }
+
+/* the game area: as tall as its content, but never taller than the free space */
+.board-stage > .fused-board { flex: 0 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.fused-board::-webkit-scrollbar { display: none; }
+
+/* each finished group has its own full row (never two in one row) */
+#solvedList { grid-template-columns: 1fr; }
+
+/* leaderboards stay directly under the game, full top-5 lists */
+.live-scoreboard { flex: 0 0 auto; margin-top: 6px; cursor: pointer; }
+
+/* Leaderboard & Activity is a pop-up sheet, so it never pushes the game */
+.details-toggle { flex: 0 0 auto; margin-top: 4px; padding: 5px; font-size: 12px; }
+.details-panel {
+  position: fixed; left: 0; right: 0; bottom: 10px; margin: 0 auto;
+  width: calc(100% - 20px); max-width: 520px; max-height: 62vh; overflow-y: auto;
+  z-index: 45; padding: 8px; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,.4);
+}
+@media (max-height: 759px) { #detailsToggle { display: none; } }
+
+/* host console: always at the bottom, one slim row  [Hide] [input] [Send] */
+.host-console-bar { position: relative; flex: 0 0 auto; flex-direction: row; align-items: center; gap: 6px; padding: 5px 10px; }
+.host-console-label { display: none; }
+.host-console-head { flex: 0 0 auto; padding: 0; }
+.host-console-row { flex: 1 1 auto; min-width: 0; margin-top: 0; }
+.host-console-bar input { min-width: 0; padding: 8px 10px; }
+
+/* offline Player Guess Bar: the how-to text is already in the Chat format line */
+.player-guess-bar { margin: 4px 10px; padding: 5px 8px; }
+.player-guess-bar-head { margin: 0 0 3px 0; }
+#soloGuessHint { display: none; }
+.player-guess-hint { margin: 0 0 4px; }
+.player-guess-input-row { margin-bottom: 0; }
+
+.app-shell:fullscreen, .app-shell:-webkit-full-screen { justify-content: flex-start; overflow: hidden; }
