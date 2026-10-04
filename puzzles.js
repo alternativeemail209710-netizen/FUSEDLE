@@ -137,6 +137,42 @@ const PACKS = [
       D('Medical Care', 'Medical Staff', 'Doctor,Nurse,Surgeon,Paramedic', 'Stretcher,Stethoscope,Bandage'),
       D('Hotel', 'Hotel Rooms', 'Suite,Penthouse,Single Room,Double Room', 'Reception,Concierge,Minibar'),
     ] },
+
+  { title: 'Planet Earth',
+    three: [
+      T('Landscape', 'Landforms', 'Mountain Ranges', 'Alps,Andes,Himalayas,Rockies', 'Valley,Canyon,Island', 'Forest,Desert,Coast'),
+      T('Water on Earth', 'Fresh Water', 'Famous Rivers', 'Nile,Amazon,Thames,Mississippi', 'Lake,Waterfall,Stream', 'Sea,Tide,Wave'),
+      T('Weather Report', 'Weather', 'Wet Weather', 'Drizzle,Downpour,Sleet,Hail', 'Sunshine,Fog,Wind', 'Temperature,Forecast,Thermometer'),
+      T('Disaster Relief', 'Natural Disasters', 'Violent Storms', 'Hurricane,Tornado,Blizzard,Thunderstorm', 'Earthquake,Volcano,Tsunami', 'Evacuation,Rescue,Shelter'),
+      T('The Universe', 'Solar System', 'Planets', 'Mercury,Venus,Mars,Saturn', 'Sun,Moon,Comet', 'Galaxy,Black Hole,Nebula'),
+      T('Navigation', 'Reading a Map', 'Compass Points', 'North,South,East,West', 'Legend,Scale,Grid', 'Compass,GPS,Globe'),
+      T('Telling Time', 'Calendar', 'Seasons', 'Spring,Summer,Autumn,Winter', 'Month,Week,Leap Year', 'Clock,Watch,Hourglass'),
+      T('The World', 'Countries', 'European Countries', 'France,Spain,Italy,Germany', 'Japan,Brazil,Egypt', 'Continents,Hemispheres,Poles'),
+    ],
+    two: [
+      D('Beach Day', 'Seaside Fun', 'Bucket,Spade,Sandcastle,Seashell', 'Deckchair,Sunscreen,Lifeguard'),
+      D('Camping Trip', 'Camping Gear', 'Sleeping Bag,Torch,Lantern,Camp Stove', 'Campsite,Marshmallow,Penknife'),
+      D('Rocks and Minerals', 'Gemstone', 'Diamond,Ruby,Emerald,Sapphire', 'Granite,Marble,Limestone'),
+      D('Hiking', 'Hiking Gear', 'Rucksack,Walking Poles,Water Bottle,Waterproofs', 'Trail,Summit,Viewpoint'),
+    ] },
+
+  { title: 'Home & Body',
+    three: [
+      T('Inside the Home', 'Kitchen', 'Kitchen Appliances', 'Fridge,Oven,Microwave,Toaster', 'Sink,Cupboard,Kettle', 'Bathroom,Bedroom,Living Room'),
+      T('Body', 'Head', 'Face', 'Eyes,Nose,Mouth,Cheeks', 'Hair,Ears,Chin', 'Arms,Legs,Torso'),
+      T('Fashion', 'Wardrobe', 'Footwear', 'Sandals,Trainers,Boots,Slippers', 'Jacket,Jeans,Dress', 'Jewellery,Handbag,Sunglasses'),
+      T('DIY', 'Toolbox', 'Hand Tools', 'Hammer,Screwdriver,Spanner,Saw', 'Drill,Nails,Screws', 'Paint,Ladder,Wallpaper'),
+      T('Study Time', 'Stationery', 'Pencil Case', 'Pencil,Rubber,Ruler,Sharpener', 'Notebook,Stapler,Scissors', 'Textbook,Dictionary,Calculator'),
+      T('Washroom', 'Bathroom Items', 'Toiletries', 'Soap,Shampoo,Toothpaste,Deodorant', 'Toothbrush,Mirror,Bath Mat', 'Bath,Shower,Toilet'),
+      T('Garden', 'Garden Plants', 'Garden Flowers', 'Rose,Tulip,Daisy,Daffodil', 'Hedge,Tree,Lawn', 'Shed,Patio,Greenhouse'),
+      T('Household', 'Family', 'Relatives', 'Aunt,Uncle,Cousin,Nephew', 'Parents,Siblings,Grandparents', 'Neighbours,Friends,Visitors'),
+    ],
+    two: [
+      D('Cleaning', 'Cleaning Tools', 'Mop,Broom,Duster,Vacuum Cleaner', 'Bleach,Rubber Gloves,Dustpan'),
+      D('Bedtime', 'Bedding', 'Pillow,Duvet,Mattress,Blanket', 'Pyjamas,Alarm Clock,Teddy Bear'),
+      D('Laundry Day', 'Washing Items', 'Detergent,Washing Machine,Tumble Dryer,Clothes Peg', 'Washing Line,Hanger,Ironing Board'),
+      D('Birthday Party', 'Party Decorations', 'Balloon,Banner,Streamer,Confetti', 'Candle,Present,Party Hat'),
+    ] },
 ];
 
 // ---------------------------------------------------------------------------
@@ -216,8 +252,10 @@ function pickPieces(packs, bucket, count, used, picked, recent, avoidRecent) {
 }
 
 // Returns { title, roots:[8 trees] }
-function compose(pack, recent) {
+const boardSig = (roots) => roots.map((r) => r.name).sort().join('|');
+function compose(pack, recent, seen) {
   recent = recent || new Set();
+  seen = seen || new Set();
   const attempt = (packs, avoidRecent) => {
     for (let i = 0; i < 60; i++) {
       const used = new Set(), picked = new Set();
@@ -225,7 +263,9 @@ function compose(pack, recent) {
       if (!threes) continue;
       const twos = pickPieces(packs, 'd2', BOARD.two, used, picked, recent, avoidRecent);
       if (!twos) continue;
-      return threes.concat(twos);
+      const picks = threes.concat(twos);
+      if (seen.has(boardSig(picks.map((p) => p.root)))) continue;   // this exact board was already played
+      return picks;
     }
     return null;
   };
@@ -234,6 +274,7 @@ function compose(pack, recent) {
   let picks = null;
   if (one) picks = attempt(one, true) || attempt(one, false);
   if (!picks) picks = attempt(titles, true) || attempt(titles, false);
+  if (!picks) { seen = new Set(); if (one) picks = attempt(one, false); if (!picks) picks = attempt(titles, false); }   // everything played once: start over
   if (!picks) throw new Error('Could not build a board');
   const packsUsed = new Set(picks.map((p) => p.pack));
   return { title: packsUsed.size === 1 ? picks[0].pack : 'Mixed Board', roots: shuffled(picks).map((p) => p.root) };
@@ -273,4 +314,4 @@ function validate() {
   return problems;
 }
 
-module.exports = { PACKS, POOL, measure, validate, compose, BOARD, GROUPS_PER_BOARD };
+module.exports = { PACKS, POOL, measure, validate, compose, boardSig, keysOf, BOARD, GROUPS_PER_BOARD };

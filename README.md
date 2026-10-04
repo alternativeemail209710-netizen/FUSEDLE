@@ -66,9 +66,15 @@ Render updates the game by itself in a minute or two.
   (Change the base 10 in Settings > Timing.)
 - **Viewer photos:** real TikTok profile pictures show in circles next to names in Live mode.
 - **Host Console** at the bottom lets you type guesses yourself. Tap **Hide** to hide it.
-- **Puzzle Pack:** 6 themes (Getting Around, Animal Kingdom, Food & Drink, Music Room, Game On, Around Town) or Mixed.
+- **Puzzle Pack:** 8 themes (Getting Around, Animal Kingdom, Food & Drink, Music Room, Game On, Around Town, Planet Earth, Home & Body) or Mixed.
   Each theme has 8 three-level groups and 4 two-level groups (the middle part of every 3-level group can also be used as a 2-level group). Every fusion is a plain "kind of / part of" link made from everyday words.
   Mixed pulls groups from all themes. No word or group name ever repeats in one round.
+
+## How many different rounds are there?
+Run `npm run count-rounds` on your computer for the exact numbers. With the two newest themes (Planet Earth and Home & Body) the library
+builds **more than 8.8 million brand-new rounds** (9,800 single-theme rounds plus 8,817,900 rounds mixing the two new themes), and every
+Mixed round that uses at least one new group is new too. The game remembers the boards it has played (file `played-boards.json`, saved
+next to the all-time scores) and never repeats an exact board until all of them have been played.
 
 ## Adding your own puzzles
 Open `puzzles.js`. Good groups: all 4 pieces clearly belong to the new tile's name, with everyday words and no piece that also fits another group. Every group has **exactly 4 children**. Words are written in one string, separated by commas (a word may contain spaces).

@@ -19,7 +19,7 @@ process.on('uncaughtException', (err) => console.error('[FATAL-CAUGHT] uncaughtE
 process.on('unhandledRejection', (reason) => console.error('[FATAL-CAUGHT] unhandledRejection:', reason));
 
 const createTikTokConnector = require('./tiktok-connector');
-const { PACKS, validate: validatePuzzles, compose: composeBoard, BOARD } = require('./puzzles');
+const { PACKS, validate: validatePuzzles, compose: composeBoard, boardSig, BOARD } = require('./puzzles');
 { const problems = validatePuzzles(); if (problems.length) { console.error('[puzzles] PROBLEMS:\n  ' + problems.join('\n  ')); process.exit(1); } }
 
 const DEFAULT_TIKTOK_USERNAME = String(process.env.TIKTOK_USERNAME || '').replace('@', '').trim();
@@ -100,8 +100,22 @@ function saveAllTimeSoon() { clearTimeout(saveTimer); saveTimer = setTimeout(sav
 // ---------------------------------------------------------------------------
 const recentGroups = [];   // names of groups used in the last few rounds, so rounds do not repeat
 
+// Boards that were already played are remembered (and saved next to the scores), so the exact same round never comes back
+// until every possible board has been played. On the free Render plan the file resets on a new deploy, like the all-time scores.
+const PLAYED_FILE = path.join(DATA_DIR, 'played-boards.json');
+let playedBoards = [];
+try { playedBoards = JSON.parse(fs.readFileSync(PLAYED_FILE, 'utf8')); if (!Array.isArray(playedBoards)) playedBoards = []; } catch (e) { playedBoards = []; }
+const playedSet = new Set(playedBoards);
+function rememberBoard(sig) {
+  if (playedSet.has(sig)) return;
+  playedSet.add(sig); playedBoards.push(sig);
+  while (playedBoards.length > 100000) playedSet.delete(playedBoards.shift());
+  try { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.writeFileSync(PLAYED_FILE, JSON.stringify(playedBoards)); } catch (e) { /* read-only disk: still works, just not saved */ }
+}
+
 function pickTrees(pack) {
-  const b = composeBoard(pack, new Set(recentGroups));
+  const b = composeBoard(pack, new Set(recentGroups), playedSet);
+  rememberBoard(boardSig(b.roots));
   b.roots.forEach((r) => { recentGroups.push(r.name); });
   while (recentGroups.length > 24) recentGroups.shift();
   return b;
