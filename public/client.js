@@ -341,6 +341,125 @@
   wireDropdown('themeDropdown', applyTheme);
   document.querySelectorAll('.theme-choice-btn').forEach((b) => b.addEventListener('click', () => applyTheme(b.dataset.themeChoice)));
 
+  // ---- Mode button (top toolbar) -------------------------------------------------
+  const MODES = { offline: { icon: '\u{1F3AE}', label: 'Offline (solo)' }, test: { icon: '\u{1F9EA}', label: 'Test (fake viewers)' }, live: { icon: '\u{1F4E1}', label: 'Live (TikTok chat)' } };
+  function pickMode(m) {
+    if (!MODES[m]) return;
+    showPanels(m); socket.emit('host:setMode', { mode: m });
+    if (m === 'live') openLive();      // choosing Live opens the TikTok connection window straight away
+  }
+  wireDropdown('modeDropdown', pickMode);
+  function renderModeButton(phase) {
+    const m = S ? S.mode : 'test', btn = $('modeDropdownBtn');
+    $('modeDropdownIcon').textContent = MODES[m].icon;
+    btn.title = 'Mode: ' + MODES[m].label + ' - tap to change'; btn.setAttribute('aria-label', btn.title);
+    btn.classList.toggle('active', m === 'live');
+    btn.dataset.dot = m === 'live' ? (phase === 'connected' ? 'ok' : (phase === 'connecting' || phase === 'retrying') ? 'wait' : 'bad') : '';
+    document.querySelectorAll('#modeDropdownMenu li[data-value]').forEach((li) => { const on = li.dataset.value === m; li.classList.toggle('dd-active', on); li.setAttribute('aria-selected', on); });
+  }
+
+  // ---- TikTok connection window (floating popup) --------------------------------
+  let liveOpen = false, autoPromptDone = false, serverOnline = true, tiktokSeenAt = Date.now(), lastPhase = null, autoCloseTimer = null;
+  const savedKey = () => { try { return localStorage.getItem('fusedle-key') || ''; } catch (e) { return ''; } };
+  function openLive() {
+    liveOpen = true; autoPromptDone = true; clearTimeout(autoCloseTimer);
+    const u = $('tiktokUsername'), k = $('tiktokApiKey');
+    if (!u.value) u.value = (S && S.tiktok && S.tiktok.username) || cfg.defaultUsername || (function () { try { return localStorage.getItem('fusedle-username') || ''; } catch (e) { return ''; } })();
+    if (!k.value && !cfg.hasDefaultSignApiKey) k.value = savedKey();
+    $('liveOverlay').hidden = false;
+    renderLiveModal();
+    setTimeout(() => { try { (u.value ? $('connectLiveBtn') : u).focus({ preventScroll: true }); } catch (e) { /* ignore */ } }, 60);
+  }
+  function closeLive() { liveOpen = false; clearTimeout(autoCloseTimer); $('liveOverlay').hidden = true; }
+  const LIVE_ICONS = { idle: '\u26AA', connecting: '\u23F3', retrying: '\u{1F504}', connected: '\u2705', failed: '\u274C', disconnected: '\u26AA', server: '\u{1F50C}', input: '\u26A0\uFE0F' };
+  let liveInputError = '';
+  function renderLiveModal() {
+    if (!liveOpen || !S) return;
+    const t = S.tiktok, phase0 = t.phase || (t.connected ? 'connected' : t.connecting ? 'connecting' : t.lastError ? 'failed' : 'idle');
+    let phase = phase0, title = '', reason = '', hint = '', meta = '';
+    const user = t.uniqueId || t.username || $('tiktokUsername').value.trim().replace(/^@/, '');
+    if (!serverOnline) {
+      phase = 'server'; title = 'Cannot reach the game server';
+      reason = 'The connection between this page and the game server was lost.';
+      hint = 'If the game is hosted on Render\'s free plan it may be waking up (about 30 seconds). This page reconnects by itself - then press Connect.';
+    } else if (liveInputError) {
+      phase = 'input'; title = 'Check your details'; reason = liveInputError; hint = '';
+    } else if (phase0 === 'connected') {
+      title = 'Connected to @' + user;
+      reason = S.mode === 'live' ? 'Success! Viewer comments from your LIVE are now counted as guesses.' : 'Connected, but the game is in ' + MODES[S.mode].label + ' mode, so chat is ignored. Choose Live in the mode button.';
+      meta = (t.roomId ? 'Room ID ' + t.roomId + '  \u00B7  ' : '') + 'Comments received: ' + (S.rawEventCount || 0);
+      if (S.lastEvent && S.lastEvent.text) meta += '  \u00B7  Last: ' + S.lastEvent.user + ': \u201C' + S.lastEvent.text + '\u201D';
+    } else if (phase0 === 'connecting') {
+      title = 'Connecting to @' + user + '...'; reason = t.statusText || ''; hint = 'This can take up to 25 seconds.';
+    } else if (phase0 === 'retrying') {
+      const left = Math.max(0, Math.ceil((t.retryInSeconds || 0) - (Date.now() - tiktokSeenAt) / 1000));
+      title = 'Not connected yet - trying again' + (left ? ' in ' + left + 's' : '...');
+      reason = t.reason || t.statusText || ''; hint = t.hint || ''; meta = t.attempt ? 'Attempt ' + t.attempt : '';
+    } else if (phase0 === 'failed') {
+      title = 'Connection failed'; reason = t.reason || t.statusText || 'Unknown error.'; hint = t.hint || '';
+    } else if (phase0 === 'disconnected') {
+      title = 'Disconnected'; reason = t.reason || ''; hint = t.hint || 'Press Connect to join your LIVE chat again.';
+    } else {
+      title = 'Not connected'; reason = 'Enter your TikTok username' + (cfg.hasDefaultSignApiKey ? '' : ' and your Sign API Key') + ', then press Connect.';
+    }
+    const box = $('liveStatusBox'); box.className = 'live-status-box phase-' + phase;
+    $('liveStatusIcon').textContent = LIVE_ICONS[phase] || '\u26AA';
+    $('liveStatusTitle').textContent = title; $('liveStatusReason').textContent = reason; $('liveStatusHint').textContent = hint; $('liveStatusMeta').textContent = meta;
+    $('liveStatusReason').hidden = !reason; $('liveStatusHint').hidden = !hint; $('liveStatusMeta').hidden = !meta;
+    const showDetail = (phase0 === 'failed' || phase0 === 'retrying') && !!t.detail && serverOnline && !liveInputError;
+    $('liveStatusDetails').hidden = !showDetail; $('liveStatusDetailText').textContent = showDetail ? t.detail + (t.code ? '\n(code: ' + t.code + ')' : '') : '';
+    const busy = phase0 === 'connecting', active = t.connected || t.connecting;
+    $('connectLiveBtn').disabled = busy || !serverOnline; $('connectLiveBtn').textContent = busy ? 'Connecting...' : t.connected ? 'Reconnect' : phase0 === 'retrying' ? 'Try again now' : 'Connect';
+    $('disconnectLiveBtn').hidden = !active;
+    $('liveModalDoneBtn').textContent = phase0 === 'connected' ? 'Done' : 'Close';
+    $('liveModalDoneBtn').className = 'btn ' + (phase0 === 'connected' ? 'btn-primary' : 'btn-secondary');
+    $('liveModalTitle').textContent = '\u{1F4E1} TikTok LIVE connection';
+  }
+  function doConnect() {
+    const u = $('tiktokUsername').value.trim().replace(/^@/, ''), k = $('tiktokApiKey').value.trim();
+    $('tiktokUsername').value = u;
+    if (!serverOnline) { renderLiveModal(); return; }
+    liveInputError = '';
+    if (!u && !cfg.defaultUsername) liveInputError = 'Please type your TikTok username (the name after the @).';
+    else if (u && !/^[A-Za-z0-9._]{2,24}$/.test(u)) liveInputError = 'A TikTok username only has letters, numbers, dots and underscores (no spaces, no @).';
+    else if (!k && !cfg.hasDefaultSignApiKey) liveInputError = 'Please paste your EulerStream Sign API Key (free at eulerstream.com).';
+    if (liveInputError) { renderLiveModal(); return; }
+    try {
+      if ($('liveRemember').checked) { localStorage.setItem('fusedle-username', u); if (k) localStorage.setItem('fusedle-key', k); }
+      else { localStorage.removeItem('fusedle-key'); }
+    } catch (e) { /* private mode */ }
+    clearTimeout(autoCloseTimer);
+    socket.emit('tiktok:connect', { uniqueId: u, apiKey: k });
+  }
+  $('connectLiveBtn').addEventListener('click', doConnect);
+  $('disconnectLiveBtn').addEventListener('click', () => { clearTimeout(autoCloseTimer); socket.emit('tiktok:disconnect'); });
+  $('liveModalCloseBtn').addEventListener('click', closeLive);
+  $('liveModalDoneBtn').addEventListener('click', closeLive);
+  $('liveOverlay').addEventListener('click', (e) => { if (e.target === $('liveOverlay')) closeLive(); });
+  ['tiktokUsername', 'tiktokApiKey'].forEach((id) => {
+    $(id).addEventListener('input', () => { if (liveInputError) { liveInputError = ''; renderLiveModal(); } });
+    $(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') doConnect(); });
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && liveOpen) closeLive(); });
+  $('liveOverlay').addEventListener('pointerdown', () => clearTimeout(autoCloseTimer), { passive: true });
+  $('liveStatusMini').addEventListener('click', openLive);
+  $('openLiveModalBtn').addEventListener('click', openLive);
+  socket.on('connect', () => { serverOnline = true; renderLiveModal(); });
+  socket.on('disconnect', () => { serverOnline = false; renderLiveModal(); });
+  socket.on('connect_error', () => { serverOnline = false; renderLiveModal(); });
+  // Called on every new game state: refresh the window, close it a moment after a success, open it if Live mode has no connection
+  function onTikTokState() {
+    const t = S.tiktok, phase = t.phase || 'idle';
+    if (phase !== lastPhase || t.updatedAt !== onTikTokState.at) tiktokSeenAt = Date.now();
+    onTikTokState.at = t.updatedAt;
+    if (liveOpen && phase === 'connected' && lastPhase !== 'connected') { clearTimeout(autoCloseTimer); autoCloseTimer = setTimeout(closeLive, 3500); }
+    if (phase !== 'connected') clearTimeout(autoCloseTimer);
+    lastPhase = phase;
+    if (!autoPromptDone && S.mode === 'live' && (phase === 'idle' || phase === 'disconnected' || phase === 'failed')) openLive();
+    renderLiveModal();
+  }
+  setInterval(() => { if (liveOpen && S && S.tiktok.phase === 'retrying') renderLiveModal(); }, 1000);
+
   // ---- Avatars (real TikTok photo, initials circle as backup) -------------
   function hue(str) { let h = 0; str = String(str || '?'); for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0; return h % 360; }
   function initials(name) {
@@ -393,6 +512,27 @@
   let wrongNums = [], wrongTimer = null;
   const tileEls = new Map();      // tile number -> button element (kept between renders so animations play once)
   let renderedStart = null;
+
+  // ---- One-shot tile animations -------------------------------------------------
+  // BUG FIXED HERE: a tile that dropped in (class "drop") or was just fused (class "fresh") kept that class for the whole round.
+  // When the same tile was later marked "wrong", the CSS swapped its animation to the shake; when the red mark was removed the
+  // animation swapped BACK, so the entry animation started again from "invisible" (plus the leftover start delay). The tile
+  // vanished for about a second after every wrong guess. Now the entry classes are removed as soon as the animation is over
+  // (and always before a tile is marked wrong), so an entry animation can never play twice.
+  function settleTile(el) {
+    if (!el || !el._anim) return;
+    el._anim = false; clearTimeout(el._settleT);
+    el.style.animationDelay = '';
+    const wasFresh = el.classList.contains('fresh');
+    el.classList.remove('drop', 'fresh');
+    if (wasFresh) el.classList.add('fresh-done');     // keeps the soft ring around a newly fused tile
+  }
+  function armSettle(el) {
+    if (!el.classList.contains('drop') && !el.classList.contains('fresh')) return;
+    el._anim = true;
+    el.addEventListener('animationend', (e) => { if (e.target === el && (e.animationName === 'tileDrop' || e.animationName === 'fuseIn')) settleTile(el); });
+    el._settleT = setTimeout(() => settleTile(el), 2500);   // safety net (animations off, reduced motion, background tab)
+  }
 
   function mk(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
 
@@ -463,12 +603,14 @@
         el = makeTile(t, fresh); tileEls.set(t.n, el);
         if (!newRound && !t.f) el.classList.add('drop');   // a waiting tile drops into a freed space
         if (merging) el.style.animationDelay = t.f ? '.5s' : '.6s';   // wait until the merging tiles have arrived
-        grid.appendChild(el);
+        grid.appendChild(el); armSettle(el);
       }
       const pos = rank.get(t.n);   // tiles are packed upward: they fill every space the earlier tiles left behind
       el.style.gridColumn = String((pos % (S.cols || 4)) + 1); el.style.gridRow = String(Math.floor(pos / (S.cols || 4)) + 1);
       el.classList.toggle('sel', selected.includes(t.n));
-      el.classList.toggle('wrong', wrongNums.includes(t.n));
+      const isWrong = wrongNums.includes(t.n);
+      if (isWrong) settleTile(el);                       // never let the red mark interrupt (and later replay) an entry animation
+      el.classList.toggle('wrong', isWrong);
       const peeking = S.peeking && t.g !== undefined;
       el.classList.toggle('peek', peeking);
       if (peeking) el.style.setProperty('--gc', groupColor(t.g)); else el.style.removeProperty('--gc');
@@ -562,14 +704,20 @@
 
   // ---- Top bar / status ----------------------------------------------------
   function renderStatus() {
-    const t = S.tiktok, el = $('liveStatusMini');
-    let cls = 'status-idle', txt = '\u25CF ' + (S.mode === 'test' ? 'Test' : S.mode === 'offline' ? 'Offline' : 'Live: waiting');
-    if (t.connected) { cls = 'status-connected'; txt = '\u25CF ' + (S.mode === 'live' ? 'Live \u00B7 @' + (t.uniqueId || '') : 'Connected (chat paused)'); }
-    else if (t.connecting) { cls = 'status-connecting'; txt = '\u25CF Connecting...'; }
-    else if (t.lastError) { cls = 'status-error'; txt = '\u25CF Not connected'; }
-    el.className = 'live-status-mini ' + cls; el.textContent = txt;
-    const ls = $('liveStatus'); ls.className = 'status-line ' + (t.connected ? 'status-connected' : t.connecting ? 'status-connecting' : t.lastError ? 'status-error' : 'status-idle');
-    ls.textContent = t.statusText || 'Not connected.';
+    const t = S.tiktok, el = $('liveStatusMini'), live = S.mode === 'live';
+    const phase = t.phase || (t.connected ? 'connected' : t.connecting ? 'connecting' : t.lastError ? 'failed' : 'idle');
+    let cls = 'status-idle', txt = '\u25CF ' + (S.mode === 'test' ? 'Test' : S.mode === 'offline' ? 'Offline' : 'Live: not connected');
+    if (phase === 'connected') { cls = 'status-connected'; txt = '\u25CF ' + (live ? 'Live \u00B7 @' + (t.uniqueId || '') : 'Connected (chat paused)'); }
+    else if (phase === 'connecting') { cls = 'status-connecting'; txt = '\u25CF Connecting...'; }
+    else if (phase === 'retrying') { cls = 'status-connecting'; txt = '\u25CF Retrying...'; }
+    else if (phase === 'failed') { cls = 'status-error'; txt = '\u25CF Not connected'; }
+    else if (live) { cls = 'status-error'; }
+    el.className = 'live-status-mini ' + cls + (live || phase !== 'idle' ? ' clickable' : ''); el.textContent = txt;
+    el.hidden = !(live || t.connected || t.connecting);   // shown in Live mode (tap it to open the connection window)
+    el.title = 'TikTok connection - tap to open';
+    const ls = $('liveStatus'); ls.className = 'status-line ' + (t.connected ? 'status-connected' : t.connecting ? 'status-connecting' : (phase === 'failed') ? 'status-error' : 'status-idle');
+    ls.textContent = (t.statusText || 'Not connected.') + (t.reason && phase !== 'connected' ? '  \u2014 ' + t.reason : '');
+    renderModeButton(phase);
   }
   function tick() {
     if (!S) return;
@@ -678,7 +826,7 @@
     document.querySelectorAll('.mode-btn').forEach((b) => b.classList.toggle('active', b.dataset.mode === mode));
     document.querySelectorAll('.panel[data-panel]').forEach((p) => { p.hidden = p.dataset.panel !== mode; });
   }
-  document.querySelectorAll('.mode-btn').forEach((b) => b.addEventListener('click', () => { showPanels(b.dataset.mode); socket.emit('host:setMode', { mode: b.dataset.mode }); }));
+  document.querySelectorAll('.mode-btn').forEach((b) => b.addEventListener('click', () => pickMode(b.dataset.mode)));
 
   function renderPacks() {
     const g = $('packGrid'); if (!g || !S) return; g.innerHTML = '';
@@ -743,11 +891,6 @@
   const sendTest = () => { const v = $('testCustomText').value.trim(); if (v) { socket.emit('host:manualInput', { user: 'Test Viewer', text: v }); $('testCustomText').value = ''; } };
   $('testCustomBtn').addEventListener('click', sendTest);
   $('testCustomText').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendTest(); });
-  $('connectLiveBtn').addEventListener('click', () => {
-    const u = $('tiktokUsername').value.trim(); try { localStorage.setItem('fusedle-username', u); } catch (e) { /* ignore */ }
-    socket.emit('tiktok:connect', { uniqueId: u, apiKey: $('tiktokApiKey').value.trim() });
-  });
-  $('disconnectLiveBtn').addEventListener('click', () => socket.emit('tiktok:disconnect'));
 
   // ---- Guess bar (Offline) and Host console ---------------------------------------
   const submitBar = () => { const v = $('offlineGuessInput').value; sendGuess(v); $('offlineGuessInput').value = ''; selected = []; if (S) renderBoard(); };
@@ -774,14 +917,16 @@
   // ---- Socket events ----------------------------------------------------------------
   socket.on('liveConfig', (c) => {
     cfg = c;
-    $('liveKeyHintManual').hidden = !!c.hasDefaultSignApiKey; $('liveKeyHintDefault').hidden = !c.hasDefaultSignApiKey; $('tiktokApiKey').hidden = !!c.hasDefaultSignApiKey;
+    $('liveKeyHintManual').hidden = !!c.hasDefaultSignApiKey; $('liveKeyHintDefault').hidden = !c.hasDefaultSignApiKey; $('liveKeyField').hidden = !!c.hasDefaultSignApiKey;
     if (!$('tiktokUsername').value) $('tiktokUsername').value = c.defaultUsername || localStorage.getItem('fusedle-username') || '';
+    if (!c.hasDefaultSignApiKey && !$('tiktokApiKey').value) $('tiktokApiKey').value = savedKey();
+    renderLiveModal();
     renderPacks();
   });
   socket.on('leaderboard', (d) => { lb = d; renderLists(); });
   socket.on('state', (s) => {
     const first = !S; S = s;
-    renderBoard(); renderStatus(); renderPacks(); syncControls(); showPanelsOnce();
+    renderBoard(); renderStatus(); renderPacks(); syncControls(); showPanelsOnce(); onTikTokState();
     $('playerGuessBar').hidden = s.mode !== 'offline';
     $('rawEventCount').textContent = s.rawEventCount;
     const ev = s.lastEvent; $('lastReceived').textContent = ev && ev.text ? ev.user + ': "' + ev.text + '" \u2192 ' + (ev.read ? 'read as ' + ev.read + ' (' + ev.kind + ')' : ev.kind) : '(none yet)';

@@ -2,6 +2,19 @@
 
 This folder is the complete, finished app. You do not need to edit any code.
 
+> **v7.9 - tiles stay put, mode button, TikTok connection window**
+> - **Tiles no longer disappear after a wrong guess.** A tile that had dropped in or been fused kept its "arrive" animation for the whole round; when the red wrong-guess mark
+>   ended, that animation played again from invisible, so the tile vanished for about a second. The arrive animation now plays once and is switched off.
+> - **New Mode button in the top toolbar** (first button, shows the current mode). Pick **Offline**, **Test** or **Live**. A small dot on it shows the Live connection:
+>   green = connected, amber = connecting, red = not connected.
+> - **Choosing Live opens a floating TikTok connection window by itself.** Type your TikTok username (and your EulerStream key if the server has none), press **Connect**.
+>   The window shows the result clearly: **Connected** (green, with the room ID and a comment counter), **Connecting**, **Retrying** (with a countdown), or **Failed** (red) with the
+>   reason and what to do: not live yet, username not found, key rejected, rate limit, network problem, timed out. Tap the status line on the board any time to reopen it.
+>   If the page opens in Live mode and nothing is connected, the window opens by itself. If the server connects on start (both Render variables set) it stays out of the way.
+> - **Connector fixes behind it:** the quick retries after a failed first attempt never actually ran (the status stayed on "Retry 1 of 3" forever), an empty username could crash
+>   the connector and block every later Connect, and a Connect that never answered stayed on "Connecting..." forever (now a clear timeout after 25 seconds).
+>   A wrong key or an unknown username now stops with a clear message instead of retrying again and again.
+
 > **v7.8 - host customisation (new Settings boxes)**
 > - **Words inside fused tiles can be hidden.** Settings > *Tile & display options* > *Tile text* has one switch for **Level 1** tiles (e.g. "Car") and one for
 >   **Level 2** tiles (e.g. "Land Transport"). Off (the default) = only the name is shown and it sits in the exact centre of the tile. On = the small
@@ -87,7 +100,8 @@ Upload every file from this folder again on top of the old ones (same names, sam
 Render updates the game by itself in a minute or two.
 
 ## Using it
-- **Settings (gear):** theme (8 looks), Tile & display options, Game rules, mode (**Offline**, **Test**, **Live**), TikTok connect, Puzzle Pack,
+- **Mode button (toolbar):** switch **Offline**, **Test** or **Live**; Live opens the TikTok connection window.
+- **Settings (gear):** theme (8 looks), Tile & display options, Game rules, mode (**Offline**, **Test**, **Live**), TikTok connection window, Puzzle Pack,
   Hints and Reveals, Reset Scores, Auto Next Game, Timing, and Save & Apply as Default.
 - **Modes:** *Offline* = you play alone with the Player Guess Bar (tap 4 tiles or type them). *Test* = fake
   viewers (turn on **Auto-Play Bots**) so you can rehearse. *Live* = real TikTok chat counts.

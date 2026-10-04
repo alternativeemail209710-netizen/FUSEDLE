@@ -75,9 +75,12 @@ const state = {
   startedAt: 0, solvedAt: 0,
   scores: {}, allTimeScores: {}, rawEventCount: 0, lastEvent: null,
   bots: false,
-  tiktok: { connected: false, connecting: false, statusText: 'Not connected.', lastError: null, uniqueId: '' },
+  // phase: idle | connecting | retrying | connected | failed | disconnected.  code/reason/hint/detail explain a failure in plain words
+  // (see classifyError in tiktok-connector.js); the connection window in the browser shows them.
+  tiktok: { connected: false, connecting: false, statusText: 'Not connected.', lastError: null, uniqueId: '',
+    phase: 'idle', username: '', code: '', reason: '', hint: '', detail: '', attempt: 0, retryInSeconds: 0, roomId: '', updatedAt: 0 },
 };
-let autoNextTimer = null, peekTimer = null, botTimer = null, currentTikTokUser = '', lastConnectorError = '';
+let autoNextTimer = null, peekTimer = null, botTimer = null, currentTikTokUser = '';
 const avatarCache = {};
 const lastGuessAt = {};   // uniqueId -> time of the last counted guess (for the guess cooldown)
 
@@ -456,15 +459,21 @@ function setMode(mode) {
 // ---------------------------------------------------------------------------
 // TikTok LIVE
 // ---------------------------------------------------------------------------
-function setTikTokStatus(status, message) {
+function setTikTokStatus(status, message, info) {
   const t = state.tiktok;
+  info = info || {};
   t.statusText = message || '';
-  if (status === 'connected') { lastConnectorError = ''; t.connected = true; t.connecting = false; t.lastError = null; t.uniqueId = currentTikTokUser; }
-  else if (status === 'connecting' || status === 'retrying') {
-    if (status === 'retrying' && lastConnectorError) t.statusText += '  [Last problem: ' + lastConnectorError + ']';
-    t.connected = false; t.connecting = true; t.lastError = null;
-  } else if (status === 'error') { lastConnectorError = String(message || '').slice(0, 220); t.connected = false; t.connecting = false; t.lastError = message || 'Connection error.'; }
-  else { if (status === 'disconnected' && /^Disconnected\.$/.test(message || '')) lastConnectorError = ''; t.connected = false; t.connecting = false; t.lastError = null; }
+  t.phase = status === 'error' ? 'failed' : (['connecting', 'retrying', 'connected', 'disconnected'].includes(status) ? status : 'idle');
+  t.username = currentTikTokUser || t.username || '';
+  t.code = info.code || ''; t.reason = info.reason || ''; t.hint = info.hint || ''; t.detail = info.detail || '';
+  t.attempt = Number(info.attempt) || 0; t.retryInSeconds = Number(info.retryInSeconds) || 0;
+  t.roomId = status === 'connected' ? String(info.roomId || '') : '';
+  t.updatedAt = Date.now();
+  if (status === 'connected') { t.connected = true; t.connecting = false; t.lastError = null; t.uniqueId = currentTikTokUser; }
+  else if (status === 'connecting' || status === 'retrying') { t.connected = false; t.connecting = true; t.lastError = null; }
+  else if (status === 'error') { t.connected = false; t.connecting = false; t.lastError = t.reason || message || 'Connection error.'; }
+  else { t.connected = false; t.connecting = false; t.lastError = null; }
+  console.log('[TikTok status] ' + status + (info.code ? ' (' + info.code + ')' : '') + ': ' + (message || ''));
   broadcast();
 }
 const tiktokConnector = createTikTokConnector(
@@ -554,8 +563,12 @@ io.on('connection', (socket) => {
     const username = String(p.uniqueId || '').replace('@', '').trim() || DEFAULT_TIKTOK_USERNAME;
     const apiKey = String(p.apiKey || '').trim() || DEFAULT_SIGN_API_KEY;
     currentTikTokUser = username;
+    state.tiktok.username = username;
     if (state.mode !== 'live') setMode('live');
-    tiktokConnector.connect(username, apiKey);
+    tiktokConnector.connect(username, apiKey).catch((err) => {   // safety net: the window must never be left on "Connecting..."
+      console.error('[TikTok] connect() threw:', err);
+      setTikTokStatus('error', 'Connection failed: ' + (err && err.message ? err.message : err), { code: 'UNKNOWN', reason: 'Unexpected error: ' + (err && err.message ? err.message : err), hint: 'Try again. The full error is in the server log.' });
+    });
   }, true));
   socket.on('tiktok:disconnect', safe(() => tiktokConnector.disconnect(), true));
 });

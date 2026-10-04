@@ -12,6 +12,17 @@
   <header class="top-bar">
     <h1>FUSEDLE <span class="accent">Live</span></h1>
     <div class="top-bar-actions">
+      <div class="toolbar-dropdown" id="modeDropdown">
+        <button type="button" id="modeDropdownBtn" class="icon-btn toolbar-dropdown-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Mode" title="Mode: tap to change">
+          <span id="modeDropdownIcon">&#129514;</span>
+        </button>
+        <ul id="modeDropdownMenu" class="toolbar-dropdown-menu" role="listbox" aria-label="Game mode" hidden>
+          <li class="dd-head" role="presentation">&#127918; Game mode</li>
+          <li role="option" data-value="offline" aria-selected="false"><span class="dd-emoji">&#127918;</span><span class="dd-label">Offline <small>play alone</small></span></li>
+          <li role="option" data-value="test" aria-selected="false"><span class="dd-emoji">&#129514;</span><span class="dd-label">Test <small>fake viewers</small></span></li>
+          <li role="option" data-value="live" aria-selected="false"><span class="dd-emoji">&#128225;</span><span class="dd-label">Live <small>TikTok chat</small></span></li>
+        </ul>
+      </div>
       <button id="newGameTopBtn" class="icon-btn" aria-label="New Game" title="New Game">&#8635;</button>
       <button id="leaderboardTopBtn" class="icon-btn" aria-label="Leaderboard" title="Leaderboard">&#127942;</button>
       <button id="peekTopBtn" class="icon-btn" aria-label="Peek: tint tiles by group" title="Peek: tint tiles by group">&#128065;</button>
@@ -169,6 +180,49 @@
       <ol id="leaderboardModalRoundList" class="round-end-list"></ol>
       <ol id="leaderboardModalAllTimeList" class="round-end-list capped-20" hidden></ol>
       <ol id="leaderboardModalTeamsList" class="round-end-list team-standings-list" hidden></ol>
+    </div>
+  </div>
+
+  <!-- TikTok connection window: opens by itself when Live mode is chosen. Username, key, and a clear success / failure status with reasons. -->
+  <div id="liveOverlay" class="live-overlay" hidden>
+    <div class="live-modal" role="dialog" aria-modal="true" aria-labelledby="liveModalTitle">
+      <div class="live-modal-head">
+        <h2 id="liveModalTitle">&#128225; TikTok LIVE connection</h2>
+        <button id="liveModalCloseBtn" class="icon-btn" type="button" aria-label="Close">&#10005;</button>
+      </div>
+      <p class="hint live-modal-intro">Enter your TikTok username to connect the game to your LIVE chat. Start your LIVE first, or connect now and the game keeps checking until you go live.</p>
+
+      <label class="live-field">
+        <span class="live-field-label">TikTok username</span>
+        <span class="live-at"><b>@</b><input id="tiktokUsername" type="text" placeholder="yourname" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="text" maxlength="40"></span>
+      </label>
+      <label class="live-field" id="liveKeyField">
+        <span class="live-field-label">EulerStream Sign API Key</span>
+        <input id="tiktokApiKey" type="password" placeholder="Paste your key" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <small class="hint" id="liveKeyHintManual">Free key from eulerstream.com. Live Mode will not connect without it.</small>
+        <small class="hint" id="liveKeyHintDefault" hidden>A Sign API Key is already set on the server.</small>
+      </label>
+      <label class="live-remember"><input type="checkbox" id="liveRemember" checked> Remember on this device</label>
+
+      <div id="liveStatusBox" class="live-status-box phase-idle" role="status" aria-live="polite">
+        <div id="liveStatusIcon" class="live-status-icon" aria-hidden="true">&#9898;</div>
+        <div class="live-status-body">
+          <div id="liveStatusTitle" class="live-status-title">Not connected</div>
+          <div id="liveStatusReason" class="live-status-reason" hidden></div>
+          <div id="liveStatusHint" class="live-status-hint" hidden></div>
+          <div id="liveStatusMeta" class="live-status-meta" hidden></div>
+        </div>
+      </div>
+      <details id="liveStatusDetails" class="live-details" hidden>
+        <summary>Technical details</summary>
+        <pre id="liveStatusDetailText"></pre>
+      </details>
+
+      <div class="live-modal-actions">
+        <button id="connectLiveBtn" class="btn btn-primary" type="button">Connect</button>
+        <button id="disconnectLiveBtn" class="btn btn-danger" type="button" hidden>Disconnect</button>
+        <button id="liveModalDoneBtn" class="btn btn-secondary" type="button">Close</button>
+      </div>
     </div>
   </div>
 
@@ -382,15 +436,9 @@
 
       <section class="panel live-panel" data-panel="live" hidden>
         <h2>Live Mode (TikTok LIVE)</h2>
-        <p class="hint" id="liveKeyHintManual">Requires a free Sign API Key from eulerstream.com. Live Mode will not connect without it.</p>
-        <p class="hint" id="liveKeyHintDefault" hidden>A Sign API Key is already set on the server - just enter your TikTok username and tap Connect.</p>
+        <p class="hint">Log in and connect to your TikTok LIVE in the connection window. It opens by itself when you choose Live in the mode button.</p>
         <div class="field-row">
-          <input id="tiktokUsername" type="text" placeholder="TikTok username (no @)" autocomplete="off">
-          <input id="tiktokApiKey" type="password" placeholder="EulerStream Sign API Key" autocomplete="off">
-        </div>
-        <div class="field-row">
-          <button id="connectLiveBtn" class="btn btn-primary">Connect to TikTok LIVE</button>
-          <button id="disconnectLiveBtn" class="btn btn-danger">Disconnect</button>
+          <button id="openLiveModalBtn" class="btn btn-primary" type="button">Open TikTok connection window</button>
         </div>
         <div id="liveStatus" class="status-line status-idle">Not connected.</div>
       </section>

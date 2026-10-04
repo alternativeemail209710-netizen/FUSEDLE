@@ -1219,6 +1219,8 @@ html, body {
 .tile.fused.peek{box-shadow:inset 0 -6px 0 var(--gc)}
 /* a brand-new fused tile pops in once (gentle scale only - no flashing) */
 .tile.fresh{animation:fuseIn .7s cubic-bezier(.2,.9,.3,1.2) both;outline:3px solid color-mix(in srgb,var(--lv) 70%,#fff);outline-offset:1px;z-index:1}
+/* after the pop-in is over the script swaps .fresh for .fresh-done: same ring, but NO animation that could ever restart */
+.tile.fresh-done{outline:3px solid color-mix(in srgb,var(--lv) 70%,#fff);outline-offset:1px;z-index:1}
 @keyframes fuseIn{0%{transform:scale(.35);opacity:0}60%{transform:scale(1.1);opacity:1}100%{transform:scale(1)}}
 
 /* Finished group: one compact card (category, round photo + name of the viewer, the 4 latest words).
@@ -1683,7 +1685,7 @@ html.nostreak .streak-badge { display: none !important; }
 html.nocardwords .solved-words { display: none !important; }
 html.nocardplayer .solved-by { display: none !important; }
 html.nocardavatar .solved-card .avatar-circle, html.nocardavatar .solved-card .solved-host { display: none !important; }
-html.noanim .tile, html.noanim .solved-card, html.noanim .tile.fresh, html.noanim .tile.drop, html.noanim .tile.wrong, html.noanim .guess-toast { animation: none !important; transition: none !important; }
+html.noanim .tile, html.noanim .solved-card, html.noanim .tile.fresh, html.noanim .tile.fresh-done, html.noanim .tile.drop, html.noanim .tile.wrong, html.noanim .guess-toast { animation: none !important; transition: none !important; }
 
 /* --- settings: option groups, rows, sample tiles --- */
 .opt-wrap { border: 2px dashed var(--border); border-radius: 12px; padding: 10px 12px; margin: 0 0 12px; background: var(--bg-panel); }
@@ -1703,3 +1705,87 @@ html.noanim .tile, html.noanim .solved-card, html.noanim .tile.fresh, html.noani
 .rules-box .auto-next-toggle { margin-top: 8px; }
 /* the three sample tiles in Settings are wider than board tiles, so give them their own text width */
 html .tile-grid.tile-preview, html.ctr .tile-grid.tile-preview { --avail: calc((min(100vw, 520px) - 32px) / 3 - 45px); }
+
+
+/* =====================================================================
+   PART 20 - MODE BUTTON + TIKTOK CONNECTION WINDOW
+   ===================================================================== */
+#modeDropdownBtn { position: relative; }
+#modeDropdownBtn #modeDropdownIcon { position: relative; z-index: 1; }
+#modeDropdownBtn[data-dot]:not([data-dot=""])::after {
+  content: ""; position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; border-radius: 50%;
+  border: 1.5px solid var(--bg-panel); z-index: 2; background: var(--danger);
+}
+#modeDropdownBtn[data-dot="ok"]::after { background: var(--success); }
+#modeDropdownBtn[data-dot="wait"]::after { background: var(--warning); }
+#modeDropdownBtn[data-dot="bad"]::after { background: var(--danger); }
+.toolbar-dropdown-menu .dd-emoji { flex: 0 0 auto; width: 22px; text-align: center; font-size: 16px; }
+.live-status-mini.clickable { cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; max-width: 46%; overflow: hidden; text-overflow: ellipsis; }
+
+.live-overlay {
+  position: fixed; inset: 0; z-index: 120; display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.55); padding: 14px; box-sizing: border-box; overflow-y: auto;
+}
+.live-overlay[hidden] { display: none; }
+.live-modal {
+  width: 100%; max-width: 400px; max-height: calc(100% - 4px); overflow-y: auto; box-sizing: border-box;
+  background: var(--bg-panel); color: var(--text); border: 2px dashed var(--border); border-radius: 16px; padding: 14px 14px 16px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.4); animation: roundEndPop .2s ease;
+}
+.live-modal-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.live-modal-head h2 { margin: 0; font-size: 16px; }
+.live-modal-intro { margin: 0 0 10px; }
+.live-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.live-field[hidden] { display: none; }
+.live-field-label { font-size: 12px; font-weight: 800; color: var(--text-dim); letter-spacing: .02em; }
+.live-field input[type="text"], .live-field input[type="password"] {
+  width: 100%; box-sizing: border-box; min-width: 0; padding: 10px 12px; font-size: 16px;   /* 16px stops iPhones zooming in */
+  border: 2px dashed var(--border); border-radius: 10px; background: var(--bg-input, var(--bg-panel)); color: var(--text);
+}
+.live-field input:focus { border-style: solid; outline: none; }
+.live-at { display: flex; align-items: center; gap: 6px; }
+.live-at b { font-size: 16px; color: var(--text-dim); }
+.live-at input { flex: 1 1 auto; }
+.live-field small.hint { margin: 0; }
+.live-remember { display: flex; align-items: center; gap: 8px; font-size: 13px; margin: 0 0 10px; cursor: pointer; }
+.live-remember input { width: 18px; height: 18px; }
+
+.live-status-box {
+  display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; margin: 4px 0 8px;
+  border: 2px solid var(--border); background: color-mix(in srgb, var(--text-dim) 10%, var(--bg-panel));
+}
+.live-status-icon { flex: 0 0 auto; font-size: 22px; line-height: 1.1; }
+.live-status-body { min-width: 0; flex: 1 1 auto; }
+.live-status-title { font-weight: 900; font-size: 15px; line-height: 1.25; overflow-wrap: anywhere; }
+.live-status-reason { margin-top: 3px; font-size: 13.5px; font-weight: 700; line-height: 1.35; overflow-wrap: anywhere; }
+.live-status-hint { margin-top: 4px; font-size: 12.5px; line-height: 1.35; color: var(--text-dim); overflow-wrap: anywhere; }
+.live-status-meta { margin-top: 5px; font-size: 11.5px; color: var(--text-dim); overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.live-status-reason[hidden], .live-status-hint[hidden], .live-status-meta[hidden] { display: none; }
+.live-status-box.phase-connected { border-color: var(--success); background: color-mix(in srgb, var(--success) 14%, var(--bg-panel)); }
+.live-status-box.phase-connected .live-status-title { color: var(--success); }
+.live-status-box.phase-connecting, .live-status-box.phase-retrying { border-color: var(--warning); background: color-mix(in srgb, var(--warning) 14%, var(--bg-panel)); }
+.live-status-box.phase-connecting .live-status-icon { animation: liveSpin 1.4s linear infinite; display: inline-block; }
+.live-status-box.phase-failed, .live-status-box.phase-server, .live-status-box.phase-input { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 13%, var(--bg-panel)); }
+.live-status-box.phase-failed .live-status-title, .live-status-box.phase-server .live-status-title, .live-status-box.phase-input .live-status-title { color: var(--danger); }
+@keyframes liveSpin { to { transform: rotate(360deg); } }
+html.noanim .live-status-box .live-status-icon, html.noanim .live-modal { animation: none; }
+@media (prefers-reduced-motion: reduce) { .live-status-box.phase-connecting .live-status-icon, .live-modal { animation: none; } }
+.live-details { margin: 0 0 8px; font-size: 12px; }
+.live-details[hidden] { display: none; }
+.live-details summary { cursor: pointer; color: var(--text-dim); font-weight: 700; }
+.live-details pre { margin: 6px 0 0; padding: 8px; border-radius: 8px; background: color-mix(in srgb, var(--text-dim) 12%, var(--bg-panel)); white-space: pre-wrap; overflow-wrap: anywhere; font-size: 11.5px; max-height: 120px; overflow: auto; }
+.live-modal-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.live-modal-actions .btn { flex: 1 1 auto; min-height: 42px; }
+.live-modal-actions .btn[hidden] { display: none; }
+.live-modal-actions .btn:disabled { opacity: .6; cursor: default; }
+
+/* The toolbar got one more button (mode). Shrink the buttons a little on phones so every button, including Settings, still fits on one row without sideways scrolling. */
+@media (max-width: 480px) {
+  .top-bar-actions { gap: 3px; }
+  .top-bar-actions .icon-btn { width: 26px; height: 26px; font-size: 12.5px; }
+}
+@media (max-width: 380px) {
+  .top-bar-actions { gap: 2px; }
+  .top-bar-actions .icon-btn { width: 25px; height: 25px; font-size: 12px; }
+  .top-bar h1 { font-size: 12.5px; }
+}

@@ -1,4 +1,9 @@
 'use strict';
+// The connector reads the same environment variables as server.js. (Before, connect() referred to these two names
+// without ever defining them here, so a connect call with an empty username/key crashed and left the connector stuck.)
+const DEFAULT_TIKTOK_USERNAME = String(process.env.TIKTOK_USERNAME || '').replace('@', '').trim();
+const DEFAULT_SIGN_API_KEY = String(process.env.EULERSTREAM_SIGN_API_KEY || process.env.TIKTOK_SIGN_API_KEY || '').trim();
+
 function createTikTokConnector(onChat, onStatus, onRawEvent) {
   var TikTokLiveConnection = null;
   var WebcastEvent = null;
@@ -24,6 +29,9 @@ function createTikTokConnector(onChat, onStatus, onRawEvent) {
   var watchdogTimer = null;
   var reconnectAttempt = 0;
   var isConnecting = false; // guards against two connect() calls racing each other
+  var attemptSeq = 0;        // bumped by every new connect() and by disconnect(); an old attempt that sees a newer number stops quietly
+  var pendingConnection = null; // the connection that is being opened right now (chat that arrives a moment before connect() resolves still counts)
+  var CONNECT_TIMEOUT_MS = 25000; // a connect() that never answers becomes a clear "timed out" failure instead of "Connecting..." forever
 
   var WATCHDOG_CHECK_MS = 20000;    // how often we check for a stalled connection
   var WATCHDOG_STALE_MS = 120000;   // no data AT ALL for this long while "connected" = assume it's dead
@@ -92,6 +100,69 @@ function createTikTokConnector(onChat, onStatus, onRawEvent) {
     console.error("[TikTok connector] " + context + ": " + info.message);
     if (info.stack) console.error(info.stack);
     return info;
+  }
+
+  // Every status the game shows goes through here. The 3rd argument carries the plain-language reason + advice for the
+  // connection window: { code, reason, hint, detail, attempt, retryInSeconds, roomId }.
+  function emit(status, message, info) {
+    try { onStatus(status, message, info || null); } catch (e) { console.error("[TikTok connector] status handler error - swallowed", e); }
+  }
+
+  // Turns a raw library error into something a host can act on.
+  // fatal = retrying cannot help (wrong key / wrong username), so the connector stops instead of hammering EulerStream.
+  function classifyError(err, username) {
+    var name = (err && (err.name || (err.constructor && err.constructor.name))) || "";
+    var msg = String((err && err.message) || err || "");
+    var status = err && ((err.response && err.response.status) || err.status || err.statusCode);
+    var text = name + " " + msg;
+    var who = username ? "@" + username : "This account";
+    var detail = (name ? name + ": " : "") + msg.slice(0, 300);
+    if (err && err.code === "CONNECT_TIMEOUT") {
+      return { code: "TIMEOUT", fatal: false, detail: detail,
+        reason: "TikTok did not answer within " + Math.round(CONNECT_TIMEOUT_MS / 1000) + " seconds.",
+        hint: "Usually a slow or blocked connection, or TikTok / EulerStream is busy. The game will try again by itself." };
+    }
+    if (/UserOffline|not (currently )?live|isn'?t (currently )?live|is offline|live (has )?ended|hosting a live|no (active )?(live|room)/i.test(text)) {
+      return { code: "USER_OFFLINE", fatal: false, detail: detail,
+        reason: who + " is not LIVE right now.",
+        hint: "Start your TikTok LIVE first. The game keeps checking and connects by itself the moment you go live." };
+    }
+    if (/InvalidUniqueId|user ?not ?found|unable to find (the )?user|could not find (the )?user|no such user|invalid (unique ?id|user ?name)/i.test(text)) {
+      return { code: "USER_NOT_FOUND", fatal: true, detail: detail,
+        reason: "TikTok could not find a user named @" + (username || "?") + ".",
+        hint: "Check the spelling of your TikTok username (without the @) and try again." };
+    }
+    if (/rate ?limit|too many requests|429/i.test(text) || status === 429) {
+      return { code: "RATE_LIMIT", fatal: false, detail: detail,
+        reason: "EulerStream says too many requests were made (rate limit).",
+        hint: "Wait a minute. The game slows down and retries by itself. Avoid pressing Connect repeatedly; a free key has a small hourly allowance." };
+    }
+    if (status === 401 || status === 403 || /api ?key|apikey|unauthori[sz]ed|forbidden|invalid (key|token)|not authenticated|authentication/i.test(text)) {
+      return { code: "BAD_KEY", fatal: true, detail: detail,
+        reason: "EulerStream rejected the Sign API Key" + (status ? " (HTTP " + status + ")" : "") + ".",
+        hint: "Copy the key again from eulerstream.com (no spaces) and paste it in the connection window, or fix EULERSTREAM_SIGN_API_KEY on the server." };
+    }
+    if (/ENOTFOUND|ECONNREFUSED|ECONNRESET|EAI_AGAIN|ETIMEDOUT|ENETUNREACH|EHOSTUNREACH|network|fetch failed|socket hang up|getaddrinfo/i.test(text)) {
+      return { code: "NETWORK", fatal: false, detail: detail,
+        reason: "The server could not reach TikTok / EulerStream (network problem).",
+        hint: "Check that the server has internet access. The game will try again by itself." };
+    }
+    if (/NoWSUpgrade|websocket upgrade|upgrade (failed|error)|websocket/i.test(text)) {
+      return { code: "WS_REFUSED", fatal: false, detail: detail,
+        reason: "TikTok refused the live chat connection.",
+        hint: "Make sure you are LIVE and the Sign API Key is valid. If it keeps happening, wait a few minutes and try again." };
+    }
+    return { code: "UNKNOWN", fatal: false, detail: detail,
+      reason: "Could not connect: " + (msg.slice(0, 160) || "unknown error") + ".",
+      hint: "Check the username and Sign API Key, make sure you are LIVE, then try again. The full error is in the server log." };
+  }
+
+  function withTimeout(promise, ms) {
+    var timer;
+    var timeout = new Promise(function (_, reject) {
+      timer = setTimeout(function () { var e = new Error("Timed out waiting for TikTok to answer."); e.code = "CONNECT_TIMEOUT"; reject(e); }, ms);
+    });
+    return Promise.race([promise, timeout]).then(function (v) { clearTimeout(timer); return v; }, function (e) { clearTimeout(timer); throw e; });
   }
 
   async function loadLibrary() {
@@ -345,6 +416,7 @@ function createTikTokConnector(onChat, onStatus, onRawEvent) {
     var chatAliases = collectChatAliases();
     chatAliases.forEach(function (chatEventName) {
       connection.on(chatEventName, function (data) {
+        if (connection !== activeConnection && connection !== pendingConnection) return; // an old, already-closed connection
         // See "FAILSAFE: message de-duplication by a real ID" above for why
         // this replaced the old WeakSet-by-object-identity check.
         var msgId = extractMessageId(data);
@@ -428,21 +500,27 @@ function createTikTokConnector(onChat, onStatus, onRawEvent) {
     });
 
     connection.on("disconnected", function (info) {
-      try {
-        var reasonSuffix = info && info.reason ? " (" + info.reason + ")" : "";
-        console.log("[TikTok connector] disconnected event" + reasonSuffix);
-        onStatus("disconnected", "Disconnected from TikTok LIVE." + reasonSuffix);
-      } catch (e) {}
+      if (connection !== activeConnection) return; // a connection we already replaced or closed on purpose
+      activeConnection = null;
+      stopWatchdog();
+      var reasonSuffix = info && info.reason ? " (" + info.reason + ")" : "";
+      console.log("[TikTok connector] disconnected event" + reasonSuffix);
+      emit("disconnected", "Disconnected from TikTok LIVE." + reasonSuffix, { code: "DISCONNECTED", reason: "The connection to TikTok LIVE was closed" + reasonSuffix + ".", hint: "The game is reconnecting by itself." });
       scheduleReconnect("the connection was closed");
     });
     connection.on("streamEnd", function () {
-      try { onStatus("disconnected", "The TikTok LIVE stream ended. Watching for it to start again..."); } catch (e) {}
+      if (connection !== activeConnection) return;
+      activeConnection = null;
+      stopWatchdog();
+      emit("disconnected", "The TikTok LIVE stream ended. Watching for it to start again...", { code: "STREAM_ENDED", reason: "Your TikTok LIVE has ended.", hint: "Start a new LIVE and the game reconnects by itself." });
       scheduleReconnect("the stream ended");
     });
     connection.on("error", function (err) {
+      if (connection !== activeConnection) return; // errors while still connecting are handled by connect() itself
       var info = reportFailure("runtime error event", err);
-      try { onStatus("error", "Runtime error: " + info.message); } catch (e) {}
-      scheduleReconnect(info.isRateLimit ? "EulerStream rate-limited the request" : "a runtime error", info);
+      var cls = classifyError(err, lastUsername);
+      emit("error", "Runtime error: " + info.message, cls);
+      scheduleReconnect(info.isRateLimit ? "EulerStream rate-limited the request" : "a runtime error", { isRateLimit: info.isRateLimit, retryAfterMs: info.retryAfterMs, cls: cls });
     });
   }
 
@@ -466,7 +544,7 @@ function createTikTokConnector(onChat, onStatus, onRawEvent) {
       var quietForMs = Date.now() - lastActivityAt;
       if (quietForMs > WATCHDOG_STALE_MS) {
         console.error("[TikTok watchdog] no data at all for " + Math.round(quietForMs / 1000) + "s while marked connected - forcing a reconnect");
-        try { onStatus("retrying", "Connection went quiet - reconnecting..."); } catch (e) {}
+        emit("retrying", "Connection went quiet - reconnecting...", { code: "QUIET", reason: "No data has arrived from TikTok for a while.", hint: "Reconnecting by itself." });
         try { activeConnection.disconnect(); } catch (e) {}
         activeConnection = null;
         stopWatchdog();
@@ -490,24 +568,20 @@ function createTikTokConnector(onChat, onStatus, onRawEvent) {
     cancelReconnectTimer();
     reconnectAttempt++;
     var delayMs = Math.min(RECONNECT_BASE_DELAY_MS * reconnectAttempt, RECONNECT_MAX_DELAY_MS);
+    var cls = errorInfo && errorInfo.cls ? errorInfo.cls : null;
 
-    // FAILSAFE: a rate-limit response means "you are asking too often, slow
-    // down" - retrying on the same short linear schedule as a normal
-    // dropped connection just re-triggers the same limit and can spin
-    // forever (this was the actual cause of the incident this was written
-    // after: a library bug turned 429s into opaque errors, and the old
-    // schedule kept re-hitting the limit every few seconds). If the
-    // provider told us how long to wait, honor that exactly; otherwise use
-    // a much longer fixed cooldown for rate limits specifically.
+    // A rate-limit means "slow down" - honour the wait the provider asked for, otherwise use a long cooldown.
     if (errorInfo && errorInfo.isRateLimit) {
       delayMs = errorInfo.retryAfterMs && errorInfo.retryAfterMs > 0
-        ? errorInfo.retryAfterMs + 1000 // small buffer past what the server asked for
+        ? errorInfo.retryAfterMs + 1000
         : Math.max(RATE_LIMIT_DEFAULT_COOLDOWN_MS, delayMs);
+    } else if (cls && cls.code === "USER_OFFLINE") {
+      delayMs = Math.max(delayMs, 10000); // "not live yet": no need to ask more often than every ~10 s
     }
 
-    try {
-      onStatus("retrying", "Lost connection (" + reasonPhrase + "). Reconnecting in " + Math.round(delayMs / 1000) + "s...");
-    } catch (e) {}
+    var secs = Math.round(delayMs / 1000);
+    var info = Object.assign({}, cls || { code: "RETRY", reason: "Lost connection (" + reasonPhrase + ").", hint: "Reconnecting by itself." }, { attempt: reconnectAttempt, retryInSeconds: secs });
+    emit("retrying", "Not connected (" + reasonPhrase + "). Trying again in " + secs + "s (attempt " + reconnectAttempt + ")...", info);
     reconnectTimer = setTimeout(function () {
       reconnectTimer = null;
       if (!desiredConnected) return;
@@ -515,101 +589,117 @@ function createTikTokConnector(onChat, onStatus, onRawEvent) {
     }, delayMs);
   }
 
-  async function connect(username, signApiKey, isAutoReconnect) {
-    // FAILSAFE: guard against overlapping connect() calls. Without this, a
-    // host double-clicking Connect, or a manual click landing at the same
-    // moment as a scheduled auto-reconnect, could open two TikTokLiveConnection
-    // sockets at once - which burns twice the EulerStream sign requests for
-    // one game and makes rate-limit errors (see below) more likely, not less.
+  async function connect(username, signApiKey, isAutoReconnect, fromRetry) {
+    // Guard against overlapping connect() calls (double click, or a click landing on a scheduled reconnect).
     if (isConnecting) {
       console.warn("[TikTok connector] connect() called while a connection attempt was already in progress - ignoring the extra call.");
       return;
     }
-    isConnecting = true;
-
-    username = username || lastUsername || DEFAULT_TIKTOK_USERNAME;
-    signApiKey = signApiKey || lastSignApiKey || DEFAULT_SIGN_API_KEY;
+    username = String(username || lastUsername || DEFAULT_TIKTOK_USERNAME || "").replace(/^@/, "").trim();
+    signApiKey = String(signApiKey || lastSignApiKey || DEFAULT_SIGN_API_KEY || "").trim();
     lastUsername = username;
     lastSignApiKey = signApiKey;
-    desiredConnected = true;
     cancelReconnectTimer();
     stopWatchdog();
+    if (!isAutoReconnect && !fromRetry) { retryCount = 0; reconnectAttempt = 0; }
+    var mySeq = ++attemptSeq;
     if (activeConnection) {
-      try { activeConnection.disconnect(); } catch (e) {}
-      activeConnection = null;
+      var old = activeConnection; activeConnection = null;
+      try { old.disconnect(); } catch (e) {}
     }
 
-    if (!signApiKey) {
-      isConnecting = false;
-      onStatus("error", "Missing Sign API Key. Get a free one at eulerstream.com and paste it in above, or set EULERSTREAM_SIGN_API_KEY in the environment.");
-      return;
-    }
+    // Problems that no amount of retrying can fix are reported straight away, in plain words.
     if (!username) {
-      isConnecting = false;
-      onStatus("error", "Missing TikTok username.");
+      desiredConnected = false;
+      emit("error", "Missing TikTok username.", { code: "NO_USER", reason: "No TikTok username was entered.", hint: "Type your TikTok username (the one after the @) and press Connect." });
       return;
     }
+    if (!/^[A-Za-z0-9._]{2,24}$/.test(username)) {
+      desiredConnected = false;
+      emit("error", "That does not look like a TikTok username.", { code: "BAD_USER", reason: "\"" + username.slice(0, 40) + "\" is not a valid TikTok username.", hint: "Use only letters, numbers, dots and underscores, without the @ and without spaces." });
+      return;
+    }
+    if (!signApiKey) {
+      desiredConnected = false;
+      emit("error", "Missing Sign API Key.", { code: "NO_KEY", reason: "No EulerStream Sign API Key was provided.", hint: "Get a free key at eulerstream.com and paste it in the connection window, or set EULERSTREAM_SIGN_API_KEY on the server." });
+      return;
+    }
+
+    desiredConnected = true;
+    isConnecting = true;
+    var connection = null, failure = null;
     try {
-      onStatus("connecting", isAutoReconnect ? "Reconnecting to @" + username + " ..." : "Loading TikTok connector library...");
+      emit("connecting", isAutoReconnect ? "Reconnecting to @" + username + " ..." : "Loading TikTok connector library...", { code: "CONNECTING", reason: "", hint: "", attempt: reconnectAttempt || retryCount || 0 });
       await loadLibrary();
+      if (mySeq !== attemptSeq) return;
       if (SignConfig) SignConfig.apiKey = signApiKey; // covers versions that only read the global config
-      onStatus("connecting", "Connecting to @" + username + " ...");
-      var connection = new TikTokLiveConnection(username, { signApiKey: signApiKey });
+      emit("connecting", "Connecting to @" + username + " ...", { code: "CONNECTING", reason: "", hint: "", attempt: reconnectAttempt || retryCount || 0 });
+      connection = new TikTokLiveConnection(username, { signApiKey: signApiKey });
+      pendingConnection = connection;
       wireEvents(connection);
-      var result = await connection.connect();
+      var result = await withTimeout(connection.connect(), CONNECT_TIMEOUT_MS);
+      if (mySeq !== attemptSeq || !desiredConnected) {   // the host pressed Disconnect (or Connect again) while we were waiting
+        try { connection.disconnect(); } catch (e) {}
+        return;
+      }
       activeConnection = connection;
       retryCount = 0;
       reconnectAttempt = 0;
       markActivity();
       startWatchdog();
-      var roomId = result && result.roomId ? result.roomId : "";
-      onStatus("connected", "Connected! Room ID: " + roomId);
+      var roomId = result && result.roomId ? String(result.roomId) : "";
+      emit("connected", "Connected! Room ID: " + roomId, { code: "CONNECTED", reason: "", hint: "", roomId: roomId });
     } catch (err) {
-      var info = reportFailure("connect() failed for @" + username, err);
-      onStatus("error", "Connection failed: " + info.message);
-      if (isAutoReconnect) {
-        scheduleReconnect("the reconnect attempt failed", info);
-      } else if (info.isRateLimit) {
-        // Don't burn the quick-retry budget hammering a rate limit three
-        // times in a row - go straight to the slower cooldown schedule.
-        scheduleReconnect("EulerStream rate-limited the request", info);
-      } else {
-        await retry(username, signApiKey);
+      try { if (connection && connection !== activeConnection) connection.disconnect(); } catch (e) {}
+      if (mySeq === attemptSeq) {
+        var info = reportFailure("connect() failed for @" + username, err);
+        failure = { info: info, cls: classifyError(err, username) };
       }
     } finally {
-      isConnecting = false;
+      if (pendingConnection === connection) pendingConnection = null;
+      if (mySeq === attemptSeq) isConnecting = false;
+    }
+
+    if (!failure || mySeq !== attemptSeq) return;
+    var cls = failure.cls;
+    emit("error", "Connection failed: " + cls.reason, cls);
+    if (cls.fatal) { desiredConnected = false; retryCount = 0; reconnectAttempt = 0; return; }   // wrong key / username: do not hammer the server
+    if (isAutoReconnect || fromRetry || failure.info.isRateLimit || cls.code === "USER_OFFLINE") {
+      scheduleReconnect("it could not connect", { isRateLimit: failure.info.isRateLimit, retryAfterMs: failure.info.retryAfterMs, cls: cls });
+    } else {
+      await retry(username, signApiKey, cls);
     }
   }
 
-  async function retry(username, signApiKey) {
+  // Three quick tries after the first failure, then slow background retries.
+  async function retry(username, signApiKey, cls) {
     if (retryCount >= MAX_INITIAL_RETRIES) {
-      onStatus("error", "Gave up after " + MAX_INITIAL_RETRIES + " quick tries. Still watching in the background - it will connect on its own once @" + username + " goes live, or double-check the username/Sign API Key and click Connect again.");
       retryCount = 0;
-      // Keep trying slowly forever in the background instead of giving up
-      // for good - this is what lets the show "just start" the moment the
-      // host goes live, with nobody needing to come back and click Connect.
-      scheduleReconnect("the streamer may not be live yet");
+      // Keep trying slowly in the background so the show starts by itself once everything is right.
+      scheduleReconnect("quick tries did not work", { cls: cls });
       return;
     }
+    var seq = attemptSeq;
     retryCount++;
     var delayMs = 1500 * retryCount;
-    onStatus("retrying", "Retry " + retryCount + " of " + MAX_INITIAL_RETRIES + " in " + (delayMs / 1000) + "s...");
+    emit("retrying", "Retry " + retryCount + " of " + MAX_INITIAL_RETRIES + " in " + (delayMs / 1000) + "s...", Object.assign({}, cls, { attempt: retryCount, retryInSeconds: delayMs / 1000 }));
     await new Promise(function (resolve) { setTimeout(resolve, delayMs); });
-    await connect(username, signApiKey);
+    if (seq !== attemptSeq || !desiredConnected) return;   // the host disconnected or reconnected meanwhile
+    await connect(username, signApiKey, false, true);
   }
 
   function disconnect() {
     desiredConnected = false;
     isConnecting = false;
+    attemptSeq++;
+    retryCount = 0;
+    reconnectAttempt = 0;
     cancelReconnectTimer();
     stopWatchdog();
-    try {
-      if (activeConnection) activeConnection.disconnect();
-    } catch (err) {
-      console.error("[disconnect error - swallowed]", err);
-    }
-    activeConnection = null;
-    onStatus("disconnected", "Disconnected.");
+    var conn = activeConnection, pend = pendingConnection;
+    activeConnection = null; pendingConnection = null;
+    [conn, pend].forEach(function (c) { try { if (c) c.disconnect(); } catch (err) { console.error("[disconnect error - swallowed]", err); } });
+    emit("disconnected", "Disconnected.", { code: "DISCONNECTED", reason: "", hint: "" });
   }
 
   return { connect: connect, disconnect: disconnect };
