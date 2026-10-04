@@ -61,9 +61,9 @@ Render updates the game by itself in a minute or two.
 - **Tiles:** every tile has its number in a gray circle on the left (6 shades of gray, white ring, never over the word). Fused tiles have the same colour as every other tile (no colour per level); they show their new number and what is inside them. The last fusion of a group becomes its finished card.
 - **Toolbar:** new game, leaderboard, **Hint** (names one group you can fuse right now), **Peek** (tints tiles by group for
   a few seconds), **Reveal 1 Fusion**, theme, full screen, settings. Nobody earns points from hints or reveals.
-- **Scoring:** points per fusion = **10 x fusion level x combo**. A level-1 fusion is worth 10, level 2 is worth 20, level 3 is worth 30.
-  Fuse back-to-back for a combo: 1x, 2x, 3x, then 4x. A wrong guess resets the streak. There is a This Round and an All-Time board.
-  (Change the base 10 in Settings > Timing.)
+- **Scoring:** every fusion is worth **1 point**, whatever its fusion level. Extra points come only from the streak combo:
+  1st fusion in a row = 1 point, 2nd = 2, 3rd = 3, 4th and beyond = 4. A wrong guess resets the streak. There is a This Round and an All-Time board.
+  (Change the base 1 in Settings > Timing.)
 - **Viewer photos:** real TikTok profile pictures show in circles next to names in Live mode.
 - **Host Console** at the bottom lets you type guesses yourself. Tap **Hide** to hide it.
 - **Puzzle Pack:** 8 themes (Getting Around, Animal Kingdom, Food & Drink, Music Room, Game On, Around Town, Planet Earth, Home & Body) or Mixed.

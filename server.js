@@ -68,7 +68,7 @@ const shuffle = (arr) => {
 const state = {
   mode: 'test', pack: 'mixed', cycle: 0, configured: false,
   autoNext: true, autoNextDelaySeconds: TIMING.autoNext.def, autoNextAt: 0,
-  mismatchSeconds: TIMING.mismatch.def, peekSeconds: TIMING.peek.def, pointsPerGroup: 10,
+  mismatchSeconds: TIMING.mismatch.def, peekSeconds: TIMING.peek.def, pointsPerGroup: 1,
   title: '', nodes: [], tiles: [], queues: {}, seq: [], nextN: 1, completed: [], rootsTotal: 0, fusionsDone: 0, lastFusion: null, hint: '', peeking: false,
   startedAt: 0, solvedAt: 0,
   scores: {}, allTimeScores: {}, rawEventCount: 0, lastEvent: null,
@@ -317,8 +317,8 @@ function attemptFuse(nums, player) {
   if (best === 4) {
     const node = state.nodes[picked[0].parent];
     row.streak = (row.streak || 0) + 1;
-    // Deeper fusions are worth more: points x fusion level x combo.
-    const gained = state.pointsPerGroup * node.height * comboMultiplier(row.streak);
+    // Every fusion is worth the same, whatever its level: base points x combo (streak) multiplier.
+    const gained = state.pointsPerGroup * comboMultiplier(row.streak);
     row.points += gained;
     const all = ensurePlayer(state.allTimeScores, player);
     all.points += gained;
@@ -474,7 +474,7 @@ io.on('connection', (socket) => {
     if (p.autoNextDelaySeconds !== undefined) state.autoNextDelaySeconds = clampSeconds(p.autoNextDelaySeconds, TIMING.autoNext);
     if (p.mismatchSeconds !== undefined) state.mismatchSeconds = clampSeconds(p.mismatchSeconds, TIMING.mismatch);
     if (p.peekSeconds !== undefined) state.peekSeconds = clampSeconds(p.peekSeconds, TIMING.peek);
-    if (p.pointsPerGroup !== undefined) state.pointsPerGroup = Math.round(clampSeconds(p.pointsPerGroup, { min: 1, max: 100, def: 10 }));
+    if (p.pointsPerGroup !== undefined) state.pointsPerGroup = Math.round(clampSeconds(p.pointsPerGroup, { min: 1, max: 100, def: 1 }));
     if (typeof p.pack === 'string' && p.pack !== state.pack && (p.pack === 'mixed' || PACKS.some((x) => x.title === p.pack))) { state.pack = p.pack; newGame(); }
     if (typeof p.bots === 'boolean') setBots(p.bots && state.mode === 'test');
     broadcast();
@@ -496,7 +496,7 @@ io.on('connection', (socket) => {
     if (p.autoNextDelaySeconds !== undefined) state.autoNextDelaySeconds = clampSeconds(p.autoNextDelaySeconds, TIMING.autoNext);
     if (p.mismatchSeconds !== undefined) state.mismatchSeconds = clampSeconds(p.mismatchSeconds, TIMING.mismatch);
     if (p.peekSeconds !== undefined) state.peekSeconds = clampSeconds(p.peekSeconds, TIMING.peek);
-    if (p.pointsPerGroup !== undefined) state.pointsPerGroup = Math.round(clampSeconds(p.pointsPerGroup, { min: 1, max: 100, def: 10 }));
+    if (p.pointsPerGroup !== undefined) state.pointsPerGroup = Math.round(clampSeconds(p.pointsPerGroup, { min: 1, max: 100, def: 1 }));
     broadcast();
   }, true));
   socket.on('host:setBots', safe((p) => setBots(!!p.enabled && state.mode === 'test'), true));

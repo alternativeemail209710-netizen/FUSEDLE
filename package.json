@@ -1,6 +1,6 @@
 {
   "name": "fusedle-live",
-  "version": "7.2.0",
+  "version": "7.4.0",
   "description": "FUSEDLE Live: one fixed build with 8 independent groups per round and 24 tiles on screen at a time (new tiles drop in as groups fuse). For TikTok LIVE chat.",
   "main": "server.js",
   "engines": {
