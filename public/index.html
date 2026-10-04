@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="knit_cream" class="knit-bg yarn">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -18,11 +18,20 @@
       <button id="hintTopBtn" class="icon-btn" aria-label="Hint" title="Hint: name one fusable group (no points)">&#128161;</button>
       <button id="revealPairTopBtn" class="icon-btn" aria-label="Reveal 1 Fusion" title="Reveal 1 Fusion (no points)">&#10024;</button>
       <div class="toolbar-dropdown" id="themeDropdown">
-        <button type="button" id="themeDropdownBtn" class="icon-btn toolbar-dropdown-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Theme: Dark" title="Theme: Dark">
-          <span id="themeDropdownIcon" class="theme-swatch swatch-dark"></span>
+        <button type="button" id="themeDropdownBtn" class="icon-btn toolbar-dropdown-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Theme" title="Theme">
+          <span id="themeDropdownIcon" class="theme-swatch swatch-knit_cream"></span>
         </button>
         <ul id="themeDropdownMenu" class="toolbar-dropdown-menu" role="listbox" aria-label="Theme" hidden>
-          <li role="option" data-value="dark" aria-selected="true" class="dd-active"><span class="theme-swatch swatch-dark"></span><span class="dd-label">Dark</span></li>
+          <li class="dd-head" role="presentation">&#129526; Knitted background</li>
+          <li role="option" data-value="knit_cream" aria-selected="false"><span class="theme-swatch swatch-knit_cream"></span><span class="dd-label">Cream Wool</span></li>
+          <li role="option" data-value="knit_blue" aria-selected="false"><span class="theme-swatch swatch-knit_blue"></span><span class="dd-label">Sky Blue Wool</span></li>
+          <li role="option" data-value="knit_green" aria-selected="false"><span class="theme-swatch swatch-knit_green"></span><span class="dd-label">Meadow Green Wool</span></li>
+          <li role="option" data-value="knit_pink" aria-selected="false"><span class="theme-swatch swatch-knit_pink"></span><span class="dd-label">Blossom Pink Wool</span></li>
+          <li role="option" data-value="knit_violet" aria-selected="false"><span class="theme-swatch swatch-knit_violet"></span><span class="dd-label">Lavender Wool</span></li>
+          <li role="option" data-value="knit_honey" aria-selected="false"><span class="theme-swatch swatch-knit_honey"></span><span class="dd-label">Honey Gold Wool</span></li>
+          <li role="option" data-value="knit_night" aria-selected="false"><span class="theme-swatch swatch-knit_night"></span><span class="dd-label">Night Wool (dark)</span></li>
+          <li class="dd-head" role="presentation">&#127912; Plain background</li>
+          <li role="option" data-value="dark" aria-selected="false"><span class="theme-swatch swatch-dark"></span><span class="dd-label">Dark</span></li>
           <li role="option" data-value="light" aria-selected="false"><span class="theme-swatch swatch-light"></span><span class="dd-label">Light</span></li>
           <li role="option" data-value="cream" aria-selected="false"><span class="theme-swatch swatch-cream"></span><span class="dd-label">Cream</span></li>
           <li role="option" data-value="sky" aria-selected="false"><span class="theme-swatch swatch-sky"></span><span class="dd-label">Sky Blue</span></li>
@@ -173,8 +182,17 @@
       </div>
 
       <div class="theme-row">
-        <span class="theme-label">Theme (easy on the eyes)</span>
+        <span class="theme-label">Theme (all have the knitting look)</span>
         <div class="theme-grid">
+          <p class="theme-group-title">&#129526; Knitted background</p>
+          <button type="button" class="theme-choice-btn" data-theme-choice="knit_cream"><span class="theme-swatch swatch-knit_cream"></span>Cream Wool</button>
+          <button type="button" class="theme-choice-btn" data-theme-choice="knit_blue"><span class="theme-swatch swatch-knit_blue"></span>Sky Blue Wool</button>
+          <button type="button" class="theme-choice-btn" data-theme-choice="knit_green"><span class="theme-swatch swatch-knit_green"></span>Meadow Green Wool</button>
+          <button type="button" class="theme-choice-btn" data-theme-choice="knit_pink"><span class="theme-swatch swatch-knit_pink"></span>Blossom Pink Wool</button>
+          <button type="button" class="theme-choice-btn" data-theme-choice="knit_violet"><span class="theme-swatch swatch-knit_violet"></span>Lavender Wool</button>
+          <button type="button" class="theme-choice-btn" data-theme-choice="knit_honey"><span class="theme-swatch swatch-knit_honey"></span>Honey Gold Wool</button>
+          <button type="button" class="theme-choice-btn" data-theme-choice="knit_night"><span class="theme-swatch swatch-knit_night"></span>Night Wool (dark)</button>
+          <p class="theme-group-title">&#127912; Plain background</p>
           <button type="button" class="theme-choice-btn" data-theme-choice="dark"><span class="theme-swatch swatch-dark"></span>Dark</button>
           <button type="button" class="theme-choice-btn" data-theme-choice="light"><span class="theme-swatch swatch-light"></span>Light</button>
           <button type="button" class="theme-choice-btn" data-theme-choice="cream"><span class="theme-swatch swatch-cream"></span>Cream</button>
@@ -185,6 +203,15 @@
           <button type="button" class="theme-choice-btn" data-theme-choice="honey"><span class="theme-swatch swatch-honey"></span>Honey Gold</button>
         </div>
       </div>
+
+      <label class="auto-next-toggle">
+        <input type="checkbox" id="yarnToggle" checked>
+        <span class="toggle-switch" aria-hidden="true"></span>
+        <span class="toggle-label">
+          Multicolour yarn tiles
+          <small>Off = every tile is one plain wool colour.</small>
+        </span>
+      </label>
 
       <div class="mode-tabs">
         <button class="mode-btn active" data-mode="offline">Offline</button>

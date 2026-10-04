@@ -16,20 +16,41 @@
   function writeJson(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* private mode */ } }
 
   // ---- Themes -------------------------------------------------------------
-  const THEMES = { dark: 'Dark', light: 'Light', cream: 'Cream', sky: 'Sky Blue', meadow: 'Meadow Green', blossom: 'Blossom Pink', lavender: 'Lavender Violet', honey: 'Honey Gold' };
+  const KNIT_THEMES = { knit_cream: 'Cream Wool', knit_blue: 'Sky Blue Wool', knit_green: 'Meadow Green Wool', knit_pink: 'Blossom Pink Wool', knit_violet: 'Lavender Wool', knit_honey: 'Honey Gold Wool', knit_night: 'Night Wool (dark)' };
+  const THEMES = Object.assign({}, KNIT_THEMES, { dark: 'Dark', light: 'Light', cream: 'Cream', sky: 'Sky Blue', meadow: 'Meadow Green', blossom: 'Blossom Pink', lavender: 'Lavender Violet', honey: 'Honey Gold' });
+  const DEFAULT_THEME = 'knit_cream';
   function applyTheme(t) {
-    if (!THEMES[t]) t = 'dark';
-    document.documentElement.setAttribute('data-theme', t);
+    if (!THEMES[t]) t = DEFAULT_THEME;
+    const root = document.documentElement;
+    root.setAttribute('data-theme', t);
+    root.classList.toggle('knit-bg', !!KNIT_THEMES[t]);   // wool themes = knitted fabric background; original themes = plain colour
     try { localStorage.setItem('fusedle-theme', t); } catch (e) { /* ignore */ }
     $('themeDropdownIcon').className = 'theme-swatch swatch-' + t;
-    $('themeDropdownBtn').title = 'Theme: ' + THEMES[t];
-    document.querySelectorAll('#themeDropdownMenu li').forEach((li) => {
+    $('themeDropdownBtn').title = 'Theme: ' + THEMES[t]; $('themeDropdownBtn').setAttribute('aria-label', 'Theme: ' + THEMES[t]);
+    document.querySelectorAll('#themeDropdownMenu li[data-value]').forEach((li) => {
       const on = li.dataset.value === t; li.classList.toggle('dd-active', on); li.setAttribute('aria-selected', on);
     });
     document.querySelectorAll('.theme-choice-btn').forEach((b) => b.classList.toggle('active', b.dataset.themeChoice === t));
   }
-  const currentTheme = () => document.documentElement.getAttribute('data-theme') || 'dark';
-  applyTheme(localStorage.getItem('fusedle-theme') || 'dark');
+  const currentTheme = () => document.documentElement.getAttribute('data-theme') || DEFAULT_THEME;
+  // first time with the knitting version: the old saved theme is dropped once, so the knitting look shows up
+  try {
+    if (localStorage.getItem('fusedle-knit-v') !== '1') {
+      localStorage.removeItem('fusedle-theme');
+      const d = readJson('fusedle-defaults'); if (d && d.theme) { delete d.theme; writeJson('fusedle-defaults', d); }
+      localStorage.setItem('fusedle-knit-v', '1');
+    }
+  } catch (e) { /* ignore */ }
+  applyTheme(localStorage.getItem('fusedle-theme') || DEFAULT_THEME);
+
+  // multicolour yarn tiles (on/off, remembered on this device)
+  function applyYarn(on) {
+    document.documentElement.classList.toggle('yarn', !!on);
+    const cb = $('yarnToggle'); if (cb) cb.checked = !!on;
+    try { localStorage.setItem('fusedle-yarn', on ? '1' : '0'); } catch (e) { /* ignore */ }
+  }
+  applyYarn(localStorage.getItem('fusedle-yarn') !== '0');
+  $('yarnToggle').addEventListener('change', (e) => applyYarn(e.target.checked));
 
   // ---- Dropdowns ----------------------------------------------------------
   function wireDropdown(rootId, onPick) {

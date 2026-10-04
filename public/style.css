@@ -1312,3 +1312,148 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 .player-guess-input-row { margin-bottom: 0; }
 
 .app-shell:fullscreen, .app-shell:-webkit-full-screen { justify-content: flex-start; overflow: hidden; }
+
+
+/* ---- Knitting wool themes (copied from WORD SHUFFLE): knitted-fabric background, yarn-ball buttons ---- */
+:root[data-theme="knit_cream"]{--bg:#FFF3DC;--bg1:#FFF3DC;--bg2:#EAD09C;--bg-panel:#FFFBF2;--bg-input:#F2E4C8;--pink:#BA563F;--cyan:#8A5F0A;--text:#5B4636;--text-dim:#7A5F49;--given:#F2E4C8;--correct:#277a53;--success:#16803d;--danger:#c0392b;--warning:#b45309;--border:#C9A26B;--legend-bg:rgba(90,60,20,.10);--on-pink:#FFFFFF;--on-cyan:#FFFFFF}
+:root[data-theme="knit_blue"]{--bg:#DCF0FA;--bg1:#DCF0FA;--bg2:#93CBE6;--bg-panel:#F2FAFD;--bg-input:#DCEFF7;--pink:#397692;--cyan:#1E5C7A;--text:#5B4636;--text-dim:#6A5A4C;--given:#DCEFF7;--correct:#277a53;--success:#16803d;--danger:#c0392b;--warning:#b45309;--border:#6FAFCB;--legend-bg:rgba(90,60,20,.10);--on-pink:#FFFFFF;--on-cyan:#FFFFFF}
+:root[data-theme="knit_green"]{--bg:#E4F5DC;--bg1:#E4F5DC;--bg2:#A2D68C;--bg-panel:#F4FBF0;--bg-input:#DDEED2;--pink:#517D43;--cyan:#2E5B26;--text:#5B4636;--text-dim:#6A5A4C;--given:#DDEED2;--correct:#277a53;--success:#16803d;--danger:#c0392b;--warning:#b45309;--border:#6FA867;--legend-bg:rgba(90,60,20,.10);--on-pink:#FFFFFF;--on-cyan:#FFFFFF}
+:root[data-theme="knit_pink"]{--bg:#FCE3EE;--bg1:#FCE3EE;--bg2:#EE9CC0;--bg-panel:#FFF6FA;--bg-input:#FADCE7;--pink:#B3537C;--cyan:#8E2E52;--text:#5B4636;--text-dim:#7A5560;--given:#FADCE7;--correct:#277a53;--success:#16803d;--danger:#c0392b;--warning:#b45309;--border:#D9678D;--legend-bg:rgba(90,60,20,.10);--on-pink:#FFFFFF;--on-cyan:#FFFFFF}
+:root[data-theme="knit_violet"]{--bg:#EEE1FA;--bg1:#EEE1FA;--bg2:#C199E8;--bg-panel:#F9F4FE;--bg-input:#E9DBF7;--pink:#865FB4;--cyan:#4E2E78;--text:#5B4636;--text-dim:#6A5A6E;--given:#E9DBF7;--correct:#277a53;--success:#16803d;--danger:#c0392b;--warning:#b45309;--border:#9C6FD1;--legend-bg:rgba(90,60,20,.10);--on-pink:#FFFFFF;--on-cyan:#FFFFFF}
+:root[data-theme="knit_honey"]{--bg:#FDEBBD;--bg1:#FDEBBD;--bg2:#F2BC48;--bg-panel:#FFFBEF;--bg-input:#F7E7BE;--pink:#8F6B1F;--cyan:#7A5109;--text:#5B4636;--text-dim:#6E5530;--given:#F7E7BE;--correct:#277a53;--success:#16803d;--danger:#c0392b;--warning:#b45309;--border:#D9A72E;--legend-bg:rgba(90,60,20,.10);--on-pink:#FFFFFF;--on-cyan:#FFFFFF}
+:root[data-theme="knit_night"]{--bg:#2B1B12;--bg1:#2B1B12;--bg2:#4A2F20;--bg-panel:#3C281B;--bg-input:#25160E;--pink:#E0724A;--cyan:#FFC38A;--text:#FFF1E0;--text-dim:#D9BFA3;--given:#4A2F20;--correct:#277a53;--success:#7FD67A;--danger:#FF8A80;--warning:#FFC857;--border:#8A6440;--legend-bg:rgba(90,60,20,.10);--on-pink:#2B1B12;--on-cyan:#2B1B12}
+
+/* theme swatches */
+.swatch-knit_cream{background:linear-gradient(135deg,#FFF3DC 50%,#BA563F 50%)}
+.swatch-knit_blue{background:linear-gradient(135deg,#DCF0FA 50%,#397692 50%)}
+.swatch-knit_green{background:linear-gradient(135deg,#E4F5DC 50%,#517D43 50%)}
+.swatch-knit_pink{background:linear-gradient(135deg,#FCE3EE 50%,#B3537C 50%)}
+.swatch-knit_violet{background:linear-gradient(135deg,#EEE1FA 50%,#865FB4 50%)}
+.swatch-knit_honey{background:linear-gradient(135deg,#FDEBBD 50%,#8F6B1F 50%)}
+.swatch-knit_night{background:linear-gradient(135deg,#2B1B12 50%,#E0724A 50%)}
+
+/* =====================================================================
+   PART 15 - KNITTING LAYER (learned from WORD SHUFFLE)
+   Wool colours, a knitted-fabric background, yarn-ball buttons, stitched
+   (dashed) borders and multicolour yarn tiles. It only changes the LOOK:
+   every size and position from Part 14 stays exactly the same.
+   html.knit-bg  = knitted fabric background (the "Wool" themes)
+   no knit-bg    = plain colour background (the original 8 themes), same yarn look
+   html.yarn     = multicolour yarn tiles (can be switched off in Settings)
+   ===================================================================== */
+:root {
+  --on-pink: #fff;
+  --on-cyan: #06201f;
+  --stitch: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='28'%3E%3Cg fill='none' stroke-linecap='round' stroke-linejoin='round' stroke-width='3'%3E%3Cpath d='M3 3 L11 14 L19 3' stroke='rgba(255,255,255,.30)'/%3E%3Cpath d='M3 16 L11 27 L19 16' stroke='rgba(255,255,255,.30)'/%3E%3Cpath d='M3 5 L11 16 L19 5' stroke='rgba(90,60,20,.06)'/%3E%3Cpath d='M3 18 L11 29 L19 18' stroke='rgba(90,60,20,.06)'/%3E%3C/g%3E%3C/svg%3E");
+}
+html, body { background-color: var(--bg); }
+body { background: transparent; }
+html.knit-bg {
+  background-image: var(--stitch), linear-gradient(160deg, var(--bg1, var(--bg)), var(--bg2, var(--bg)));
+  background-size: 22px 28px, 100% 100%;
+  background-attachment: fixed, fixed;
+}
+html[data-theme="knit_night"].knit-bg { background-image: linear-gradient(160deg, var(--bg1), var(--bg2)); }
+/* full screen paints its own background, so give it the same fabric */
+html.knit-bg .app-shell:fullscreen, html.knit-bg .app-shell:-webkit-full-screen {
+  background-image: var(--stitch), linear-gradient(160deg, var(--bg1, var(--bg)), var(--bg2, var(--bg)));
+  background-size: 22px 28px, 100% 100%;
+}
+html.knit-bg .app-shell::backdrop { background: var(--bg1, var(--bg)); }
+
+/* TOP BAR: knitted band with a stitched edge; buttons are little yarn balls with a stitch ring */
+.top-bar { border-bottom: 2px dashed var(--border); box-shadow: 0 3px 0 rgba(90,60,20,.10); }
+.top-bar h1 { text-shadow: 0 1px 0 rgba(255,255,255,.55), 0 2px 0 rgba(139,90,52,.18); }
+html[data-theme="knit_night"] .top-bar h1, html[data-theme="dark"] .top-bar h1 { text-shadow: 0 2px 0 rgba(0,0,0,.35); }
+.icon-btn {
+  position: relative;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  box-shadow: inset 0 2px 2px rgba(255,255,255,.5), inset 0 -3px 4px rgba(0,0,0,.07), 0 2px 0 var(--border);
+}
+.icon-btn::before {
+  content: ''; position: absolute; inset: 14%; border-radius: 50%;
+  border: 1.5px dashed currentColor; opacity: .32; pointer-events: none;
+}
+.icon-btn.active { color: var(--on-pink); }
+.toolbar-dropdown-trigger .theme-swatch { position: relative; z-index: 1; }
+.quick-hint { border-bottom: 2px dashed var(--border); }
+
+/* BUTTONS: yarn pills with a white stitch line inside */
+.btn {
+  position: relative;
+  border-radius: 999px;
+  box-shadow: inset 0 2px 2px rgba(255,255,255,.4), 0 3px 0 rgba(0,0,0,.20);
+  outline: 2px dashed rgba(255,255,255,.7); outline-offset: -4px;
+}
+.btn-primary { background: linear-gradient(var(--pink), color-mix(in srgb, var(--pink) 82%, #000)); color: var(--on-pink); }
+.btn-secondary { background: linear-gradient(var(--cyan), color-mix(in srgb, var(--cyan) 82%, #000)); color: var(--on-cyan); }
+.btn-danger { background: linear-gradient(var(--danger), color-mix(in srgb, var(--danger) 82%, #000)); color: #fff; }
+html[data-theme="knit_night"] .btn-danger { color: #2b0b0b; }
+.btn:active { transform: translateY(2px); box-shadow: inset 0 2px 2px rgba(255,255,255,.3), 0 1px 0 rgba(0,0,0,.2); }
+.host-console-show-btn { border: 2px dashed var(--border); }
+.host-console-toggle, .player-guess-bar-toggle { text-decoration: underline dashed; text-underline-offset: 3px; }
+
+/* BOXES: stitched (dashed) borders */
+.host-console-bar { border-top: 2px dashed var(--border); }
+.player-guess-bar, .live-score-col, .details-panel, .diagnostics-box, .leaderboard-box, .feed-box,
+.theme-row, .emoji-pack-row, .timing-box, .hints-box, .panel, .auto-next-toggle, .legend-box-full, .round-end-card,
+.toolbar-dropdown-menu, .guess-toast { border: 2px dashed var(--border); box-shadow: 0 3px 0 rgba(90,60,20,.10); }
+.hint-line { border: 2px dashed var(--cyan); }
+.settings-drawer { border-top: 3px dashed var(--border); }
+.details-toggle { border: 2px dashed var(--border); }
+.guess-toast { border-width: 1.5px; }
+.guess-toast.toast-correct { border-color: var(--correct); }
+.guess-toast.toast-wrong { border-color: var(--danger); }
+.guess-toast.toast-info { border-color: var(--warning); }
+.live-score-col h3 { text-shadow: none; }
+.avatar-circle { border: 2px solid var(--pink); box-shadow: 0 0 0 1.5px rgba(255,255,255,.7); }
+.solved-card .avatar-circle { border: 2px solid #fff; box-shadow: none; }
+.host-console-bar input, .field-row input, .field-row select, .timing-field input, .puzzle-controls select { border: 2px dashed var(--border); }
+.host-console-bar input { padding: 7px 10px; }
+.host-console-bar input:focus, .field-row input:focus, .timing-field input:focus { border-style: solid; outline: none; }
+.mode-btn, .theme-choice-btn, .emoji-pack-btn, .lb-modal-tab { border: 2px dashed var(--border); }
+.mode-btn.active, .lb-modal-tab.active { border-style: solid; background: linear-gradient(var(--pink), color-mix(in srgb, var(--pink) 82%, #000)); color: var(--on-pink); }
+.theme-choice-btn.active, .emoji-pack-btn.active { border-style: solid; }
+.toolbar-dropdown-menu li.dd-active { outline: 1.5px dashed var(--border); outline-offset: -4px; }
+.toolbar-dropdown-menu .dd-head { cursor: default; font-size: 11px; font-weight: 800; letter-spacing: .04em; opacity: .75; padding: 6px 8px 2px; pointer-events: none; }
+.toolbar-dropdown-menu li.dd-head:hover { background: none; }
+.theme-group-title { grid-column: 1 / -1; font-size: 11.5px; font-weight: 800; opacity: .75; letter-spacing: .04em; margin: 2px 0 -2px; }
+.round-end-row, .round-end-list li { border: 1.5px dashed var(--border); }
+.solved-banner { border: 2px dashed rgba(255,255,255,.8); }
+.toggle-switch { border: 2px dashed var(--border); background: var(--bg-input); }
+.auto-next-toggle input:checked + .toggle-switch { border-style: solid; }
+.fuse-banner, .solved-card { outline: 1.5px dashed rgba(255,255,255,.8); outline-offset: -3px; }
+
+/* FINISHED GROUPS: stay soft pastel with dark text; just stitched */
+.solved-card { border: 1px solid rgba(42,34,49,.14); box-shadow: 0 2px 0 rgba(90,60,20,.14); }
+
+/* TILES: balls of wool. Colour follows the tile number (tiles that move keep their colour). Dark brown letters on light wool = easy to read. */
+.tile::before {
+  content: ''; position: absolute; inset: 2.5px; border-radius: 9px; pointer-events: none;
+  border: 1.5px dashed rgba(60,35,10,.38);
+}
+.tile i, .tile-text { position: relative; z-index: 1; }
+.tile { color: #2E1E10; text-shadow: 0 1px 0 rgba(255,255,255,.35); }
+html.yarn .tile {
+  background: linear-gradient(var(--tb1, #F3CF74), var(--tb2, #E2B13F));
+  border-color: var(--tbe, #B58420);
+  box-shadow: 0 3px 0 var(--tbe, #B58420);
+}
+html.yarn .tile[data-s="0"] { --tb1: #F6D57E; --tb2: #E6B546; --tbe: #B58420; }
+html.yarn .tile[data-s="1"] { --tb1: #B4DC9C; --tb2: #86BC70; --tbe: #5C8F4C; }
+html.yarn .tile[data-s="2"] { --tb1: #F8B096; --tb2: #EC8D68; --tbe: #BC6342; }
+html.yarn .tile[data-s="3"] { --tb1: #96CDE9; --tb2: #68AFD4; --tbe: #447F9F; }
+html.yarn .tile[data-s="4"] { --tb1: #F5AAC5; --tb2: #E080A5; --tbe: #B25A7D; }
+html.yarn .tile[data-s="5"] { --tb1: #CDB6EC; --tb2: #A98ED9; --tbe: #7C62AC; }
+html.yarn .tile:active { box-shadow: 0 1px 0 var(--tbe, #B58420); }
+html.yarn .tile.sel[data-s] { background: var(--bg-panel); border-color: var(--warning); }
+html.yarn .tile.wrong[data-s] { background: color-mix(in srgb, var(--danger) 35%, #fff); border-color: var(--danger); }
+html.yarn .tile.fused[data-s] { border-width: 2px; }
+/* number circle: a little stitched button */
+.tile i { background: #5B4636; }
+.tile[data-s] i { background: #5B4636; }
+/* yarn off: one plain wool colour */
+html:not(.yarn) .tile { background: var(--given); }
+
+@media (prefers-reduced-motion: reduce) { .btn:active, .icon-btn:active { transform: none; } }

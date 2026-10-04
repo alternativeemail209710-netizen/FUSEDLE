@@ -26,6 +26,12 @@ Each group is either a **2-level fusion** (7 starting tiles) or a **3-level fusi
 
 > **Finished-group colors:** soft pastel colors (pink, sage, lavender, butter, peach, sky, latte, periwinkle) with dark text. Every card keeps at least an 8:1 contrast ratio, so the letters stay easy to read. Each finished group gets the next color in order.
 
+> **Knitting look (learned from WORD SHUFFLE):** the whole game is knitted. The page is a knitted-fabric background, the toolbar buttons are round yarn balls
+> with a stitch ring, the other buttons are yarn pills, every box has a stitched (dashed) edge, and the tiles are balls of multicolour wool with dark
+> letters. Pick a theme with the round colour button in the top bar (or in Settings): 7 **Wool** themes (Cream, Sky Blue, Meadow Green, Blossom Pink,
+> Lavender, Honey Gold and a dark Night Wool) have the knitted background, and the 8 original themes keep their colours with a plain background.
+> The default is Cream Wool. Settings has a switch for the multicolour yarn tiles (Off = one plain wool colour). Sizes and positions are unchanged.
+
 **When a group is completely finished** it shows as one small card: the category name, the viewer who fused it (their round TikTok
 photo and name) and only the **4 latest words** that made it. Each card takes one row of its own and stays small, so the unsolved tiles and
 the leaderboards stay on the screen. If the host used Reveal, the card says "Host reveal".
