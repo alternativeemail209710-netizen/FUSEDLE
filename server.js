@@ -40,14 +40,14 @@ app.use(express.static(path.join(__dirname, 'public'), {
 // ---------------------------------------------------------------------------
 // Settings tables
 // ---------------------------------------------------------------------------
-// Difficulty = a FIXED number of starting tiles (4 columns x N rows). Every level has at least one fusion chain
-// that is 4 levels deep; higher levels add more tiles and more groups. The exact recipe lives in puzzles.js (LEVEL_SPECS).
+// Difficulty = a FIXED number of starting tiles (4 columns x N rows). Levels 1-2 use 2-level fusion chains and
+// levels 3-5 use 3-level fusion chains. The exact recipe lives in puzzles.js (LEVEL_SPECS).
 const LEVELS = {
-  1: { name: 'Warmup', desc: '4 x 4 = 16 tiles', rows: 4 },
-  2: { name: 'Easy',   desc: '4 x 5 = 20 tiles', rows: 5 },
-  3: { name: 'Medium', desc: '4 x 6 = 24 tiles', rows: 6 },
-  4: { name: 'Hard',   desc: '4 x 7 = 28 tiles', rows: 7 },
-  5: { name: 'Chaos',  desc: '4 x 8 = 32 tiles', rows: 8 },
+  1: { name: 'Warmup', desc: '4 x 4 = 16 tiles, 2-level fusion', rows: 4 },
+  2: { name: 'Easy',   desc: '4 x 5 = 20 tiles, 2-level fusion', rows: 5 },
+  3: { name: 'Medium', desc: '4 x 6 = 24 tiles, 3-level fusion', rows: 6 },
+  4: { name: 'Hard',   desc: '4 x 7 = 28 tiles, 3-level fusion', rows: 7 },
+  5: { name: 'Chaos',  desc: '4 x 8 = 32 tiles, 3-level fusion', rows: 8 },
 };
 const TIMING = {
   autoNext: { min: 3, max: 300, def: 8 },
