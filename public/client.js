@@ -50,7 +50,7 @@
   wireDropdown('difficultyDropdown', (v) => setPendingLevel(Number(v)));
   document.querySelectorAll('.theme-choice-btn').forEach((b) => b.addEventListener('click', () => applyTheme(b.dataset.themeChoice)));
 
-  const LEVEL_NAMES = { 1: 'Warmup', 2: 'Easy', 3: 'Medium', 4: 'Hard', 5: 'Chaos' };
+  const LEVEL_NAMES = { 1: 'Classic', 2: 'Easy', 3: 'Medium', 4: 'Hard', 5: 'Chaos' };
   function setPendingLevel(n) {
     pendingLevel = n;
     const icon = $('difficultyDropdownIcon');
@@ -177,8 +177,10 @@
       if (grid.children[idx] !== el) grid.insertBefore(el, grid.children[idx] || null);
     });
 
-    let counter = '\u26A1 ' + S.fusionsDone + '/' + S.fusionsTotal + ' fusions \u00B7 ' + S.title + ' \u00B7 ' + S.maxLevels + ' levels';
-    if (S.chainsTotal > 1) counter += ' \u00B7 ' + S.chainsDone + '/' + S.chainsTotal + ' chains';
+    // big boards (many tiles): slightly shorter rows so the whole board stays on screen
+    grid.style.gridAutoRows = S.tiles.length > 28 ? 'minmax(38px,46px)' : S.tiles.length > 20 ? 'minmax(40px,52px)' : '';
+    let counter = '\u26A1 ' + S.fusionsDone + '/' + S.fusionsTotal + ' fusions \u00B7 ' + S.title + ' \u00B7 ' + (S.maxLevels > 1 ? 'up to ' + S.maxLevels + ' fusion levels' : 'classic');
+    if (S.chainsTotal > 1) counter += ' \u00B7 ' + S.chainsDone + '/' + S.chainsTotal + ' groups';
     $('pairsCounter').textContent = counter;
     $('solvedBanner').hidden = !S.solvedAt;
     const hl = $('hintLine'); hl.hidden = !S.hint; hl.textContent = S.hint || '';

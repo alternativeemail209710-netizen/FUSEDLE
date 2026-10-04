@@ -1,20 +1,22 @@
-# FUSEDLE Live (TikTok LIVE) - Multi-Level Fusion
+# FUSEDLE Live (TikTok LIVE) - Classic Board + Multi-Level Fusion
 
 This folder is the complete, finished app. You do not need to edit any code.
 
-**How the game works:** a board of numbered word tiles. Viewers type **four tile numbers** in chat, like `2 5 8 12`.
-If all four belong together they are **destroyed and fuse into ONE brand-new tile** with a **new number**.
-That new tile is a real tile: it can be used again in the next fusion. Chains go 2, 3 or even 4 levels deep.
+**How the game works:** every round is a board of numbered word tiles hiding **4 groups**. Viewers type **four tile numbers**
+in chat, like `2 5 8 12`. If all four belong together, those tiles are **destroyed and fuse into ONE brand-new tile** with a **new number**.
+
+That is the classic game. On top of it, **some groups are fusion chains**: the new tile is a real tile and can be used again
+in the next fusion, up to 4 levels deep. Harder boards mix ordinary groups of 4 with deeper chains.
 
 > **Example (2 levels)**
 > - Level 1: viewers type the numbers of **Ford, Toyota, Honda, BMW**. Those 4 tiles vanish and one new tile **"Car"** appears with the next free number (for example 17).
 > - Level 2: viewers now fuse **Car (17) + Boat + Plane + Train** into the final group **"Transportation"**.
 >
-> You cannot skip ahead: "Car" does not exist until the car brands are fused, so Car + Boat + Plane + Train
-> only works after level 1. Trying it early shows "one away" or "not on the board".
+> You cannot skip ahead: "Car" does not exist until the car brands are fused. Trying it early shows "one away" or "not on the board".
 
-Deeper puzzles exist too, for example **Mammal -> Vertebrate -> Animal -> Life on Earth** (4 levels).
-When a chain is finished it is shown as nested boxes, with the final group on the outside and the original words in the middle.
+A deeper chain looks like **Mammal -> Vertebrate -> Animal -> Life on Earth** (4 levels), sitting on the same board as other groups.
+When a group is finished it is shown as nested boxes, with the final group on the outside and the original words in the middle.
+The round ends when all 4 groups are done.
 
 > **Before you go live:** in the TikTok app open LIVE settings, then **Comments > Filtered**, and turn **OFF**
 > the **Spam filter** and **Potentially unkind words**. TikTok can quietly hide short number comments.
@@ -42,15 +44,15 @@ Render updates the game by itself in a minute or two.
   Hints and Reveals, Reset Scores, Auto Next Game, Timing, difficulty, and Save & Apply as Default.
 - **Modes:** *Offline* = you play alone with the Player Guess Bar (tap 4 tiles or type them). *Test* = fake
   viewers (turn on **Auto-Play Bots**) so you can rehearse. *Live* = real TikTok chat counts.
-- **Difficulty** (pick a level from the toolbar badge, then tap the refresh button to start a new game):
+- **Difficulty** (pick a level from the toolbar badge, then tap the refresh button to start a new game). Every board has 4 groups:
 
-  | Level | Name   | Fusion levels | Tiles at the start |
-  |-------|--------|---------------|--------------------|
-  | 1     | Warmup | 2             | 7                  |
-  | 2     | Easy   | 2             | 10                 |
-  | 3     | Medium | 3             | 10                 |
-  | 4     | Hard   | 3 or 4        | 13 to 22           |
-  | 5     | Chaos  | 2 or 3 different chains mixed on one board | 20 to 29 |
+  | Level | Name    | What is on the board                                   | Tiles at the start |
+  |-------|---------|--------------------------------------------------------|--------------------|
+  | 1     | Classic | 4 ordinary groups of 4 (the original game)             | 16                 |
+  | 2     | Easy    | 1 fusion chain (2 levels) + 3 ordinary groups          | 19                 |
+  | 3     | Medium  | 2 fusion chains (2 levels) + 2 ordinary groups         | 22 to 25           |
+  | 4     | Hard    | chains up to 3 levels deep + ordinary groups           | 28                 |
+  | 5     | Chaos   | chains up to 4 levels deep, 4 groups on a huge board   | 31 to 34           |
 
 - **Fused tiles** are coloured by level (L1 teal, L2 violet, L3 gold, L4 pink), show their new number and what is inside them.
 - **Toolbar:** difficulty, new game, leaderboard, **Hint** (names one group you can fuse right now), **Peek** (tints tiles by group for
@@ -61,19 +63,27 @@ Render updates the game by itself in a minute or two.
 - **Viewer photos:** real TikTok profile pictures show in circles next to names in Live mode.
 - **Host Console** at the bottom lets you type guesses yourself. Tap **Hide** to hide it.
 - **Puzzle Pack:** 6 themes (Getting Around, Animal Kingdom, Food & Drink, Music Room, Game On, Around Town) or Mixed.
-  Each theme has a puzzle for every difficulty level.
+  Each theme has ordinary groups and fusion chains for every difficulty level. Mixed pulls groups from all themes.
 
 ## Adding your own puzzles
-Open `puzzles.js`. A puzzle is a tree. Every group has **exactly 4 children**, and a child is either a word or another group:
+Open `puzzles.js`. Everything is a group of **exactly 4 children**, and a child is either a word or another group.
+Add lines inside a pack's `trees: [ ... ]` list. The game builds each board from 4 of these, so more lines means more variety.
 
+**Ordinary group (classic, level 1):**
+```js
+N('Fuels', 'Petrol', 'Diesel', 'Kerosene', 'Ethanol')
+```
+
+**Fusion chain (2 or more levels):**
 ```js
 N('Transportation',
   N('Car', 'Ford', 'Toyota', 'Honda', 'BMW'),   // level 1: these 4 words fuse into "Car"
   'Boat', 'Plane', 'Train')                      // level 2: Car + these 3 words fuse into "Transportation"
 ```
 
-Nest groups inside groups to go deeper. Add the line inside a pack's `trees: [ ... ]` list. The game checks `puzzles.js` when it
-starts and tells you in the log if a group does not have exactly 4 children or a word is repeated.
+Nest groups inside groups to go deeper. The board builder never puts the same word or group name on a board twice.
+The game checks `puzzles.js` when it starts and tells you in the log if a group does not have exactly 4 children or a word is repeated.
+How many ordinary groups and chains each difficulty uses is set in `LEVEL_SPECS` near the bottom of `puzzles.js`.
 
 ## Keep it awake while you stream
 Render's free plan sleeps after about 15 minutes with no visitors, which drops the TikTok connection.

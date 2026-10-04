@@ -1,7 +1,7 @@
 {
   "name": "fusedle-live",
-  "version": "2.0.0",
-  "description": "FUSEDLE Live: multi-level fusion word game for TikTok LIVE. Audience types four tile numbers in chat; groups fuse into new tiles that fuse again.",
+  "version": "3.0.0",
+  "description": "FUSEDLE Live: classic 4-group word board with multi-level fusion for TikTok LIVE. Audience types four tile numbers in chat; groups fuse into new tiles that can fuse again.",
   "main": "server.js",
   "engines": {
     "node": ">=18.0.0"

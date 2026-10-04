@@ -21,11 +21,11 @@
           <span id="difficultyDropdownIcon" class="diff-badge level-2">2</span>
         </button>
         <ul id="difficultyDropdownMenu" class="toolbar-dropdown-menu" role="listbox" aria-label="Difficulty" hidden>
-          <li role="option" data-value="1" aria-selected="false"><span class="diff-badge level-1">1</span><span class="dd-label">Warmup <small>2 levels · 7 tiles</small></span></li>
-          <li role="option" data-value="2" aria-selected="true" class="dd-active"><span class="diff-badge level-2">2</span><span class="dd-label">Easy <small>2 levels · 10 tiles</small></span></li>
-          <li role="option" data-value="3" aria-selected="false"><span class="diff-badge level-3">3</span><span class="dd-label">Medium <small>3 levels · 10 tiles</small></span></li>
-          <li role="option" data-value="4" aria-selected="false"><span class="diff-badge level-4">4</span><span class="dd-label">Hard <small>3-4 levels · 13+ tiles</small></span></li>
-          <li role="option" data-value="5" aria-selected="false"><span class="diff-badge level-5">5</span><span class="dd-label">Chaos <small>2-3 chains mixed</small></span></li>
+          <li role="option" data-value="1" aria-selected="false"><span class="diff-badge level-1">1</span><span class="dd-label">Classic <small>4 groups · 16 tiles</small></span></li>
+          <li role="option" data-value="2" aria-selected="true" class="dd-active"><span class="diff-badge level-2">2</span><span class="dd-label">Easy <small>1 fusion chain · 19 tiles</small></span></li>
+          <li role="option" data-value="3" aria-selected="false"><span class="diff-badge level-3">3</span><span class="dd-label">Medium <small>2 fusion chains · 22-25 tiles</small></span></li>
+          <li role="option" data-value="4" aria-selected="false"><span class="diff-badge level-4">4</span><span class="dd-label">Hard <small>3-level chains · 28 tiles</small></span></li>
+          <li role="option" data-value="5" aria-selected="false"><span class="diff-badge level-5">5</span><span class="dd-label">Chaos <small>4-level chains · 31-34 tiles</small></span></li>
         </ul>
       </div>
       <button id="newGameTopBtn" class="icon-btn" aria-label="New Game" title="New Game">&#8635;</button>
@@ -323,11 +323,11 @@
 
       <div class="puzzle-controls">
         <select id="difficultySelect" aria-label="Difficulty">
-          <option value="1">1 · Warmup (2 levels, 7 tiles)</option>
-          <option value="2" selected>2 · Easy (2 levels, 10 tiles)</option>
-          <option value="3">3 · Medium (3 levels, 10 tiles)</option>
-          <option value="4">4 · Hard (3-4 levels, 13+ tiles)</option>
-          <option value="5">5 · Chaos (2-3 chains mixed)</option>
+          <option value="1">1 · Classic (4 groups, 16 tiles)</option>
+          <option value="2" selected>2 · Easy (1 fusion chain, 19 tiles)</option>
+          <option value="3">3 · Medium (2 fusion chains, 22-25 tiles)</option>
+          <option value="4">4 · Hard (3-level chains, 28 tiles)</option>
+          <option value="5">5 · Chaos (4-level chains, 31-34 tiles)</option>
         </select>
         <button id="newGameBtn" class="btn btn-secondary">New Game</button>
       </div>
@@ -340,9 +340,9 @@
       <div class="legend-box-full">
         <strong class="how-to-play-title">&#128218; How To Play (Live Game)</strong>
         <ol class="how-to-play-list">
-          <li><span class="htp-icon">&#9997;&#65039;</span><span>Type <b>four tile numbers</b> in chat, e.g. <span class="mono highlight">2 5 8 12</span></span></li>
+          <li><span class="htp-icon">&#9997;&#65039;</span><span>Type <b>four tile numbers</b> in chat, e.g. <span class="mono highlight">2 5 8 12</span>. Every board hides <b>4 groups</b> to find</span></li>
           <li><span class="htp-icon">&#129513;</span><span>If all four share a link (Ford, Toyota, Honda, BMW), they are <b>destroyed</b> and <b>fuse into one new tile</b> (&ldquo;Car&rdquo;) with a brand-new number</span></li>
-          <li><span class="htp-icon">&#9889;</span><span><b>Fuse again:</b> the new &ldquo;Car&rdquo; tile can now join Boat, Plane and Train to fuse into the final group &ldquo;Transportation&rdquo;. Some puzzles go 3 or 4 levels deep</span></li>
+          <li><span class="htp-icon">&#9889;</span><span><b>Fuse again:</b> the new &ldquo;Car&rdquo; tile can now join Boat, Plane and Train to fuse into the final group &ldquo;Transportation&rdquo;. Harder boards have chains 3 or 4 levels deep, mixed with ordinary groups of 4</span></li>
           <li><span class="htp-icon">&#128064;</span><span>Three of four right shows <b>&ldquo;one away&rdquo;</b>. Anything else is marked wrong</span></li>
           <li><span class="htp-icon">&#11088;</span><span>Every fusion earns points &mdash; <b>deeper levels are worth more</b> (x1, x2, x3, x4)</span></li>
           <li><span class="htp-icon">&#128293;</span><span>Fuse <b>back-to-back</b> for a combo streak: 1x, 2x, 3x, up to 4x. A wrong guess resets it</span></li>

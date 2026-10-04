@@ -1,6 +1,8 @@
 /**
  * FUSEDLE puzzle library - MULTI-LEVEL FUSION TREES
  *
+ * A board is made of 4 top-level groups. Some are plain groups of 4 words (the classic game: type 4 numbers,
+ * the group is found). Others are fusion trees: a found group becomes a NEW tile that joins other tiles for the next level.
  * Every group ("node") has EXACTLY 4 children. A child is either
  *   - a plain word  (it becomes a starting tile on the board), or
  *   - another group (it only exists once players have fused it).
@@ -37,6 +39,17 @@ const PACKS = [
       N('Sea Travel', N('Ship', 'Ferry', 'Yacht', 'Liner', 'Tanker'), 'Canoe', 'Kayak', 'Raft'),
       N('Air Travel', N('Aircraft', 'Jet', 'Glider', 'Helicopter', 'Blimp'), 'Balloon', 'Drone', 'Parachute'),
       'Train'),
+    // more fusion chains
+    N('Heavy Vehicles', N('Truck', 'Lorry', 'Tipper', 'Trailer', 'Semi'), 'Tractor', 'Bulldozer', 'Crane'),
+    // classic groups of 4 (level 1)
+    N('Fuels', 'Petrol', 'Diesel', 'Kerosene', 'Ethanol'),
+    N('Car Parts', 'Bonnet', 'Boot', 'Bumper', 'Exhaust'),
+    N('Road Signs', 'Stop', 'Yield', 'Detour', 'Zebra'),
+    N('Airport', 'Runway', 'Terminal', 'Hangar', 'Control Tower'),
+    N('Ship Parts', 'Deck', 'Hull', 'Anchor', 'Mast'),
+    N('Bike Parts', 'Pedal', 'Saddle', 'Chain', 'Spoke'),
+    N('Railway', 'Platform', 'Sleeper', 'Signal', 'Carriage'),
+    N('Journey Words', 'Voyage', 'Trek', 'Commute', 'Excursion'),
   ]},
   { title: 'Animal Kingdom', trees: [
     N('Pets', N('Dog', 'Poodle', 'Beagle', 'Collie', 'Husky'), 'Rabbit', 'Hamster', 'Goldfish'),
@@ -54,6 +67,18 @@ const PACKS = [
         N('Vertebrate', N('Mammal', 'Lion', 'Whale', 'Bat', 'Zebra'), 'Bird', 'Fish', 'Reptile'),
         'Insect', 'Spider', 'Worm'),
       'Plant', 'Fungus', 'Bacteria'),
+    // more fusion chains
+    N('Wild Animals', N('Big Cat', 'Tiger', 'Leopard', 'Jaguar', 'Cheetah'), 'Elephant', 'Giraffe', 'Hippo'),
+    // 4 levels, 13 tiles
+    N('Planet Earth', N('Land', N('Highlands', N('Mountain', 'Everest', 'Alps', 'Andes', 'Rockies'), 'Hill', 'Cliff', 'Plateau'), 'Desert', 'Forest', 'Island'), 'Ocean', 'River', 'Lake'),
+    N('Big Cats', 'Tiger', 'Leopard', 'Jaguar', 'Cheetah'),
+    N('Birds of Prey', 'Eagle', 'Falcon', 'Hawk', 'Owl'),
+    N('Ocean Life', 'Octopus', 'Squid', 'Crab', 'Starfish'),
+    N('Reptiles', 'Gecko', 'Iguana', 'Cobra', 'Crocodile'),
+    N('Bugs', 'Beetle', 'Ant', 'Wasp', 'Dragonfly'),
+    N('Baby Animals', 'Kitten', 'Puppy', 'Calf', 'Cub'),
+    N('Animal Homes', 'Nest', 'Burrow', 'Hive', 'Den'),
+    N('Primates', 'Gorilla', 'Chimp', 'Orangutan', 'Baboon'),
   ]},
   { title: 'Food & Drink', trees: [
     N('Fruit', N('Apple', 'Gala', 'Fuji', 'Braeburn', 'Jazz'), 'Banana', 'Mango', 'Grape'),
@@ -70,6 +95,16 @@ const PACKS = [
       N('Fruit', N('Apple', 'Gala', 'Fuji', 'Braeburn', 'Jazz'), 'Banana', 'Mango', 'Grape'),
       N('Dairy', N('Cheese', 'Cheddar', 'Brie', 'Gouda', 'Feta'), 'Milk', 'Butter', 'Yogurt'),
       'Grain', 'Meat'),
+    // more fusion chains
+    N('Dessert Table', N('Cake', 'Sponge', 'Carrot Cake', 'Gateau', 'Cupcake'), 'Pie', 'Ice Cream', 'Custard'),
+    N('Spices', 'Cumin', 'Paprika', 'Turmeric', 'Nutmeg'),
+    N('Vegetables', 'Carrot', 'Broccoli', 'Spinach', 'Leek'),
+    N('Nuts', 'Almond', 'Cashew', 'Walnut', 'Pecan'),
+    N('Breakfast', 'Pancake', 'Omelette', 'Cereal', 'Porridge'),
+    N('Desserts', 'Brownie', 'Trifle', 'Sorbet', 'Tiramisu'),
+    N('Cooking Methods', 'Bake', 'Grill', 'Steam', 'Poach'),
+    N('Sauces', 'Ketchup', 'Mustard', 'Mayonnaise', 'Pesto'),
+    N('Seafood', 'Prawn', 'Salmon', 'Lobster', 'Mussel'),
   ]},
   { title: 'Music Room', trees: [
     N('Instruments', N('Drum', 'Snare', 'Bongo', 'Timpani', 'Conga'), 'Violin', 'Flute', 'Trumpet'),
@@ -86,6 +121,18 @@ const PACKS = [
       N('Composer', 'Mozart', 'Bach', 'Beethoven', 'Chopin'),
       N('Orchestra', N('Strings', 'Violin', 'Cello', 'Harp', 'Viola'), 'Brass', 'Woodwind', 'Percussion'),
       'Symphony', 'Opera'),
+    // more fusion chains
+    N('Band', N('Guitar', 'Acoustic', 'Electric', 'Bass', 'Slide'), 'Drums', 'Keyboard', 'Microphone'),
+    // 4 levels, 13 tiles
+    N('Entertainment', N('Music', N('Instruments', N('Strings', 'Violin', 'Cello', 'Harp', 'Viola'), 'Trumpet', 'Flute', 'Piano'), 'Jazz', 'Rock', 'Opera'), 'Cinema', 'Theatre', 'Circus'),
+    N('Music Terms', 'Tempo', 'Chord', 'Rhythm', 'Melody'),
+    N('Singing Voices', 'Soprano', 'Alto', 'Tenor', 'Baritone'),
+    N('Keyboard Instruments', 'Piano', 'Organ', 'Synthesizer', 'Accordion'),
+    N('Dance Styles', 'Waltz', 'Tango', 'Salsa', 'Ballet'),
+    N('Sheet Music', 'Clef', 'Stave', 'Sharp', 'Rest'),
+    N('Music Venues', 'Stage', 'Studio', 'Arena', 'Auditorium'),
+    N('Tempo Markings', 'Allegro', 'Adagio', 'Presto', 'Largo'),
+    N('Band Lineup', 'Singer', 'Guitarist', 'Drummer', 'Bassist'),
   ]},
   { title: 'Game On', trees: [
     N('Sports', N('Martial Arts', 'Judo', 'Karate', 'Aikido', 'Kendo'), 'Tennis', 'Golf', 'Rugby'),
@@ -102,6 +149,16 @@ const PACKS = [
       N('Ball Games', N('Racket Sports', 'Tennis', 'Squash', 'Badminton', 'Padel'), 'Football', 'Cricket', 'Rugby'),
       N('Combat Sports', N('Martial Arts', 'Judo', 'Karate', 'Aikido', 'Kendo'), 'Boxing', 'Wrestling', 'Fencing'),
       'Swimming', 'Cycling'),
+    // more fusion chains
+    N('Games', N('Board Game', 'Chess', 'Monopoly', 'Scrabble', 'Cluedo'), 'Poker', 'Darts', 'Snooker'),
+    N('Board Games', 'Chess', 'Monopoly', 'Scrabble', 'Cluedo'),
+    N('Card Games', 'Poker', 'Bridge', 'Rummy', 'Snap'),
+    N('Sports Equipment', 'Racket', 'Helmet', 'Goggles', 'Whistle'),
+    N('Video Games', 'Minecraft', 'Tetris', 'Fortnite', 'Zelda'),
+    N('Chess Pieces', 'Bishop', 'Rook', 'Pawn', 'Knight'),
+    N('Winter Sports', 'Skiing', 'Curling', 'Luge', 'Bobsled'),
+    N('Sports Officials', 'Referee', 'Umpire', 'Linesman', 'Judge'),
+    N('Trophies', 'Medal', 'Cup', 'Trophy', 'Shield'),
   ]},
   { title: 'Around Town', trees: [
     N('Buildings', N('Home', 'House', 'Flat', 'Bungalow', 'Cottage'), 'School', 'Hospital', 'Library'),
@@ -118,6 +175,16 @@ const PACKS = [
       N('Shopping', N('Shops', 'Bakery', 'Pharmacy', 'Florist', 'Butcher'), 'Market', 'Mall', 'Kiosk'),
       N('Entertainment', N('Culture', 'Museum', 'Library', 'Gallery', 'Theatre'), 'Cinema', 'Arcade', 'Bowling'),
       'Station', 'Bank'),
+    // more fusion chains
+    N('Parks', N('Playground', 'Swing', 'Slide', 'Seesaw', 'Roundabout'), 'Pond', 'Bench', 'Fountain'),
+    N('Street Furniture', 'Bench', 'Lamppost', 'Bin', 'Bollard'),
+    N('Roads', 'Avenue', 'Lane', 'Boulevard', 'Crescent'),
+    N('Emergency Services', 'Police', 'Fire Brigade', 'Ambulance', 'Coastguard'),
+    N('Banking', 'Deposit', 'Loan', 'Balance', 'Interest'),
+    N('Local Workers', 'Postman', 'Plumber', 'Barber', 'Mechanic'),
+    N('Eateries', 'Cafe', 'Diner', 'Bistro', 'Canteen'),
+    N('Places of Worship', 'Church', 'Mosque', 'Temple', 'Synagogue'),
+    N('In the Park', 'Fountain', 'Playground', 'Pond', 'Bandstand'),
   ]},
 ];
 
@@ -155,7 +222,6 @@ function validate() {
         if (seen.has(lc(x))) problems.push('"' + t.name + '": duplicate word/group name "' + x + '"');
         seen.add(lc(x));
       });
-      if (m.levels < 2) problems.push('"' + t.name + '": only ' + m.levels + ' level - needs 2 or more');
     } catch (e) { problems.push(e.message); }
   }));
   return problems;
@@ -165,4 +231,53 @@ function validate() {
 const ALL = [];
 PACKS.forEach((p) => p.trees.forEach((root) => ALL.push(Object.assign({ pack: p.title, root }, measure(root)))));
 
-module.exports = { PACKS, ALL, measure, validate };
+// ---------------------------------------------------------------------------
+// Building a board: 4 top-level groups per round
+// ---------------------------------------------------------------------------
+// shapes = how deep each of the 4 groups goes (1 = classic group of 4 words, 2+ = fusion chain)
+// max    = most starting tiles allowed on the board
+const LEVEL_SPECS = {
+  1: { shapes: [[1, 1, 1, 1]], max: 16 },                              // Classic: 4 groups, 16 tiles
+  2: { shapes: [[2, 1, 1, 1]], max: 19 },                              // Easy: one 2-level fusion + 3 classic groups
+  3: { shapes: [[2, 2, 1, 1]], max: 26 },                              // Medium: two 2-level fusions + 2 classic
+  4: { shapes: [[3, 2, 2, 1], [3, 3, 1, 1]], max: 28 },                // Hard: 3-level fusions appear
+  5: { shapes: [[4, 3, 2, 1], [3, 3, 2, 1], [3, 3, 3, 1]], max: 34 },  // Chaos: the deepest chains together
+};
+const MIN_GROUP_TILES = 4;
+const keysOf = (p) => p.words.concat(p.names).map(lc);
+const shuffled = (arr) => {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+};
+
+// Returns { title, roots:[tree, ...] } - no word or group name repeats anywhere on the board.
+// `recent` (a Set of group names) is avoided when possible so rounds do not repeat.
+function compose(level, pack, recent) {
+  const spec = LEVEL_SPECS[level] || LEVEL_SPECS[2];
+  recent = recent || new Set();
+  const attempt = (pool, avoidRecent) => {
+    for (let i = 0; i < 250; i++) {
+      const shape = spec.shapes[Math.floor(Math.random() * spec.shapes.length)].slice().sort((a, b) => b - a);
+      const picks = [], used = new Set(); let total = 0, ok = true;
+      for (let k = 0; k < shape.length; k++) {
+        const room = spec.max - total - MIN_GROUP_TILES * (shape.length - k - 1);
+        const c = shuffled(pool).find((p) => p.levels === shape[k] && p.leaves <= room && !picks.includes(p) &&
+          !(avoidRecent && recent.has(p.root.name)) && keysOf(p).every((x) => !used.has(x)));
+        if (!c) { ok = false; break; }
+        picks.push(c); keysOf(c).forEach((x) => used.add(x)); total += c.leaves;
+      }
+      if (ok) return picks;
+    }
+    return null;
+  };
+  const inPack = pack && pack !== 'mixed' ? ALL.filter((p) => p.pack === pack) : null;
+  let picks = null;
+  if (inPack) picks = attempt(inPack, true) || attempt(inPack, false);
+  if (!picks) picks = attempt(ALL, true) || attempt(ALL, false);
+  if (!picks) throw new Error('Could not build a board for level ' + level);
+  const packs = new Set(picks.map((p) => p.pack));
+  return { title: packs.size === 1 ? picks[0].pack : 'Mixed Board', roots: shuffled(picks).map((p) => p.root) };
+}
+
+module.exports = { PACKS, ALL, measure, validate, compose, LEVEL_SPECS };

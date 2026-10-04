@@ -1,5 +1,5 @@
 /**
- * FUSEDLE Live - Server  (MULTI-LEVEL FUSION edition)
+ * FUSEDLE Live - Server  (classic 4-group board + MULTI-LEVEL FUSION)
  * Express (static) + Socket.IO (realtime) + MEMORY's hardened TikTok LIVE
  * connector (tiktok-connector.js) + MEMORY's viewer-photo service (avatars.js).
  *
@@ -19,7 +19,7 @@ process.on('uncaughtException', (err) => console.error('[FATAL-CAUGHT] uncaughtE
 process.on('unhandledRejection', (reason) => console.error('[FATAL-CAUGHT] unhandledRejection:', reason));
 
 const createTikTokConnector = require('./tiktok-connector');
-const { PACKS, ALL: PUZZLE_ALL, validate: validatePuzzles } = require('./puzzles');
+const { PACKS, validate: validatePuzzles, compose: composeBoard } = require('./puzzles');
 { const problems = validatePuzzles(); if (problems.length) { console.error('[puzzles] PROBLEMS:\n  ' + problems.join('\n  ')); process.exit(1); } }
 
 const DEFAULT_TIKTOK_USERNAME = String(process.env.TIKTOK_USERNAME || '').replace('@', '').trim();
@@ -40,14 +40,16 @@ app.use(express.static(path.join(__dirname, 'public'), {
 // ---------------------------------------------------------------------------
 // Settings tables
 // ---------------------------------------------------------------------------
-// Difficulty = how deep the fusion chain goes and how many tiles are on the board.
-//   levels = fusion levels in the chain (Car -> Transportation = 2 levels)
+// Difficulty = how many of the 4 groups are fusion chains, how deep they go, and how many tiles start on the board.
+//   Every board has 4 top-level groups. Level 1 is the classic game (4 groups of 4 words, 16 tiles).
+//   From level 2 up, some groups are fusion chains: a found group becomes a NEW tile that fuses again.
+//   (The exact recipe for each level lives in puzzles.js, LEVEL_SPECS.)
 const LEVELS = {
-  1: { name: 'Warmup', desc: '2 fusion levels, 7 tiles',  rule: (p) => p.levels === 2 && p.leaves <= 8 },
-  2: { name: 'Easy',   desc: '2 fusion levels, 10 tiles', rule: (p) => p.levels === 2 && p.leaves >= 9 && p.leaves <= 13 },
-  3: { name: 'Medium', desc: '3 fusion levels, 10 tiles', rule: (p) => p.levels === 3 && p.leaves <= 12 },
-  4: { name: 'Hard',   desc: '3-4 fusion levels, 13+ tiles', rule: (p) => p.levels >= 3 && p.leaves >= 13 },
-  5: { name: 'Chaos',  desc: 'Two or three chains mixed together', rule: null },
+  1: { name: 'Classic', desc: '4 groups, 16 tiles' },
+  2: { name: 'Easy',    desc: '1 fusion chain (2 levels) + 3 groups, 19 tiles' },
+  3: { name: 'Medium',  desc: '2 fusion chains (2 levels) + 2 groups, 22-25 tiles' },
+  4: { name: 'Hard',    desc: 'chains up to 3 levels deep, 28 tiles' },
+  5: { name: 'Chaos',   desc: 'chains up to 4 levels deep, 31-34 tiles' },
 };
 const TIMING = {
   autoNext: { min: 3, max: 300, def: 8 },
@@ -103,40 +105,13 @@ function saveAllTimeSoon() { clearTimeout(saveTimer); saveTimer = setTimeout(sav
 // ---------------------------------------------------------------------------
 // Puzzle building
 // ---------------------------------------------------------------------------
-const queues = {};
-let lastPuzzle = null;
-
-// Chaos: 2-3 different chains share one board (no word or group name may repeat).
-function buildChaos() {
-  const keysOf = (p) => p.words.concat(p.names).map((x) => String(x).trim().toLowerCase());
-  for (let attempt = 0; attempt < 80; attempt++) {
-    const picks = [], used = new Set(); let total = 0;
-    for (const p of shuffle(PUZZLE_ALL.slice())) {
-      const keys = keysOf(p);
-      if (keys.some((k) => used.has(k)) || total + p.leaves > 30) continue;
-      picks.push(p); keys.forEach((k) => used.add(k)); total += p.leaves;
-      if ((picks.length >= 2 && total >= 20) || picks.length >= 3) break;
-    }
-    if (picks.length >= 2 && total >= 16) return { title: 'Mixed Chaos', roots: picks.map((p) => p.root) };
-  }
-  const two = shuffle(PUZZLE_ALL.filter((p) => p.leaves <= 10)).slice(0, 2);
-  return { title: 'Mixed Chaos', roots: two.map((p) => p.root) };
-}
+const recentGroups = [];   // names of groups used in the last few rounds, so rounds do not repeat
 
 function pickTrees(level, pack) {
-  if (level === 5) return buildChaos();
-  let pool = PUZZLE_ALL.filter(LEVELS[level].rule);
-  if (pack !== 'mixed') { const inPack = pool.filter((p) => p.pack === pack); if (inPack.length) pool = inPack; }
-  if (!pool.length) pool = PUZZLE_ALL.slice();
-  const key = level + '|' + pack;
-  if (!queues[key] || !queues[key].length) {
-    queues[key] = shuffle(pool.slice());
-    const q = queues[key];
-    if (q.length > 1 && q[q.length - 1] === lastPuzzle) { const t = q[0]; q[0] = q[q.length - 1]; q[q.length - 1] = t; }
-  }
-  const pick = queues[key].pop();
-  lastPuzzle = pick;
-  return { title: pick.pack, roots: [pick.root] };
+  const b = composeBoard(level, pack, new Set(recentGroups));
+  b.roots.forEach((r) => { recentGroups.push(r.name); });
+  while (recentGroups.length > 16) recentGroups.shift();
+  return b;
 }
 
 // Turn the chosen fusion trees into nodes (groups) + starting tiles.
