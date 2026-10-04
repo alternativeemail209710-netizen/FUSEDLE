@@ -1212,13 +1212,8 @@ html, body {
 
 /* ===================== MULTI-LEVEL FUSION ===================== */
 /* Fused tiles: a tile that was CREATED by a fusion (new number). Colour = fusion level. */
-.tile.fused{--lv:#4fd1c5;color:#10131c;border-color:var(--lv);
-  background:linear-gradient(145deg,color-mix(in srgb,var(--lv) 92%,#fff),color-mix(in srgb,var(--lv) 70%,#000));
-  box-shadow:0 3px 0 color-mix(in srgb,var(--lv) 55%,#000)}
-.tile.fused[data-f="1"]{--lv:#4fd1c5}
-.tile.fused[data-f="2"]{--lv:#a78bfa}
-.tile.fused[data-f="3"]{--lv:#fbbf24}
-.tile.fused[data-f="4"]{--lv:#f472b6}
+/* all tiles share ONE colour (no colour per fusion level); a fused tile just shows what is inside it */
+.tile.fused{--lv:var(--cyan)}
 .tile-name{font-size:inherit;font-weight:900;line-height:1.05;max-width:100%;overflow:hidden;overflow-wrap:normal;word-break:normal;display:block}
 .tile-sub{font:700 8px/1.1 system-ui,sans-serif;opacity:.75;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tile.fused.peek{box-shadow:inset 0 -6px 0 var(--gc)}

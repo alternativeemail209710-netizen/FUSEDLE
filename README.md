@@ -58,7 +58,7 @@ Render updates the game by itself in a minute or two.
   the full board always contains at least one group that can be fused, so a round can never get stuck.
   Tile numbers keep counting up (1, 2, 3 ... as tiles appear) and are never reused, so a late chat message can never hit the wrong tile.
 
-- **Tiles:** every tile has its number in a gray circle on the left (6 shades of gray, white ring, never over the word). Fused tiles are coloured by level (teal, violet, gold), show their new number and what is inside them. The last fusion of a group becomes its finished card.
+- **Tiles:** every tile has its number in a gray circle on the left (6 shades of gray, white ring, never over the word). Fused tiles have the same colour as every other tile (no colour per level); they show their new number and what is inside them. The last fusion of a group becomes its finished card.
 - **Toolbar:** new game, leaderboard, **Hint** (names one group you can fuse right now), **Peek** (tints tiles by group for
   a few seconds), **Reveal 1 Fusion**, theme, full screen, settings. Nobody earns points from hints or reveals.
 - **Scoring:** points per fusion = **10 x fusion level x combo**. A level-1 fusion is worth 10, level 2 is worth 20, level 3 is worth 30.
@@ -67,11 +67,11 @@ Render updates the game by itself in a minute or two.
 - **Viewer photos:** real TikTok profile pictures show in circles next to names in Live mode.
 - **Host Console** at the bottom lets you type guesses yourself. Tap **Hide** to hide it.
 - **Puzzle Pack:** 6 themes (Getting Around, Animal Kingdom, Food & Drink, Music Room, Game On, Around Town) or Mixed.
-  Each theme has 10 three-level groups and 4 two-level groups (the middle part of every 3-level group can also be used as a 2-level group).
+  Each theme has 8 three-level groups and 4 two-level groups (the middle part of every 3-level group can also be used as a 2-level group). Every fusion is a plain "kind of / part of" link made from everyday words.
   Mixed pulls groups from all themes. No word or group name ever repeats in one round.
 
 ## Adding your own puzzles
-Open `puzzles.js`. Every group has **exactly 4 children**. Words are written in one string, separated by commas (a word may contain spaces).
+Open `puzzles.js`. Good groups: all 4 pieces clearly belong to the new tile's name, with everyday words and no piece that also fits another group. Every group has **exactly 4 children**. Words are written in one string, separated by commas (a word may contain spaces).
 Add lines inside a pack's `three: [ ... ]` list (3-level groups) or `two: [ ... ]` list (2-level groups).
 
 **2-level group (7 tiles):**
