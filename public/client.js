@@ -132,8 +132,10 @@
     d.appendChild(by ? avatarImg(by.avatar, by.uniqueId, by.name, 'sm') : mk('span', 'solved-host', '\u2728'));
     const t = mk('div', 'solved-text');
     t.appendChild(mk('b', 'solved-cat', '\u{1F3C6} ' + g.name));
-    t.appendChild(mk('span', 'solved-by', by ? by.name : 'Host reveal'));
-    t.appendChild(mk('span', 'solved-words', (g.words || []).join(' \u00B7 ')));
+    const sub = mk('span', 'solved-sub');
+    sub.appendChild(mk('span', 'solved-by', by ? by.name : 'Host reveal'));
+    sub.appendChild(mk('span', 'solved-words', (g.words || []).join(' \u00B7 ')));
+    t.appendChild(sub);
     d.appendChild(t);
     return d;
   }
@@ -207,20 +209,42 @@
     const cols = S.cols || 4;
     const rowsShown = Math.max(1, Math.ceil(S.tiles.length / cols));
     grid.style.gridTemplateRows = 'repeat(' + rowsShown + ', var(--row-h))';
-    $('pairsCounter').textContent = '\u26A1 ' + S.fusionsDone + '/' + S.fusionsTotal + ' fusions \u00B7 \u{1F9E9} ' + S.chainsDone + '/' + S.chainsTotal + ' groups' + (S.waiting > 0 ? ' \u00B7 \u23EC ' + S.waiting + ' more to come' : '');
+    const pc = $('pairsCounter'); pc.textContent = '';
+    const add = (t, c) => { const e = document.createElement('span'); if (c) e.className = c; e.textContent = t; pc.appendChild(e); };
+    add('\u26A1 ' + S.fusionsDone + '/' + S.fusionsTotal); add(' fusions', 'lbl');
+    add(' \u00B7 \u{1F9E9} ' + S.chainsDone + '/' + S.chainsTotal); add(' groups', 'lbl');
+    if (S.waiting > 0) { add(' \u00B7 \u23EC ' + S.waiting); add(' more to come', 'lbl'); }
     $('solvedBanner').hidden = !S.solvedAt;
     const hl = $('hintLine'); hl.hidden = !S.hint; hl.textContent = S.hint || '';
     fitLayout();
   }
 
   // ---- Keep the page exactly one phone screen tall ---------------------------
-  // The top line, leaderboards and console never leave the screen. Tiles keep
-  // their full size; if a very short phone cannot show every row, only the game
-  // area scrolls (kept scrolled so the tiles stay in view).
+  // The top line, leaderboards and console never leave the screen. The game area
+  // (finished groups + tiles) sizes ITSELF to the space that is left: it tries the
+  // roomiest layout first and only shrinks as far as it must, in this order:
+  //   n = normal finished cards, c = slim finished cards, d = slim cards two per row
+  // (each paired with a tile-row height). Only if even the smallest layout does not
+  // fit (very short phone) does the game area scroll inside its own box.
+  const FIT_STEPS = [];
+  [['n', [54, 50, 46, 44]], ['c', [54, 50, 46, 42, 40]], ['d', [54, 50, 46, 42, 38, 34, 32]]].forEach((m) => m[1].forEach((h) => FIT_STEPS.push([m[0], h])));
   function fitLayout() {
-    const shell = document.querySelector('.app-shell'), fb = $('fusedBoard');
-    if (!shell || !fb) return;
+    const shell = document.querySelector('.app-shell'), fb = $('fusedBoard'), grid = $('tileGrid'), sl = $('solvedList');
+    if (!shell || !fb || !grid || !sl) return;
     if (!document.fullscreenElement) shell.style.setProperty('--app-h', Math.round(window.innerHeight) + 'px');
+    const prevFlex = fb.style.flex; fb.style.flex = '1 1 0';          // measure: the game area takes ALL the free space
+    let chosen = FIT_STEPS[FIT_STEPS.length - 1], fits = false;
+    for (let k = 0; k < FIT_STEPS.length; k++) {
+      sl.dataset.mode = FIT_STEPS[k][0]; grid.style.setProperty('--row-h', FIT_STEPS[k][1] + 'px');
+      if (fb.scrollHeight <= fb.clientHeight + 1) { chosen = FIT_STEPS[k]; fits = true; break; }
+    }
+    if (!fits) { sl.dataset.mode = chosen[0]; grid.style.setProperty('--row-h', chosen[1] + 'px'); }
+    fb.style.flex = prevFlex;
+    // topline: drop the long words (keep icons + numbers) if the counter would not fit next to the timer
+    const pc = $('pairsCounter'); pc.classList.remove('tight'); pc.style.fontSize = '';
+    if (pc.scrollWidth > pc.clientWidth + 1) pc.classList.add('tight');
+    let fs = parseFloat(getComputedStyle(pc).fontSize) || 12;
+    while (pc.scrollWidth > pc.clientWidth + 1 && fs > 8.5) { fs -= 0.5; pc.style.fontSize = fs + 'px'; }
     if (fb.scrollHeight > fb.clientHeight + 1) fb.scrollTop = fb.scrollHeight;
   }
   let fitQueued = false;
@@ -230,6 +254,7 @@
   document.addEventListener('fullscreenchange', () => { setTimeout(queueFit, 50); setTimeout(queueFit, 400); });
   if (window.visualViewport) window.visualViewport.addEventListener('resize', queueFit);
   window.addEventListener('load', () => { queueFit(); setTimeout(queueFit, 300); });
+  if (window.ResizeObserver) { const st = document.querySelector('.board-stage'); if (st) new ResizeObserver(queueFit).observe(st); }
 
   // Merge animation: the 4 fused tiles slide together into the new tile (or into the finished-group card).
   function playMerge(removed) {

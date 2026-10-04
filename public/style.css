@@ -34,13 +34,13 @@
     --bg: #f4f5f9;
     --bg-panel: #ffffff;
     --bg-input: #eef0f5;
-    --pink: #d63a56;
-    --cyan: #0c766c;
+    --pink: #c42a48;
+    --cyan: #0a6a61;
     --text: #1c2030;
     --text-dim: #5b6178;
     --given: #e7e9f1;
     --correct: #1f7a4f;
-    --success: #16803d;
+    --success: #0f6b2f;
     --danger: #d33a3a;
     --warning: #b45309;
     --border: #dcdfe8;
@@ -52,13 +52,13 @@
   --bg: #f4f5f9;
   --bg-panel: #ffffff;
   --bg-input: #eef0f5;
-  --pink: #d63a56;
-  --cyan: #0c766c;
+  --pink: #c42a48;
+  --cyan: #0a6a61;
   --text: #1c2030;
   --text-dim: #5b6178;
   --given: #e7e9f1;
   --correct: #1f7a4f;
-  --success: #16803d;
+  --success: #0f6b2f;
   --danger: #d33a3a;
   --warning: #b45309;
   --border: #dcdfe8;
@@ -76,13 +76,13 @@
   --bg: #faf3e4;
   --bg-panel: #ffffff;
   --bg-input: #f1e6cf;
-  --pink: #c1512b;
+  --pink: #b04523;
   --cyan: #8a5518;
   --text: #2a2012;
   --text-dim: #6b5c42;
   --given: #ece0c5;
   --correct: #1f7a4f;
-  --success: #16803d;
+  --success: #0f6b2f;
   --danger: #d33a3a;
   --warning: #b45309;
   --border: #e3d6b8;
@@ -98,7 +98,7 @@
   --text-dim: #4d6478;
   --given: #d7e8f2;
   --correct: #1f7a4f;
-  --success: #16803d;
+  --success: #0f6b2f;
   --danger: #d33a3a;
   --warning: #b45309;
   --border: #cfe1ee;
@@ -114,7 +114,7 @@
   --text-dim: #4b5f4f;
   --given: #dcebd7;
   --correct: #1f7a4f;
-  --success: #16803d;
+  --success: #0f6b2f;
   --danger: #c1342b;
   --warning: #b45309;
   --border: #cfe3cf;
@@ -130,7 +130,7 @@
   --text-dim: #7a5568;
   --given: #f6dbe6;
   --correct: #1f7a4f;
-  --success: #16803d;
+  --success: #0f6b2f;
   --danger: #d33a3a;
   --warning: #b45309;
   --border: #f0cfdd;
@@ -146,7 +146,7 @@
   --text-dim: #5c5271;
   --given: #e3dbf5;
   --correct: #1f7a4f;
-  --success: #16803d;
+  --success: #0f6b2f;
   --danger: #d33a3a;
   --warning: #b45309;
   --border: #ddd3f0;
@@ -162,7 +162,7 @@
   --text-dim: #6e5a30;
   --given: #f2e2b6;
   --correct: #1f7a4f;
-  --success: #16803d;
+  --success: #0f6b2f;
   --danger: #c1342b;
   --warning: #b45309;
   --border: #ecd9a0;
@@ -1315,13 +1315,13 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 
 
 /* ---- Knitting wool themes (copied from WORD SHUFFLE): knitted-fabric background, yarn-ball buttons ---- */
-:root[data-theme="knit_cream"]{--bg:#FFF3DC;--bg1:#FFF3DC;--bg2:#EAD09C;--bg-panel:#FFFBF2;--bg-input:#F2E4C8;--pink:#BA563F;--cyan:#8A5F0A;--text:#5B4636;--text-dim:#7A5F49;--given:#F2E4C8;--correct:#277a53;--success:#16803d;--danger:#c0392b;--warning:#b45309;--border:#C9A26B;--legend-bg:rgba(90,60,20,.10);--on-pink:#FFFFFF;--on-cyan:#FFFFFF}
-:root[data-theme="knit_blue"]{--bg:#DCF0FA;--bg1:#DCF0FA;--bg2:#93CBE6;--bg-panel:#F2FAFD;--bg-input:#DCEFF7;--pink:#397692;--cyan:#1E5C7A;--text:#5B4636;--text-dim:#6A5A4C;--given:#DCEFF7;--correct:#277a53;--success:#16803d;--danger:#c0392b;--warning:#b45309;--border:#6FAFCB;--legend-bg:rgba(90,60,20,.10);--on-pink:#FFFFFF;--on-cyan:#FFFFFF}
-:root[data-theme="knit_green"]{--bg:#E4F5DC;--bg1:#E4F5DC;--bg2:#A2D68C;--bg-panel:#F4FBF0;--bg-input:#DDEED2;--pink:#517D43;--cyan:#2E5B26;--text:#5B4636;--text-dim:#6A5A4C;--given:#DDEED2;--correct:#277a53;--success:#16803d;--danger:#c0392b;--warning:#b45309;--border:#6FA867;--legend-bg:rgba(90,60,20,.10);--on-pink:#FFFFFF;--on-cyan:#FFFFFF}
-:root[data-theme="knit_pink"]{--bg:#FCE3EE;--bg1:#FCE3EE;--bg2:#EE9CC0;--bg-panel:#FFF6FA;--bg-input:#FADCE7;--pink:#B3537C;--cyan:#8E2E52;--text:#5B4636;--text-dim:#7A5560;--given:#FADCE7;--correct:#277a53;--success:#16803d;--danger:#c0392b;--warning:#b45309;--border:#D9678D;--legend-bg:rgba(90,60,20,.10);--on-pink:#FFFFFF;--on-cyan:#FFFFFF}
-:root[data-theme="knit_violet"]{--bg:#EEE1FA;--bg1:#EEE1FA;--bg2:#C199E8;--bg-panel:#F9F4FE;--bg-input:#E9DBF7;--pink:#865FB4;--cyan:#4E2E78;--text:#5B4636;--text-dim:#6A5A6E;--given:#E9DBF7;--correct:#277a53;--success:#16803d;--danger:#c0392b;--warning:#b45309;--border:#9C6FD1;--legend-bg:rgba(90,60,20,.10);--on-pink:#FFFFFF;--on-cyan:#FFFFFF}
-:root[data-theme="knit_honey"]{--bg:#FDEBBD;--bg1:#FDEBBD;--bg2:#F2BC48;--bg-panel:#FFFBEF;--bg-input:#F7E7BE;--pink:#8F6B1F;--cyan:#7A5109;--text:#5B4636;--text-dim:#6E5530;--given:#F7E7BE;--correct:#277a53;--success:#16803d;--danger:#c0392b;--warning:#b45309;--border:#D9A72E;--legend-bg:rgba(90,60,20,.10);--on-pink:#FFFFFF;--on-cyan:#FFFFFF}
-:root[data-theme="knit_night"]{--bg:#2B1B12;--bg1:#2B1B12;--bg2:#4A2F20;--bg-panel:#3C281B;--bg-input:#25160E;--pink:#E0724A;--cyan:#FFC38A;--text:#FFF1E0;--text-dim:#D9BFA3;--given:#4A2F20;--correct:#277a53;--success:#7FD67A;--danger:#FF8A80;--warning:#FFC857;--border:#8A6440;--legend-bg:rgba(90,60,20,.10);--on-pink:#2B1B12;--on-cyan:#2B1B12}
+:root[data-theme="knit_cream"]{--bg:#FFF3DC;--bg1:#FFF3DC;--bg2:#EAD09C;--bg-panel:#FFFBF2;--bg-input:#F2E4C8;--pink:#A94833;--cyan:#8A5F0A;--text:#5B4636;--text-dim:#7A5F49;--given:#F2E4C8;--correct:#277a53;--success:#0f6b2f;--danger:#c0392b;--warning:#b45309;--border:#C9A26B;--legend-bg:rgba(90,60,20,.10);--on-pink:#FFFFFF;--on-cyan:#FFFFFF}
+:root[data-theme="knit_blue"]{--bg:#DCF0FA;--bg1:#DCF0FA;--bg2:#93CBE6;--bg-panel:#F2FAFD;--bg-input:#DCEFF7;--pink:#397692;--cyan:#1E5C7A;--text:#5B4636;--text-dim:#6A5A4C;--given:#DCEFF7;--correct:#277a53;--success:#0f6b2f;--danger:#c0392b;--warning:#b45309;--border:#6FAFCB;--legend-bg:rgba(90,60,20,.10);--on-pink:#FFFFFF;--on-cyan:#FFFFFF}
+:root[data-theme="knit_green"]{--bg:#E4F5DC;--bg1:#E4F5DC;--bg2:#A2D68C;--bg-panel:#F4FBF0;--bg-input:#DDEED2;--pink:#517D43;--cyan:#2E5B26;--text:#5B4636;--text-dim:#6A5A4C;--given:#DDEED2;--correct:#277a53;--success:#0f6b2f;--danger:#c0392b;--warning:#b45309;--border:#6FA867;--legend-bg:rgba(90,60,20,.10);--on-pink:#FFFFFF;--on-cyan:#FFFFFF}
+:root[data-theme="knit_pink"]{--bg:#FCE3EE;--bg1:#FCE3EE;--bg2:#EE9CC0;--bg-panel:#FFF6FA;--bg-input:#FADCE7;--pink:#B3537C;--cyan:#8E2E52;--text:#5B4636;--text-dim:#7A5560;--given:#FADCE7;--correct:#277a53;--success:#0f6b2f;--danger:#c0392b;--warning:#b45309;--border:#D9678D;--legend-bg:rgba(90,60,20,.10);--on-pink:#FFFFFF;--on-cyan:#FFFFFF}
+:root[data-theme="knit_violet"]{--bg:#EEE1FA;--bg1:#EEE1FA;--bg2:#C199E8;--bg-panel:#F9F4FE;--bg-input:#E9DBF7;--pink:#865FB4;--cyan:#4E2E78;--text:#5B4636;--text-dim:#6A5A6E;--given:#E9DBF7;--correct:#277a53;--success:#0f6b2f;--danger:#c0392b;--warning:#b45309;--border:#9C6FD1;--legend-bg:rgba(90,60,20,.10);--on-pink:#FFFFFF;--on-cyan:#FFFFFF}
+:root[data-theme="knit_honey"]{--bg:#FDEBBD;--bg1:#FDEBBD;--bg2:#F2BC48;--bg-panel:#FFFBEF;--bg-input:#F7E7BE;--pink:#8F6B1F;--cyan:#6B4607;--text:#5B4636;--text-dim:#6E5530;--given:#F7E7BE;--correct:#277a53;--success:#0f6b2f;--danger:#c0392b;--warning:#b45309;--border:#D9A72E;--legend-bg:rgba(90,60,20,.10);--on-pink:#FFFFFF;--on-cyan:#FFFFFF}
+:root[data-theme="knit_night"]{--bg:#2B1B12;--bg1:#2B1B12;--bg2:#4A2F20;--bg-panel:#3C281B;--bg-input:#25160E;--pink:#F28B63;--cyan:#FFC38A;--text:#FFF1E0;--text-dim:#E6CFB4;--given:#4A2F20;--correct:#277a53;--success:#7FD67A;--danger:#FF8A80;--warning:#FFC857;--border:#8A6440;--legend-bg:rgba(90,60,20,.10);--on-pink:#2B1B12;--on-cyan:#2B1B12}
 
 /* theme swatches */
 .swatch-knit_cream{background:linear-gradient(135deg,#FFF3DC 50%,#BA563F 50%)}
@@ -1330,7 +1330,7 @@ html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 .swatch-knit_pink{background:linear-gradient(135deg,#FCE3EE 50%,#B3537C 50%)}
 .swatch-knit_violet{background:linear-gradient(135deg,#EEE1FA 50%,#865FB4 50%)}
 .swatch-knit_honey{background:linear-gradient(135deg,#FDEBBD 50%,#8F6B1F 50%)}
-.swatch-knit_night{background:linear-gradient(135deg,#2B1B12 50%,#E0724A 50%)}
+.swatch-knit_night{background:linear-gradient(135deg,#2B1B12 50%,#F28B63 50%)}
 
 /* =====================================================================
    PART 15 - KNITTING LAYER (learned from WORD SHUFFLE)
@@ -1457,3 +1457,127 @@ html.yarn .tile.fused[data-s] { border-width: 2px; }
 html:not(.yarn) .tile { background: var(--given); }
 
 @media (prefers-reduced-motion: reduce) { .btn:active, .icon-btn:active { transform: none; } }
+
+
+/* =====================================================================
+   PART 16 - PHONE FIT + DARK-THEME READABILITY
+   (1) The game area now sizes itself (client.js fitLayout): tile rows and
+       finished-group cards shrink only as much as needed so every section
+       stays on screen. The rules below make each section compact enough.
+   (2) Every text colour on the dark themes (Night Wool + Dark) was checked
+       against its real background; anything under 4.5:1 was fixed.
+   ===================================================================== */
+
+/* ---------- (1) phone fit ---------- */
+html, body { width: 100%; max-width: 100vw; overflow-x: hidden; }
+.app-shell { width: 100%; max-width: 100vw; }
+.top-bar { padding-top: max(10px, env(safe-area-inset-top)); padding-left: max(14px, env(safe-area-inset-left)); padding-right: max(14px, env(safe-area-inset-right)); }
+.host-console-bar { padding-bottom: max(5px, env(safe-area-inset-bottom)); }
+
+/* status row: counter on the left (may shrink), timer always fully visible on the right */
+.puzzle-topline { margin-bottom: 4px; gap: 6px; flex: 0 0 auto; }
+.puzzle-topline .pairs-counter { flex: 1 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; margin-right: 0; }
+.pairs-counter.tight .lbl { display: none; }
+.stopwatch { flex: 0 0 auto; white-space: nowrap; }
+.live-status-mini { flex: 0 0 auto; }
+
+/* guess pill: smaller reserved space */
+.live-guess-toast-area { height: 32px; margin-bottom: 4px; }
+.guess-toast { height: 30px; }
+
+/* finished groups: three sizes picked by the fit code (data-mode on #solvedList) */
+.solved-sub { display: flex; flex-direction: column; min-width: 0; }
+#solvedList { gap: 4px; }
+#solvedList[data-mode="c"] .solved-card, #solvedList[data-mode="d"] .solved-card { padding: 2px 6px; gap: 5px; border-radius: 9px; }
+#solvedList[data-mode="c"] .solved-card .avatar-circle, #solvedList[data-mode="d"] .solved-card .avatar-circle,
+#solvedList[data-mode="c"] .solved-host, #solvedList[data-mode="d"] .solved-host { flex-basis: 22px; width: 22px; height: 22px; font-size: 11px; }
+#solvedList[data-mode="c"] .solved-cat, #solvedList[data-mode="d"] .solved-cat { font-size: 11.5px; }
+#solvedList[data-mode="c"] .solved-sub, #solvedList[data-mode="d"] .solved-sub { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 9.5px; }
+#solvedList[data-mode="c"] .solved-by, #solvedList[data-mode="d"] .solved-by,
+#solvedList[data-mode="c"] .solved-words, #solvedList[data-mode="d"] .solved-words { display: inline; font-size: 9.5px; overflow: visible; }
+#solvedList[data-mode="c"] .solved-by::after, #solvedList[data-mode="d"] .solved-by::after { content: " \00B7  "; }
+#solvedList[data-mode="d"] { grid-template-columns: 1fr 1fr; }
+#solvedList[data-mode="d"] .solved-cat { font-size: 11px; }
+#solvedList[data-mode="c"] .solved-card, #solvedList[data-mode="d"] .solved-card { padding-top: 1px; padding-bottom: 1px; }
+#solvedList[data-mode="c"] .solved-text, #solvedList[data-mode="d"] .solved-text { line-height: 1.1; }
+
+/* offline Player Guess Bar: ONE slim row  [ input ][ Submit ][ Hide ] */
+.player-guess-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; padding: 4px 8px; margin: 3px 10px; }
+.player-guess-bar-head { order: 3; margin: 0; flex: 0 0 auto; }
+.player-guess-bar-label { display: none; }
+.player-guess-bar .team-player-chips { order: 0; flex: 1 0 100%; }
+.player-guess-bar .player-guess-hint { order: 1; flex: 1 0 100%; margin: 0; }
+.player-guess-bar .player-guess-input-row { order: 2; flex: 1 1 0; min-width: 0; margin: 0; }
+.player-guess-bar .player-guess-input-row input { padding: 6px 9px; }
+.player-guess-bar .player-guess-input-row .btn { padding: 6px 12px; }
+.player-guess-bar.collapsed { justify-content: flex-end; }
+.player-guess-bar.collapsed .player-guess-bar-label { display: inline; margin-right: auto; }
+
+/* shorter phones: tighten the fixed sections (tiles keep their size as long as possible) */
+@media (max-height: 760px) {
+  .top-bar { padding-top: max(6px, env(safe-area-inset-top)); padding-bottom: 6px; }
+  .quick-hint { padding: 5px 6px; }
+  .board-stage { padding-top: 5px; padding-bottom: 4px; }
+  .live-scoreboard { margin-top: 4px; gap: 6px; }
+  .live-score-col { padding: 3px 6px; border-radius: 10px; }
+  .live-score-col h3 { font-size: 11px; margin: 0 0 1px; }
+  .live-score-list li { font-size: 11px; padding: 1px 0; gap: 4px; }
+  .live-score-list .avatar-circle { width: 17px; height: 17px; }
+  .live-score-list .inline-rank { width: 16px; }
+  .live-score-list .inline-rank-medal { font-size: 12px; }
+  .live-score-list .streak-badge { font-size: 9.5px; padding: 0 5px; }
+  .host-console-bar { padding-top: 3px; }
+  .host-console-bar input { padding: 5px 9px; }
+  .host-console-bar .btn { padding: 6px 14px; }
+}
+@media (max-height: 620px) {
+  .live-guess-toast-area { height: 28px; margin-bottom: 2px; }
+  .guess-toast { height: 26px; font-size: 11.5px; }
+}
+/* very narrow phones */
+@media (max-width: 340px) {
+  .top-bar h1 { font-size: 12.5px; }
+  .tile { gap: 2px; }
+  .tile i { width: 15px; height: 15px; font-size: 8px; }
+}
+
+/* ---------- (2) readable text on every theme ---------- */
+::placeholder { color: var(--text-dim); opacity: 1; }
+.streak-badge { color: #2b0b0b; }
+
+/* a tapped (selected) tile is a bright cream tile with dark letters on EVERY theme */
+html[data-theme] .app-shell .tile.sel, html.yarn[data-theme] .app-shell .tile.sel[data-s] {
+  background: #FFF4CC; color: #2E1E10; text-shadow: none; border-color: var(--warning);
+}
+
+/* dark themes: buttons use dark ink on the bright accent, danger buttons too */
+:root[data-theme="dark"] { --on-pink: #1b0a10; --on-cyan: #04201d; }
+html[data-theme="dark"] .btn-danger, html[data-theme="knit_night"] .btn-danger { color: #2b0b0b; }
+html[data-theme="dark"] .btn-primary, html[data-theme="dark"] .mode-btn.active, html[data-theme="dark"] .lb-modal-tab.active,
+html[data-theme="dark"] .icon-btn.active, html[data-theme="dark"] .save-settings-btn { color: var(--on-pink); }
+html[data-theme="dark"] .btn-primary { background: linear-gradient(var(--pink), color-mix(in srgb, var(--pink) 92%, #000)); }
+html[data-theme="knit_night"] .btn-primary { background: linear-gradient(var(--pink), color-mix(in srgb, var(--pink) 90%, #000)); }
+html[data-theme="dark"] .btn-danger, html[data-theme="knit_night"] .btn-danger { background: linear-gradient(var(--danger), color-mix(in srgb, var(--danger) 92%, #000)); }
+
+/* dark themes with the multicolour yarn switched OFF: light letters on the dark wool tile */
+html:not(.yarn)[data-theme="knit_night"] .tile, html:not(.yarn)[data-theme="dark"] .tile { color: var(--text); text-shadow: none; }
+html:not(.yarn)[data-theme="knit_night"] .tile::before, html:not(.yarn)[data-theme="dark"] .tile::before { border-color: rgba(255,241,224,.30); }
+html:not(.yarn)[data-theme="knit_night"] .tile.wrong, html:not(.yarn)[data-theme="dark"] .tile.wrong { background: color-mix(in srgb, var(--danger) 38%, var(--given)); }
+
+/* plain light themes: white letters on their deep accent buttons (they had dark letters on dark buttons) */
+:root[data-theme="light"], :root[data-theme="cream"], :root[data-theme="sky"], :root[data-theme="meadow"],
+:root[data-theme="blossom"], :root[data-theme="lavender"], :root[data-theme="honey"] { --on-cyan: #fff; }
+
+/* light wool themes: letters that sit straight on the knitted background (which gets darker toward the bottom)
+   use a deeper brown / accent so they stay easy to read everywhere on the screen */
+:root[data-theme="knit_cream"], :root[data-theme="knit_blue"], :root[data-theme="knit_green"],
+:root[data-theme="knit_pink"], :root[data-theme="knit_violet"], :root[data-theme="knit_honey"] { --text: #43301F; --text-dim: #4D3926; }
+html.knit-bg:not([data-theme="knit_night"]) .accent { color: color-mix(in srgb, var(--pink) 68%, #000); }
+html.knit-bg:not([data-theme="knit_night"]) .highlight,
+html.knit-bg:not([data-theme="knit_night"]) .details-toggle,
+html.knit-bg:not([data-theme="knit_night"]) .link-btn,
+html.knit-bg:not([data-theme="knit_night"]) .how-to-play-title { color: color-mix(in srgb, var(--cyan) 72%, #000); }
+:root[data-theme="honey"] .highlight, :root[data-theme="honey"] .details-toggle, :root[data-theme="honey"] .link-btn,
+:root[data-theme="honey"] .how-to-play-title, :root[data-theme="sky"] .highlight, :root[data-theme="sky"] .how-to-play-title,
+:root[data-theme="meadow"] .highlight, :root[data-theme="meadow"] .how-to-play-title { color: color-mix(in srgb, var(--cyan) 72%, #000); }
+html[data-theme="dark"] .mode-btn.active, html[data-theme="dark"] .lb-modal-tab.active { background: linear-gradient(var(--pink), color-mix(in srgb, var(--pink) 92%, #000)); }

@@ -2,6 +2,11 @@
 
 This folder is the complete, finished app. You do not need to edit any code.
 
+> **v7.6 - phone fit + dark-theme readability**
+> - The game area now sizes itself to the phone: tile rows (54px down to 32px) and the finished-group cards (normal, slim, or two per row) shrink only as far as needed, so the status row, tiles, both leaderboards and the console all stay on screen from 360x640 phones up. Only a very short phone (about 320x568) with many finished groups may scroll inside the game box.
+> - The status line keeps the timer fully visible (long words are dropped on narrow screens), and the Offline guess bar is now one slim row.
+> - Night Wool and Dark: every text colour is at least 4.5:1 against its real background. A tapped tile is now bright cream with dark letters, and plain (non-yarn) tiles use light letters. Light themes got small contrast fixes too.
+
 **How the game works:** a board of numbered word tiles. Viewers type **four tile numbers** in chat, like `2 5 8 12`.
 If all four belong together they are **destroyed and fuse into ONE brand-new tile** with a **new number**. That is the classic game.
 
