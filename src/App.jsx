@@ -10,12 +10,10 @@ import Footer from './components/Footer.jsx';
 import { VictoryOverlay } from './components/Overlays.jsx';
 
 const params = new URLSearchParams(window.location.search);
-const AUTOSTART = params.get('autostart') === '1';
 const DEBUG = params.get('debug') === '1';
 const PLAY = params.get('play') === '1'; // tap-to-play on this device (needs DEBUG_MODE=true on the server)
 
 export default function App() {
-  const [started, setStarted] = useState(AUTOSTART);
   const [sel, setSel] = useState([]);
   const g = useGame();
 
@@ -26,11 +24,16 @@ export default function App() {
     if (g.game) setSel((s) => s.filter((n) => g.game.tiles.some((t) => t.num === n)));
   }, [g.game]);
 
-  const start = () => {
-    initAudio();
-    setStarted(true);
-    document.documentElement.requestFullscreen?.().catch(() => {});
-  };
+  // Browsers only allow sound after a touch/click: enable it on the first one, no start screen needed.
+  useEffect(() => {
+    const unlock = () => initAudio();
+    window.addEventListener('pointerdown', unlock, { once: true });
+    window.addEventListener('keydown', unlock, { once: true });
+    return () => {
+      window.removeEventListener('pointerdown', unlock);
+      window.removeEventListener('keydown', unlock);
+    };
+  }, []);
 
   const toggle = (num) => setSel((s) => (s.includes(num) ? s.filter((n) => n !== num) : [...s, num]));
   const submit = () => {
@@ -41,23 +44,7 @@ export default function App() {
 
   return (
     <div className="stage">
-      {!started && (
-        <div className="start">
-          <motion.div
-            className="start-logo"
-            animate={{ rotate: [-3, 3, -3] }}
-            transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-          >
-            <span>FUSION</span>
-            <span>ASSOCIATIONS</span>
-            <span className="live-pill">LIVE</span>
-          </motion.div>
-          <button className="start-btn" onClick={start}>Start game</button>
-          <p className="start-note">Tap once, then start TikTok Mobile Gaming screen share. The game runs itself.</p>
-        </div>
-      )}
-
-      {started && g.game && (
+      {g.game && (
         <div className="zones">
           <Header game={g.game} tiktok={g.tiktok} online={g.online} />
           <Board
@@ -86,9 +73,9 @@ export default function App() {
         </div>
       )}
 
-      {started && !g.game && <div className="loading">Connecting...</div>}
+      {!g.game && <div className="loading">Connecting...</div>}
 
-      {DEBUG && started && <DebugBar />}
+      {DEBUG && <DebugBar />}
     </div>
   );
 }

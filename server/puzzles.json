@@ -1,83 +1,577 @@
 [
-  {
-    "id": "everyday-things",
-    "title": "Everyday Things",
-    "initialBoard": [
-      { "id": "ford",   "type": "text",  "content": "Ford" },
-      { "id": "toyota", "type": "text",  "content": "Toyota" },
-      { "id": "honda",  "type": "text",  "content": "Honda" },
-      { "id": "bmw",    "type": "text",  "content": "BMW" },
-      { "id": "boat",   "type": "emoji", "content": "🚤" },
-      { "id": "plane",  "type": "emoji", "content": "✈️" },
-      { "id": "train",  "type": "emoji", "content": "🚆" },
-      { "id": "apple",  "type": "emoji", "content": "🍎" },
-      { "id": "banana", "type": "emoji", "content": "🍌" },
-      { "id": "grape",  "type": "emoji", "content": "🍇" },
-      { "id": "berry",  "type": "emoji", "content": "🍓" },
-      { "id": "dog",    "type": "emoji", "content": "🐶" },
-      { "id": "cat",    "type": "emoji", "content": "🐱" }
+ {
+  "id": "move-it",
+  "title": "Move It",
+  "initialBoard": [
+   {
+    "id": "ford",
+    "type": "text",
+    "content": "Ford"
+   },
+   {
+    "id": "toyota",
+    "type": "text",
+    "content": "Toyota"
+   },
+   {
+    "id": "carimg",
+    "type": "image",
+    "content": "/images/car.svg"
+   },
+   {
+    "id": "suv",
+    "type": "emoji",
+    "content": "🚙"
+   },
+   {
+    "id": "bike",
+    "type": "image",
+    "content": "/images/bicycle.svg"
+   },
+   {
+    "id": "scooter",
+    "type": "text",
+    "content": "Scooter"
+   },
+   {
+    "id": "moto",
+    "type": "emoji",
+    "content": "🏍️"
+   },
+   {
+    "id": "truck",
+    "type": "text",
+    "content": "Truck"
+   },
+   {
+    "id": "train",
+    "type": "emoji",
+    "content": "🚆"
+   },
+   {
+    "id": "tram",
+    "type": "text",
+    "content": "Tram"
+   },
+   {
+    "id": "plane",
+    "type": "emoji",
+    "content": "✈️"
+   },
+   {
+    "id": "heli",
+    "type": "emoji",
+    "content": "🚁"
+   },
+   {
+    "id": "glider",
+    "type": "text",
+    "content": "Glider"
+   },
+   {
+    "id": "sail",
+    "type": "emoji",
+    "content": "⛵"
+   },
+   {
+    "id": "boatimg",
+    "type": "image",
+    "content": "/images/boat.svg"
+   },
+   {
+    "id": "ferry",
+    "type": "text",
+    "content": "Ferry"
+   }
+  ],
+  "recipes": [
+   {
+    "id": "r_cars",
+    "requires": [
+     "ford",
+     "toyota",
+     "carimg",
+     "suv"
     ],
-    "recipes": [
-      {
-        "id": "r_cars",
-        "requires": ["ford", "toyota", "honda", "bmw"],
-        "kind": "fuse",
-        "yields": { "id": "car", "type": "emoji", "content": "🚗", "label": "Car" }
-      },
-      {
-        "id": "r_transport",
-        "requires": ["car", "boat", "plane", "train"],
-        "kind": "category_solve",
-        "yields": { "id": "transportation", "type": "emoji", "content": "🚦", "label": "Transportation" }
-      },
-      {
-        "id": "r_fruits",
-        "requires": ["apple", "banana", "grape", "berry"],
-        "kind": "category_solve",
-        "yields": { "id": "fruits", "type": "emoji", "content": "🧺", "label": "Fruits" }
-      },
-      {
-        "id": "r_pets",
-        "requires": ["dog", "cat"],
-        "kind": "category_solve",
-        "yields": { "id": "pets", "type": "emoji", "content": "🏠", "label": "Pets" }
-      }
-    ]
-  },
-  {
-    "id": "sound-and-sky",
-    "title": "Sound & Sky",
-    "initialBoard": [
-      { "id": "guitar",    "type": "text",  "content": "Guitar" },
-      { "id": "violin",    "type": "text",  "content": "Violin" },
-      { "id": "cello",     "type": "text",  "content": "Cello" },
-      { "id": "drum",      "type": "text",  "content": "Drum" },
-      { "id": "cymbal",    "type": "text",  "content": "Cymbal" },
-      { "id": "triangle",  "type": "text",  "content": "Triangle" },
-      { "id": "trumpet",   "type": "text",  "content": "Trumpet" },
-      { "id": "trombone",  "type": "text",  "content": "Trombone" },
-      { "id": "piano",     "type": "emoji", "content": "🎹" },
-      { "id": "sun",       "type": "image", "content": "/images/sun.svg", "label": "Sun" },
-      { "id": "cloud",     "type": "image", "content": "/images/cloud.svg", "label": "Cloud" },
-      { "id": "bolt",      "type": "emoji", "content": "⚡" },
-      { "id": "red",       "type": "text",  "content": "Red" },
-      { "id": "blue",      "type": "text",  "content": "Blue" },
-      { "id": "green",     "type": "text",  "content": "Green" },
-      { "id": "yellow",    "type": "text",  "content": "Yellow" }
+    "kind": "fuse",
+    "yields": {
+     "id": "cars",
+     "type": "image",
+     "content": "/images/car.svg",
+     "label": "Cars"
+    }
+   },
+   {
+    "id": "r_two",
+    "requires": [
+     "bike",
+     "scooter",
+     "moto"
     ],
-    "recipes": [
-      { "id": "r_strings", "requires": ["guitar", "violin", "cello"], "kind": "fuse",
-        "yields": { "id": "strings", "type": "emoji", "content": "🎻", "label": "Strings" } },
-      { "id": "r_percussion", "requires": ["drum", "cymbal", "triangle"], "kind": "fuse",
-        "yields": { "id": "percussion", "type": "emoji", "content": "🥁", "label": "Percussion" } },
-      { "id": "r_brass", "requires": ["trumpet", "trombone"], "kind": "fuse",
-        "yields": { "id": "brass", "type": "emoji", "content": "🎺", "label": "Brass" } },
-      { "id": "r_instruments", "requires": ["strings", "percussion", "brass", "piano"], "kind": "category_solve",
-        "yields": { "id": "instruments", "type": "emoji", "content": "🎼", "label": "Instruments" } },
-      { "id": "r_weather", "requires": ["sun", "cloud", "bolt"], "kind": "category_solve",
-        "yields": { "id": "weather", "type": "emoji", "content": "🌦️", "label": "Weather" } },
-      { "id": "r_colors", "requires": ["red", "blue", "green", "yellow"], "kind": "category_solve",
-        "yields": { "id": "colors", "type": "emoji", "content": "🎨", "label": "Colors" } }
-    ]
-  }
+    "kind": "fuse",
+    "yields": {
+     "id": "twowheels",
+     "type": "emoji",
+     "content": "🛵",
+     "label": "Two Wheels"
+    }
+   },
+   {
+    "id": "r_road",
+    "requires": [
+     "cars",
+     "twowheels",
+     "truck"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "road",
+     "type": "emoji",
+     "content": "🛣️",
+     "label": "Road"
+    }
+   },
+   {
+    "id": "r_rail",
+    "requires": [
+     "train",
+     "tram"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "rail",
+     "type": "emoji",
+     "content": "🚉",
+     "label": "Rail"
+    }
+   },
+   {
+    "id": "r_land",
+    "requires": [
+     "road",
+     "rail"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "land",
+     "type": "emoji",
+     "content": "🌍",
+     "label": "Land"
+    }
+   },
+   {
+    "id": "r_air",
+    "requires": [
+     "plane",
+     "heli",
+     "glider"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "air",
+     "type": "emoji",
+     "content": "☁️",
+     "label": "Air"
+    }
+   },
+   {
+    "id": "r_sea",
+    "requires": [
+     "sail",
+     "boatimg",
+     "ferry"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "sea",
+     "type": "emoji",
+     "content": "🌊",
+     "label": "Sea"
+    }
+   },
+   {
+    "id": "r_transport",
+    "requires": [
+     "land",
+     "air",
+     "sea"
+    ],
+    "kind": "category_solve",
+    "yields": {
+     "id": "transportation",
+     "type": "emoji",
+     "content": "🚦",
+     "label": "Transportation"
+    }
+   }
+  ]
+ },
+ {
+  "id": "sound-sky",
+  "title": "Sound & Sky",
+  "initialBoard": [
+   {
+    "id": "guitar",
+    "type": "text",
+    "content": "Guitar"
+   },
+   {
+    "id": "violin",
+    "type": "emoji",
+    "content": "🎻"
+   },
+   {
+    "id": "harp",
+    "type": "image",
+    "content": "/images/harp.svg"
+   },
+   {
+    "id": "drum",
+    "type": "emoji",
+    "content": "🥁"
+   },
+   {
+    "id": "cymbal",
+    "type": "text",
+    "content": "Cymbal"
+   },
+   {
+    "id": "trumpet",
+    "type": "emoji",
+    "content": "🎺"
+   },
+   {
+    "id": "trombone",
+    "type": "text",
+    "content": "Trombone"
+   },
+   {
+    "id": "mic",
+    "type": "emoji",
+    "content": "🎤"
+   },
+   {
+    "id": "choir",
+    "type": "text",
+    "content": "Choir"
+   },
+   {
+    "id": "sun",
+    "type": "image",
+    "content": "/images/sun.svg"
+   },
+   {
+    "id": "cloud",
+    "type": "image",
+    "content": "/images/cloud.svg"
+   },
+   {
+    "id": "bolt",
+    "type": "emoji",
+    "content": "⚡"
+   },
+   {
+    "id": "red",
+    "type": "text",
+    "content": "Red"
+   },
+   {
+    "id": "blue",
+    "type": "emoji",
+    "content": "🟦"
+   },
+   {
+    "id": "green",
+    "type": "text",
+    "content": "Green"
+   },
+   {
+    "id": "yellow",
+    "type": "image",
+    "content": "/images/yellow.svg"
+   }
+  ],
+  "recipes": [
+   {
+    "id": "r_strings",
+    "requires": [
+     "guitar",
+     "violin",
+     "harp"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "strings",
+     "type": "emoji",
+     "content": "🪕",
+     "label": "Strings"
+    }
+   },
+   {
+    "id": "r_perc",
+    "requires": [
+     "drum",
+     "cymbal"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "percussion",
+     "type": "emoji",
+     "content": "🪘",
+     "label": "Percussion"
+    }
+   },
+   {
+    "id": "r_brass",
+    "requires": [
+     "trumpet",
+     "trombone"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "brass",
+     "type": "emoji",
+     "content": "🎷",
+     "label": "Brass"
+    }
+   },
+   {
+    "id": "r_instr",
+    "requires": [
+     "strings",
+     "percussion",
+     "brass"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "instruments",
+     "type": "emoji",
+     "content": "🎼",
+     "label": "Instruments"
+    }
+   },
+   {
+    "id": "r_music",
+    "requires": [
+     "instruments",
+     "mic",
+     "choir"
+    ],
+    "kind": "category_solve",
+    "yields": {
+     "id": "music",
+     "type": "emoji",
+     "content": "🎶",
+     "label": "Music"
+    }
+   },
+   {
+    "id": "r_weather",
+    "requires": [
+     "sun",
+     "cloud",
+     "bolt"
+    ],
+    "kind": "category_solve",
+    "yields": {
+     "id": "weather",
+     "type": "emoji",
+     "content": "🌦️",
+     "label": "Weather"
+    }
+   },
+   {
+    "id": "r_colors",
+    "requires": [
+     "red",
+     "blue",
+     "green",
+     "yellow"
+    ],
+    "kind": "category_solve",
+    "yields": {
+     "id": "colors",
+     "type": "emoji",
+     "content": "🎨",
+     "label": "Colors"
+    }
+   }
+  ]
+ },
+ {
+  "id": "dinner-table",
+  "title": "Dinner Table",
+  "initialBoard": [
+   {
+    "id": "apple",
+    "type": "emoji",
+    "content": "🍎"
+   },
+   {
+    "id": "banana",
+    "type": "image",
+    "content": "/images/banana.svg"
+   },
+   {
+    "id": "grape",
+    "type": "text",
+    "content": "Grapes"
+   },
+   {
+    "id": "carrot",
+    "type": "emoji",
+    "content": "🥕"
+   },
+   {
+    "id": "spinach",
+    "type": "text",
+    "content": "Spinach"
+   },
+   {
+    "id": "corn",
+    "type": "emoji",
+    "content": "🌽"
+   },
+   {
+    "id": "milk",
+    "type": "emoji",
+    "content": "🥛"
+   },
+   {
+    "id": "cheese",
+    "type": "image",
+    "content": "/images/cheese.svg"
+   },
+   {
+    "id": "butter",
+    "type": "text",
+    "content": "Butter"
+   },
+   {
+    "id": "bread",
+    "type": "emoji",
+    "content": "🍞"
+   },
+   {
+    "id": "choc",
+    "type": "emoji",
+    "content": "🍫"
+   },
+   {
+    "id": "cookie",
+    "type": "text",
+    "content": "Cookie"
+   },
+   {
+    "id": "donut",
+    "type": "emoji",
+    "content": "🍩"
+   }
+  ],
+  "recipes": [
+   {
+    "id": "r_fruit",
+    "requires": [
+     "apple",
+     "banana",
+     "grape"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "fruit",
+     "type": "emoji",
+     "content": "🧺",
+     "label": "Fruit"
+    }
+   },
+   {
+    "id": "r_veg",
+    "requires": [
+     "carrot",
+     "spinach",
+     "corn"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "veg",
+     "type": "emoji",
+     "content": "🥬",
+     "label": "Veg"
+    }
+   },
+   {
+    "id": "r_produce",
+    "requires": [
+     "fruit",
+     "veg"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "produce",
+     "type": "emoji",
+     "content": "🛒",
+     "label": "Produce"
+    }
+   },
+   {
+    "id": "r_dairy",
+    "requires": [
+     "milk",
+     "cheese",
+     "butter"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "dairy",
+     "type": "emoji",
+     "content": "🐄",
+     "label": "Dairy"
+    }
+   },
+   {
+    "id": "r_grocer",
+    "requires": [
+     "produce",
+     "dairy",
+     "bread"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "groceries",
+     "type": "emoji",
+     "content": "🛍️",
+     "label": "Groceries"
+    }
+   },
+   {
+    "id": "r_treats",
+    "requires": [
+     "choc",
+     "cookie",
+     "donut"
+    ],
+    "kind": "fuse",
+    "yields": {
+     "id": "treats",
+     "type": "emoji",
+     "content": "🍬",
+     "label": "Treats"
+    }
+   },
+   {
+    "id": "r_food",
+    "requires": [
+     "groceries",
+     "treats"
+    ],
+    "kind": "category_solve",
+    "yields": {
+     "id": "food",
+     "type": "emoji",
+     "content": "🍽️",
+     "label": "Food"
+    }
+   }
+  ]
+ }
 ]

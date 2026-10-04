@@ -26,7 +26,9 @@ export default function Tile({ tile, size, anim, registerTile, selected, hinted,
   }
 
   const hue = (tile.num * 47) % 360;
-  const cls = ['tile', tile.type, tile.fused && 'fused', selected && 'selected', hinted && 'hinted', onTap && 'tappable']
+  const hasLabel = !!tile.label && tile.type !== 'text';
+  const ll = (tile.label || '').length;
+  const cls = ['tile', tile.type, hasLabel && 'has-label', hasLabel && (ll > 11 ? 'lbl-sm' : ll > 7 ? 'lbl-md' : 'lbl-lg'), tile.fused && 'fused', selected && 'selected', hinted && 'hinted', onTap && 'tappable']
     .filter(Boolean)
     .join(' ');
 

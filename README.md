@@ -15,8 +15,7 @@ When the board is empty: victory screen, then the next puzzle loads by itself.
    - Start command: `npm start`
    - Instance type: Starter or higher (free instances sleep and drop the chat connection)
 3. Environment: `TIKTOK_USERNAME` = your handle without `@`. Optional: `TIKTOK_SESSION_ID`, `ADMIN_KEY`.
-4. On the Android phone open `https://YOUR-APP.onrender.com/?autostart=1` in Chrome, tap Start if shown
-   (needed once for sound/fullscreen), then go LIVE with TikTok Mobile Gaming and share the screen.
+4. On the Android phone open `https://YOUR-APP.onrender.com/` in Chrome (the game starts by itself; sound switches on at the first touch), then go LIVE with TikTok Mobile Gaming and share the screen.
 
 ## Local preview
 ```
@@ -40,3 +39,8 @@ npm run dev              # open http://localhost:5173/?debug=1
 ## Play it yourself (tap mode)
 Set `DEBUG_MODE=true` on the server, then open `/?play=1`. Tap tiles to select them and press **Fuse!**.
 It uses the same engine as chat guesses. Turn `DEBUG_MODE` off for real streams.
+
+## Multi-level puzzles
+`fuse` recipes can feed other recipes, so chains can be as deep as you like (the sample "Move It" puzzle is 4 levels:
+brands/images/emoji -> Cars -> Road -> Land -> Transportation). A group can mix words, emoji and images.
+Put your own images in `public/images/` and reference them as `/images/name.svg` (png/jpg/svg all work).
