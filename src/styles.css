@@ -1,0 +1,151 @@
+:root {
+  --ink: #140f3d;
+  --grape: #2a1b6e;
+  --magenta: #ff3d8b;
+  --sun: #ffd60a;
+  --mint: #2ee6a6;
+  --cyan: #3dd5ff;
+  --paper: #fff8e7;
+  --display: 'Lilita One', 'Arial Rounded MT Bold', system-ui, sans-serif;
+  --body: 'Nunito', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body, #root { height: 100%; margin: 0; background: #000; overflow: hidden; }
+body { font-family: var(--body); font-weight: 700; color: var(--paper); user-select: none; }
+
+/* ---------- 9:16 stage, letterboxed on any screen ---------- */
+.stage {
+  position: relative;
+  margin: 0 auto;
+  width: min(100vw, calc(100dvh * 9 / 16));
+  height: min(100dvh, calc(100vw * 16 / 9));
+  container-type: size;
+  overflow: hidden;
+  background:
+    radial-gradient(120cqw 60cqh at 50% 38%, #3b27a0 0%, transparent 70%),
+    linear-gradient(180deg, #1b1250 0%, var(--ink) 100%);
+}
+
+.zones {
+  position: absolute; inset: 0;
+  display: grid;
+  grid-template-rows: 20% 45% 20% 15%;
+}
+.zone { min-height: 0; position: relative; padding: 0 4cqw; }
+
+/* ---------- Zone 1: header + solved ---------- */
+.zone-top { padding-top: 2cqh; display: flex; flex-direction: column; gap: 0.6cqh; padding-right: 15cqw; /* keeps clear of TikTok's side icons */ }
+.title-row { display: flex; align-items: center; gap: 2cqw; }
+.title { font: 400 6.4cqw/1 var(--display); margin: 0; letter-spacing: 0.02em; text-shadow: 0 0.5cqw 0 #000a; }
+.live-pill { display: inline-block; background: var(--magenta); color: #fff; font: 400 3.4cqw/1 var(--display); padding: 0.7cqw 1.8cqw; border-radius: 2cqw; vertical-align: 0.4cqw; margin-left: 1cqw; animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse { 50% { transform: scale(1.1); } }
+.dot { width: 2.4cqw; height: 2.4cqw; border-radius: 50%; margin-left: auto; opacity: 0.85; }
+.dot.ok { background: var(--mint); }
+.dot.bad { background: var(--magenta); }
+.theme { font-size: 3.4cqw; color: var(--cyan); }
+.solved { flex: 1; min-height: 0; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 1.4cqw; padding-top: 0.8cqh; overflow: hidden; }
+.solved-empty { font-size: 3.2cqw; opacity: 0.45; align-self: center; }
+.solved-chip { display: flex; align-items: center; gap: 1.4cqw; background: linear-gradient(135deg, var(--mint), #1fb98a); color: var(--ink); border: 0.6cqw solid var(--ink); border-radius: 3cqw; padding: 0.8cqw 2.4cqw 0.8cqw 1.2cqw; box-shadow: 0 0.8cqw 0 #0007; }
+.solved-icon { width: 6cqw; height: 6cqw; display: grid; place-items: center; container-type: size; }
+.solved-icon .face-emoji { font-size: 78cqw; }
+.solved-icon .face-img { width: 100%; height: 100%; object-fit: contain; }
+.solved-icon .face-text { font-size: 40cqw; }
+.solved-name { font: 400 4cqw/1 var(--display); }
+.solved-by { font-size: 2.6cqw; opacity: 0.7; max-width: 16cqw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------- Zone 2: board ---------- */
+.zone-board { padding: 0 3cqw; }
+.board { position: absolute; inset: 0 3cqw; display: flex; flex-wrap: wrap; justify-content: center; align-content: center; gap: 12px; }
+.tile-slot { flex: 0 0 auto; position: relative; }
+.tile {
+  position: relative; width: 100%; height: 100%;
+  container-type: size;
+  display: grid; place-items: center; text-align: center;
+  border-radius: 16%;
+  background: linear-gradient(150deg, hsl(var(--h) 85% 62%), hsl(calc(var(--h) + 35) 80% 42%));
+  border: 0.8cqw solid #fff;
+  box-shadow: 0 1.2cqw 0 rgba(0,0,0,.45), inset 0 -3cqw 0 rgba(0,0,0,.14);
+}
+.tile.fused { background: linear-gradient(150deg, #fff3a8, var(--sun) 45%, #ff9f1c); border-color: var(--paper); box-shadow: 0 0 5cqw #ffd60a99, 0 1.2cqw 0 rgba(0,0,0,.45); }
+.tile.image { background: linear-gradient(150deg, #ffffff, #dfe8ff); }
+.face-emoji { font-size: 52cqw; line-height: 1; }
+.face-img { width: 70%; height: 70%; object-fit: contain; margin-bottom: 8%; pointer-events: none; }
+.face-text { font-family: var(--display); font-weight: 400; line-height: 1.02; padding: 0 6%; overflow-wrap: anywhere; color: #fff; text-shadow: 0 2cqw 0 rgba(0,0,0,.3); -webkit-text-stroke: 1.2cqw rgba(20,15,61,.55); paint-order: stroke fill; }
+.face-text.t-lg { font-size: 25cqw; }
+.face-text.t-md { font-size: 19cqw; }
+.face-text.t-sm { font-size: 14cqw; }
+.tile.fused .face-text { color: var(--ink); -webkit-text-stroke: 0; text-shadow: none; }
+.tile-label { position: absolute; bottom: 5%; left: 0; right: 0; font: 400 15cqw/1 var(--display); color: var(--ink); }
+.tile.image .tile-label { bottom: 4%; }
+.tile.emoji:not(.fused) .tile-label { color: #fff; }
+
+/* the number badge: the thing viewers actually type */
+.badge {
+  position: absolute; top: -9%; left: -9%;
+  min-width: 42cqw; height: 42cqw; padding: 0 6cqw;
+  display: grid; place-items: center;
+  background: var(--sun); color: var(--ink);
+  font: 400 30cqw/1 var(--display);
+  border: 2.4cqw solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 0 2cqw 0 rgba(0,0,0,.5);
+}
+
+/* fusion fx layer */
+.fx { position: absolute; inset: 0; pointer-events: none; display: grid; place-items: center; z-index: 20; }
+.charge { position: absolute; width: 38cqw; height: 38cqw; border-radius: 50%; background: radial-gradient(circle, #fff 0%, var(--sun) 35%, #ff3d8b00 70%); filter: blur(1cqw); }
+.burst { position: absolute; inset: 0; display: grid; place-items: center; }
+.flash { position: absolute; width: 30cqw; height: 30cqw; border-radius: 50%; background: radial-gradient(circle, #fff, #ffd60a 40%, #ff3d8b00 70%); }
+.burst-card { position: relative; display: grid; justify-items: center; gap: 1cqw; background: linear-gradient(150deg, #fff3a8, var(--sun) 50%, #ff9f1c); border: 1.2cqw solid #fff; border-radius: 6cqw; padding: 3cqw 6cqw 3.4cqw; box-shadow: 0 0 10cqw #ffd60acc; color: var(--ink); min-width: 30cqw; }
+.burst-card.solved { background: linear-gradient(150deg, #b9ffe6, var(--mint) 55%, #1fb98a); box-shadow: 0 0 10cqw #2ee6a6cc; }
+.burst-face { height: 22cqw; display: grid; place-items: center; container-type: size; width: 22cqw; }
+.burst-face .face-emoji { font-size: 80cqw; }
+.burst-face .face-img { width: 100%; height: 100%; margin: 0; }
+.burst-face .face-text { color: var(--ink); -webkit-text-stroke: 0; text-shadow: none; font-size: 24cqw; }
+.burst-label { font: 400 6cqw/1 var(--display); }
+.burst-user { position: absolute; bottom: 2cqh; font: 400 4.2cqw/1 var(--display); color: #fff; background: #000a; padding: 1.2cqw 3cqw; border-radius: 3cqw; }
+
+/* ---------- Zone 3: leaderboard + live feed ---------- */
+.zone-feed { padding-right: 15cqw; display: flex; flex-direction: column; gap: 1cqh; padding-top: 1cqh; }
+.leaders { display: flex; gap: 1.6cqw; min-height: 4.6cqh; }
+.leader { display: flex; align-items: center; gap: 1.2cqw; background: #ffffff1c; border-radius: 3cqw; padding: 0.8cqw 2.2cqw; font-size: 3.2cqw; max-width: 32cqw; }
+.leader-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 14cqw; }
+.leader b { color: var(--sun); font-family: var(--display); font-weight: 400; }
+.leader-empty { font-size: 3.2cqw; opacity: 0.5; align-self: center; }
+.feed { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 0.6cqh; overflow: hidden; }
+.guess { display: flex; align-items: baseline; gap: 2cqw; font-size: 3.5cqw; background: #00000040; border-left: 1.2cqw solid #ffffff55; border-radius: 1.6cqw; padding: 0.5cqh 2cqw; white-space: nowrap; overflow: hidden; }
+.guess-user { color: var(--cyan); max-width: 20cqw; overflow: hidden; text-overflow: ellipsis; }
+.guess-nums { font-family: var(--display); font-weight: 400; letter-spacing: 0.06em; flex: 1; overflow: hidden; text-overflow: ellipsis; }
+.guess.correct { border-left-color: var(--mint); background: #2ee6a626; }
+.guess.close { border-left-color: var(--sun); }
+.guess.wrong { opacity: 0.6; }
+
+/* ---------- Zone 4: instructions (sits above TikTok's comment bar) ---------- */
+.zone-footer { display: flex; flex-direction: column; justify-content: flex-start; align-items: center; gap: 1cqh; padding-top: 1cqh; padding-right: 15cqw; }
+.how { margin: 0; text-align: center; font-size: 4cqw; line-height: 1.25; background: var(--paper); color: var(--ink); padding: 1.6cqh 4cqw; border-radius: 4cqw; border: 0.8cqw solid var(--ink); box-shadow: 0 1cqw 0 #0008; }
+.how b { font-family: var(--display); font-weight: 400; background: var(--sun); padding: 0 1.6cqw; border-radius: 1.6cqw; letter-spacing: 0.08em; }
+.hint { font-size: 3.4cqw; color: var(--sun); text-align: center; }
+
+/* ---------- victory ---------- */
+.victory { position: absolute; inset: 0; z-index: 50; display: grid; place-items: center; background: radial-gradient(circle, #140f3dcc, #140f3df0); overflow: hidden; }
+.confetti { position: absolute; top: 0; font-size: 7cqw; }
+.victory-card { text-align: center; background: linear-gradient(150deg, #fff3a8, var(--sun) 50%, #ff9f1c); color: var(--ink); padding: 5cqh 8cqw; border-radius: 8cqw; border: 1.4cqw solid #fff; box-shadow: 0 0 12cqw #ffd60a99; display: grid; gap: 1.4cqh; }
+.victory-big { font: 400 12cqw/1 var(--display); }
+.victory-sub { font-size: 5cqw; }
+.victory-mvp { font: 400 5.4cqw/1 var(--display); background: var(--ink); color: var(--sun); padding: 1.2cqh 4cqw; border-radius: 4cqw; }
+.victory-next { font-size: 3.6cqw; opacity: 0.7; }
+
+/* ---------- start screen / misc ---------- */
+.start { position: absolute; inset: 0; z-index: 100; display: grid; place-content: center; justify-items: center; gap: 5cqh; background: var(--ink); padding: 8cqw; text-align: center; }
+.start-logo { display: grid; gap: 1cqh; font: 400 15cqw/0.95 var(--display); }
+.start-logo span:nth-child(2) { font-size: 10.4cqw; color: var(--sun); }
+.start-logo .live-pill { justify-self: center; font-size: 5cqw; margin: 1cqh 0 0; padding: 1cqw 3cqw; }
+.start-btn { font: 400 8cqw/1 var(--display); background: var(--mint); color: var(--ink); border: 1cqw solid #fff; border-radius: 6cqw; padding: 2.4cqh 10cqw; box-shadow: 0 1.4cqw 0 #0008; cursor: pointer; }
+.start-btn:active { transform: translateY(1cqw); box-shadow: none; }
+.start-note { font-size: 3.6cqw; opacity: 0.7; max-width: 70cqw; margin: 0; }
+.loading { position: absolute; inset: 0; display: grid; place-items: center; font: 400 6cqw var(--display); }
+.debug { position: absolute; top: 0; left: 0; right: 0; z-index: 200; display: flex; gap: 6px; padding: 6px; background: #000c; }
+.debug input { flex: 1; font-size: 16px; padding: 6px; }
+
+@media (prefers-reduced-motion: reduce) { .live-pill { animation: none; } }

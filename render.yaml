@@ -1,0 +1,17 @@
+# Render Blueprint - optional. You can also create the Web Service by hand
+# (Build: npm install && npm run build   Start: npm start)
+services:
+  - type: web
+    name: fusion-associations-live
+    runtime: node
+    plan: starter            # free tier sleeps after 15 min idle -> would drop the live chat connection
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: TIKTOK_USERNAME   # your TikTok @handle WITHOUT the @ (set in Render dashboard)
+        sync: false
+      - key: ADMIN_KEY
+        generateValue: true

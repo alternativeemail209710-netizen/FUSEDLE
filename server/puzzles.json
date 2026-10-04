@@ -1,0 +1,83 @@
+[
+  {
+    "id": "everyday-things",
+    "title": "Everyday Things",
+    "initialBoard": [
+      { "id": "ford",   "type": "text",  "content": "Ford" },
+      { "id": "toyota", "type": "text",  "content": "Toyota" },
+      { "id": "honda",  "type": "text",  "content": "Honda" },
+      { "id": "bmw",    "type": "text",  "content": "BMW" },
+      { "id": "boat",   "type": "emoji", "content": "🚤" },
+      { "id": "plane",  "type": "emoji", "content": "✈️" },
+      { "id": "train",  "type": "emoji", "content": "🚆" },
+      { "id": "apple",  "type": "emoji", "content": "🍎" },
+      { "id": "banana", "type": "emoji", "content": "🍌" },
+      { "id": "grape",  "type": "emoji", "content": "🍇" },
+      { "id": "berry",  "type": "emoji", "content": "🍓" },
+      { "id": "dog",    "type": "emoji", "content": "🐶" },
+      { "id": "cat",    "type": "emoji", "content": "🐱" }
+    ],
+    "recipes": [
+      {
+        "id": "r_cars",
+        "requires": ["ford", "toyota", "honda", "bmw"],
+        "kind": "fuse",
+        "yields": { "id": "car", "type": "emoji", "content": "🚗", "label": "Car" }
+      },
+      {
+        "id": "r_transport",
+        "requires": ["car", "boat", "plane", "train"],
+        "kind": "category_solve",
+        "yields": { "id": "transportation", "type": "emoji", "content": "🚦", "label": "Transportation" }
+      },
+      {
+        "id": "r_fruits",
+        "requires": ["apple", "banana", "grape", "berry"],
+        "kind": "category_solve",
+        "yields": { "id": "fruits", "type": "emoji", "content": "🧺", "label": "Fruits" }
+      },
+      {
+        "id": "r_pets",
+        "requires": ["dog", "cat"],
+        "kind": "category_solve",
+        "yields": { "id": "pets", "type": "emoji", "content": "🏠", "label": "Pets" }
+      }
+    ]
+  },
+  {
+    "id": "sound-and-sky",
+    "title": "Sound & Sky",
+    "initialBoard": [
+      { "id": "guitar",    "type": "text",  "content": "Guitar" },
+      { "id": "violin",    "type": "text",  "content": "Violin" },
+      { "id": "cello",     "type": "text",  "content": "Cello" },
+      { "id": "drum",      "type": "text",  "content": "Drum" },
+      { "id": "cymbal",    "type": "text",  "content": "Cymbal" },
+      { "id": "triangle",  "type": "text",  "content": "Triangle" },
+      { "id": "trumpet",   "type": "text",  "content": "Trumpet" },
+      { "id": "trombone",  "type": "text",  "content": "Trombone" },
+      { "id": "piano",     "type": "emoji", "content": "🎹" },
+      { "id": "sun",       "type": "image", "content": "/images/sun.svg", "label": "Sun" },
+      { "id": "cloud",     "type": "image", "content": "/images/cloud.svg", "label": "Cloud" },
+      { "id": "bolt",      "type": "emoji", "content": "⚡" },
+      { "id": "red",       "type": "text",  "content": "Red" },
+      { "id": "blue",      "type": "text",  "content": "Blue" },
+      { "id": "green",     "type": "text",  "content": "Green" },
+      { "id": "yellow",    "type": "text",  "content": "Yellow" }
+    ],
+    "recipes": [
+      { "id": "r_strings", "requires": ["guitar", "violin", "cello"], "kind": "fuse",
+        "yields": { "id": "strings", "type": "emoji", "content": "🎻", "label": "Strings" } },
+      { "id": "r_percussion", "requires": ["drum", "cymbal", "triangle"], "kind": "fuse",
+        "yields": { "id": "percussion", "type": "emoji", "content": "🥁", "label": "Percussion" } },
+      { "id": "r_brass", "requires": ["trumpet", "trombone"], "kind": "fuse",
+        "yields": { "id": "brass", "type": "emoji", "content": "🎺", "label": "Brass" } },
+      { "id": "r_instruments", "requires": ["strings", "percussion", "brass", "piano"], "kind": "category_solve",
+        "yields": { "id": "instruments", "type": "emoji", "content": "🎼", "label": "Instruments" } },
+      { "id": "r_weather", "requires": ["sun", "cloud", "bolt"], "kind": "category_solve",
+        "yields": { "id": "weather", "type": "emoji", "content": "🌦️", "label": "Weather" } },
+      { "id": "r_colors", "requires": ["red", "blue", "green", "yellow"], "kind": "category_solve",
+        "yields": { "id": "colors", "type": "emoji", "content": "🎨", "label": "Colors" } }
+    ]
+  }
+]
