@@ -1,19 +1,24 @@
-# Render Blueprint - optional. You can also create the Web Service by hand
-# (Build: npm install   Start: npm start)
 services:
   - type: web
-    name: fusion-associations-live
+    name: fusedle-live
     runtime: node
-    plan: starter            # free tier sleeps after 15 min idle -> would drop the live chat connection
-    buildCommand: npm install   # the frontend builds automatically via the postinstall script
+    plan: free
+    buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /healthz
     envVars:
-      - key: NODE_VERSION
-        value: 20
-      - key: MODE              # test | live | offline  (switchable later in the host toolbar)
-        value: live
-      - key: TIKTOK_USERNAME   # your TikTok @handle WITHOUT the @ (set in Render dashboard)
+      # Your EulerStream Sign API Key. Set it in Render's dashboard (Environment tab).
+      - key: EULERSTREAM_SIGN_API_KEY
         sync: false
-      - key: ADMIN_KEY         # password for the host toolbar (auto-generated, view it in Render > Environment)
-        generateValue: true
+      # Your TikTok username (no @). With BOTH variables set, the game connects
+      # to your LIVE by itself every time it starts.
+      - key: TIKTOK_USERNAME
+        sync: false
+      - key: CHAT_DEBUG_LOG
+        value: "false"
+    # Optional (paid plan): keep all-time scores across deploys by attaching a
+    # Persistent Disk and setting DATA_DIR to its folder.
+    # disk:
+    #   name: fusedle-data
+    #   mountPath: /var/data
+    #   sizeGB: 1
