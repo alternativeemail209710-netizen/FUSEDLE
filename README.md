@@ -1,15 +1,15 @@
-# FUSEDLE Live (TikTok LIVE) - 8 Groups per Board, 2-Level and 3-Level Fusion
+# FUSEDLE Live (TikTok LIVE) - 8 Groups per Round, 24 Tiles on Screen
 
 This folder is the complete, finished app. You do not need to edit any code.
 
 **How the game works:** a board of numbered word tiles. Viewers type **four tile numbers** in chat, like `2 5 8 12`.
 If all four belong together they are **destroyed and fuse into ONE brand-new tile** with a **new number**. That is the classic game.
 
-On top of it, the new tile is a real tile that can be used again in the next fusion. **Every board has exactly 8 separate groups (no chains of groups).**
-Each group is either a **2-level fusion** (7 starting tiles) or a **3-level fusion** (10 starting tiles). Harder difficulties simply have more 3-level groups.
+On top of it, the new tile is a real tile that can be used again in the next fusion. **Every round has exactly 8 separate groups (no chains of groups).**
+Each group is either a **2-level fusion** (7 starting tiles) or a **3-level fusion** (10 starting tiles).
 
 > **Example (2-level group, 7 tiles)**
-> - Level 1: viewers type the numbers of **Ford, Toyota, Honda, BMW**. Those 4 tiles vanish and one new tile **"Car"** appears with the next free number (for example 63).
+> - Level 1: viewers type the numbers of **Ford, Toyota, Honda, BMW**. Those 4 tiles vanish and one new tile **"Car"** appears with the next free number (for example 25).
 > - Level 2: **Car (63) + Bus + Tram + Bicycle** fuse into the finished group **"Land Transport"**.
 >
 > **Example (3-level group, 10 tiles)**
@@ -46,24 +46,20 @@ Render updates the game by itself in a minute or two.
 
 ## Using it
 - **Settings (gear):** theme (8 looks), mode (**Offline**, **Test**, **Live**), TikTok connect, Puzzle Pack,
-  Hints and Reveals, Reset Scores, Auto Next Game, Timing, difficulty, and Save & Apply as Default.
+  Hints and Reveals, Reset Scores, Auto Next Game, Timing, and Save & Apply as Default.
 - **Modes:** *Offline* = you play alone with the Player Guess Bar (tap 4 tiles or type them). *Test* = fake
   viewers (turn on **Auto-Play Bots**) so you can rehearse. *Live* = real TikTok chat counts.
-- **Difficulty** (pick a level from the toolbar badge, then tap the refresh button to start a new game). **Every level has exactly 8 groups.**
-  Only the mix of 2-level groups (7 tiles each) and 3-level groups (10 tiles each) changes:
-
-  | Level | Name    | 2-level groups | 3-level groups | Groups | Tiles at the start | Board (4 columns) | Fusions to finish |
-  |-------|---------|----------------|----------------|--------|--------------------|-------------------|-------------------|
-  | 1     | Warmup  | 8              | 0              | 8      | 56                 | 14 rows           | 16                |
-  | 2     | Easy    | 6              | 2              | 8      | 62                 | 16 rows           | 18                |
-  | 3     | Medium  | 4              | 4              | 8      | 68                 | 17 rows           | 20                |
-  | 4     | Hard    | 2              | 6              | 8      | 74                 | 19 rows           | 22                |
-  | 5     | Chaos   | 0              | 8              | 8      | 80                 | 20 rows           | 24                |
-
-  The board scrolls on a phone. The round ends when all 8 groups are finished.
+- **One fixed build (no difficulty levels):** every round has exactly **8 groups**: **4 two-level** groups (7 tiles each) and
+  **4 three-level** groups (10 tiles each), so **68 tiles** and **20 fusions** in total.
+  **Only 24 tiles (4 columns x 6 rows) are on the screen at any moment.** When viewers fuse a group, 4 tiles disappear and 1 new fused tile
+  takes the first freed space; the other freed spaces are filled by **new tiles dropping in** from the waiting pile, until every tile of
+  the round has appeared and all 8 groups are discovered. The counter above the board shows how many tiles are still to come.
+  The words of one group arrive lowest level first (for example the 4 car brands before Bus, Tram, Bicycle), and the game guarantees
+  the full board always contains at least one group that can be fused, so a round can never get stuck.
+  Tile numbers keep counting up (1, 2, 3 ... as tiles appear) and are never reused, so a late chat message can never hit the wrong tile.
 
 - **Tiles:** every tile has its number in a gray circle on the left (6 shades of gray, white ring, never over the word). Fused tiles are coloured by level (teal, violet, gold), show their new number and what is inside them. The last fusion of a group becomes its finished card.
-- **Toolbar:** difficulty, new game, leaderboard, **Hint** (names one group you can fuse right now), **Peek** (tints tiles by group for
+- **Toolbar:** new game, leaderboard, **Hint** (names one group you can fuse right now), **Peek** (tints tiles by group for
   a few seconds), **Reveal 1 Fusion**, theme, full screen, settings. Nobody earns points from hints or reveals.
 - **Scoring:** points per fusion = **10 x fusion level x combo**. A level-1 fusion is worth 10, level 2 is worth 20, level 3 is worth 30.
   Fuse back-to-back for a combo: 1x, 2x, 3x, then 4x. A wrong guess resets the streak. There is a This Round and an All-Time board.
@@ -72,7 +68,7 @@ Render updates the game by itself in a minute or two.
 - **Host Console** at the bottom lets you type guesses yourself. Tap **Hide** to hide it.
 - **Puzzle Pack:** 6 themes (Getting Around, Animal Kingdom, Food & Drink, Music Room, Game On, Around Town) or Mixed.
   Each theme has 10 three-level groups and 4 two-level groups (the middle part of every 3-level group can also be used as a 2-level group).
-  Mixed pulls groups from all themes. No word or group name ever repeats on one board.
+  Mixed pulls groups from all themes. No word or group name ever repeats in one round.
 
 ## Adding your own puzzles
 Open `puzzles.js`. Every group has **exactly 4 children**. Words are written in one string, separated by commas (a word may contain spaces).
@@ -92,8 +88,8 @@ T('Transport', 'Land Transport', 'Car', 'Ford,Toyota,Honda,BMW', 'Bus,Tram,Bicyc
 
 **Rules the game checks when it starts** (it tells you in the log if one is broken): every group has 4 children, a `T(...)` has 10 words,
 a `D(...)` has 7 words, and **no word or group name is used twice anywhere in the file**. Each pack needs at least 8 three-level groups
-so that Chaos can be built from a single theme. The mix per difficulty is in `LEVEL_SPECS` near the bottom of `puzzles.js`
-(`two` = number of 2-level groups, `three` = number of 3-level groups; they must add up to 8).
+so that a round can be built from a single theme. The mix for the round is `BOARD` near the bottom of `puzzles.js`
+(`two` = number of 2-level groups, `three` = number of 3-level groups; they must add up to 8). The 24-tile screen size is `COLS` and `ROWS` at the top of `server.js`.
 
 ## Keep it awake while you stream
 Render's free plan sleeps after about 15 minutes with no visitors, which drops the TikTok connection.

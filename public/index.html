@@ -12,22 +12,6 @@
   <header class="top-bar">
     <h1>FUSEDLE <span class="accent">Live</span></h1>
     <div class="top-bar-actions">
-      <!-- Difficulty: one small numbered badge (green to red). The full
-           names only show once the menu is open, so nothing gets cut off
-           on a narrow phone. Pick a level here, then tap the refresh
-           button to start a new game at that level. -->
-      <div class="toolbar-dropdown" id="difficultyDropdown">
-        <button type="button" id="difficultyDropdownBtn" class="icon-btn toolbar-dropdown-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Difficulty: Easy" title="Difficulty: Easy">
-          <span id="difficultyDropdownIcon" class="diff-badge level-2">2</span>
-        </button>
-        <ul id="difficultyDropdownMenu" class="toolbar-dropdown-menu" role="listbox" aria-label="Difficulty" hidden>
-          <li role="option" data-value="1" aria-selected="false"><span class="diff-badge level-1">1</span><span class="dd-label">Warmup <small>8 groups · 8×2-level · 56 tiles</small></span></li>
-          <li role="option" data-value="2" aria-selected="true" class="dd-active"><span class="diff-badge level-2">2</span><span class="dd-label">Easy <small>8 groups · 6×2 + 2×3-level · 62 tiles</small></span></li>
-          <li role="option" data-value="3" aria-selected="false"><span class="diff-badge level-3">3</span><span class="dd-label">Medium <small>8 groups · 4×2 + 4×3-level · 68 tiles</small></span></li>
-          <li role="option" data-value="4" aria-selected="false"><span class="diff-badge level-4">4</span><span class="dd-label">Hard <small>8 groups · 2×2 + 6×3-level · 74 tiles</small></span></li>
-          <li role="option" data-value="5" aria-selected="false"><span class="diff-badge level-5">5</span><span class="dd-label">Chaos <small>8 groups · 8×3-level · 80 tiles</small></span></li>
-        </ul>
-      </div>
       <button id="newGameTopBtn" class="icon-btn" aria-label="New Game" title="New Game">&#8635;</button>
       <button id="leaderboardTopBtn" class="icon-btn" aria-label="Leaderboard" title="Leaderboard">&#127942;</button>
       <button id="peekTopBtn" class="icon-btn" aria-label="Peek: tint tiles by group" title="Peek: tint tiles by group">&#128065;</button>
@@ -322,25 +306,18 @@
       </div>
 
       <div class="puzzle-controls">
-        <select id="difficultySelect" aria-label="Difficulty">
-          <option value="1">1 · Warmup (8 groups: 8 two-level, 56 tiles)</option>
-          <option value="2" selected>2 · Easy (8 groups: 6 two-level + 2 three-level, 62 tiles)</option>
-          <option value="3">3 · Medium (8 groups: 4 two-level + 4 three-level, 68 tiles)</option>
-          <option value="4">4 · Hard (8 groups: 2 two-level + 6 three-level, 74 tiles)</option>
-          <option value="5">5 · Chaos (8 groups: 8 three-level, 80 tiles)</option>
-        </select>
         <button id="newGameBtn" class="btn btn-secondary">New Game</button>
       </div>
 
       <button type="button" id="saveSettingsBtn" class="btn btn-primary save-settings-btn">&#128190; Save &amp; Apply Settings</button>
       <button type="button" id="saveDefaultSettingsBtn" class="btn btn-secondary save-default-settings-btn">&#127775; Save &amp; Apply as Default</button>
-      <p class="hint save-default-hint">Remembers Theme, Mode, Difficulty, Auto Next Game (and its delay), the timings, Auto-Play Bots and your TikTok username on this device, and re-applies them when this page loads after the game has restarted. <button type="button" id="clearDefaultSettingsBtn" class="link-btn">Clear saved default</button></p>
+      <p class="hint save-default-hint">Remembers Theme, Mode, Puzzle Pack, Auto Next Game (and its delay), the timings, Auto-Play Bots and your TikTok username on this device, and re-applies them when this page loads after the game has restarted. <button type="button" id="clearDefaultSettingsBtn" class="link-btn">Clear saved default</button></p>
       <div id="saveSettingsConfirm" class="save-settings-confirm" hidden></div>
 
       <div class="legend-box-full">
         <strong class="how-to-play-title">&#128218; How To Play (Live Game)</strong>
         <ol class="how-to-play-list">
-          <li><span class="htp-icon">&#9997;&#65039;</span><span>Type <b>four tile numbers</b> in chat, e.g. <span class="mono highlight">2 5 8 12</span>. Every board has <b>8 separate groups</b>. Each group is a <b>2-level</b> or <b>3-level fusion</b>; harder difficulties have more 3-level groups</span></li>
+          <li><span class="htp-icon">&#9997;&#65039;</span><span>Type <b>four tile numbers</b> in chat, e.g. <span class="mono highlight">2 5 8 12</span>. Every round has <b>8 separate groups</b> (some 2-level, some 3-level fusions). Only <b>24 tiles</b> show at a time; when tiles fuse, <b>new tiles drop into the free spaces</b> until every group is found</span></li>
           <li><span class="htp-icon">&#129513;</span><span>If all four share a link (Ford, Toyota, Honda, BMW), they are <b>destroyed</b> and <b>fuse into one new tile</b> (&ldquo;Car&rdquo;) with a brand-new number</span></li>
           <li><span class="htp-icon">&#9889;</span><span><b>Fuse again:</b> the new &ldquo;Car&rdquo; tile can now join Boat, Plane and Train to fuse into the final group &ldquo;Transportation&rdquo;. A 3-level group goes one step further: the new tile fuses into another new tile, which then fuses into the final group</span></li>
           <li><span class="htp-icon">&#128064;</span><span>Three of four right shows <b>&ldquo;one away&rdquo;</b>. Anything else is marked wrong</span></li>

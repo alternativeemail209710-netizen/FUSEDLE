@@ -1,7 +1,7 @@
 /**
- * FUSEDLE puzzle library - 8 INDEPENDENT GROUPS PER BOARD (no chains of groups).
+ * FUSEDLE puzzle library - ONE fixed build: 8 INDEPENDENT GROUPS per round (no chains of groups).
  *
- * Every difficulty level has exactly 8 groups. Each group is its own little fusion tree:
+ * Every round has exactly 8 groups. Each group is its own little fusion tree:
  *
  *   2-level fusion group = 7 starting tiles, 2 fusions
  *       D('Top', 'Sub', 'w1,w2,w3,w4', 'w5,w6,w7')
@@ -14,7 +14,7 @@
  *       Level 2:  "Sub"+w5+w6+w7     -> new tile "Mid"
  *       Level 3:  "Mid"+w8+w9+w10    -> group "Top" is done
  *
- * How many of each per difficulty level lives in LEVEL_SPECS near the bottom of this file.
+ * There are NO difficulty levels. Every round is one fixed build: 8 groups (BOARD near the bottom of this file).
  * Words are separated by commas inside one string, so a word may contain spaces ("Ice Cream").
  * Keep every word and every group name UNIQUE across this whole file (the start-up check tells you if not).
  */
@@ -199,22 +199,13 @@ PACKS.forEach((p) => {
 });
 
 // ---------------------------------------------------------------------------
-// Difficulty: EVERY level has exactly 8 independent groups. Only the mix of 2-level and 3-level groups changes.
+// The one fixed build: every round has exactly 8 independent groups.
 //   2-level group = 7 tiles, 3-level group = 10 tiles   ->   tiles = 7 x two + 10 x three
+// Only 24 tiles (4 columns x 6 rows) are on screen at a time; the rest drop in as space frees up (see server.js).
 // ---------------------------------------------------------------------------
 const GROUPS_PER_BOARD = 8;
-const LEVEL_SPECS = {
-  1: { two: 8, three: 0 },
-  2: { two: 6, three: 2 },
-  3: { two: 4, three: 4 },
-  4: { two: 2, three: 6 },
-  5: { two: 0, three: 8 },
-};
-Object.keys(LEVEL_SPECS).forEach((k) => {
-  const s = LEVEL_SPECS[k];
-  s.tiles = s.two * 7 + s.three * 10;
-  s.rows = Math.ceil(s.tiles / 4);
-});
+const BOARD = { two: 4, three: 4 };
+BOARD.tiles = BOARD.two * 7 + BOARD.three * 10;   // 68
 
 // Pick `count` pieces of one depth. No word or group name may repeat anywhere on the board.
 function pickPieces(packs, bucket, count, used, picked, recent, avoidRecent) {
@@ -233,15 +224,14 @@ function pickPieces(packs, bucket, count, used, picked, recent, avoidRecent) {
 }
 
 // Returns { title, roots:[8 trees] }
-function compose(level, pack, recent) {
-  const spec = LEVEL_SPECS[level] || LEVEL_SPECS[2];
+function compose(pack, recent) {
   recent = recent || new Set();
   const attempt = (packs, avoidRecent) => {
     for (let i = 0; i < 60; i++) {
       const used = new Set(), picked = new Set();
-      const threes = pickPieces(packs, 'd3', spec.three, used, picked, recent, avoidRecent);
+      const threes = pickPieces(packs, 'd3', BOARD.three, used, picked, recent, avoidRecent);
       if (!threes) continue;
-      const twos = pickPieces(packs, 'd2', spec.two, used, picked, recent, avoidRecent);
+      const twos = pickPieces(packs, 'd2', BOARD.two, used, picked, recent, avoidRecent);
       if (!twos) continue;
       return threes.concat(twos);
     }
@@ -252,7 +242,7 @@ function compose(level, pack, recent) {
   let picks = null;
   if (one) picks = attempt(one, true) || attempt(one, false);
   if (!picks) picks = attempt(titles, true) || attempt(titles, false);
-  if (!picks) throw new Error('Could not build a board for level ' + level);
+  if (!picks) throw new Error('Could not build a board');
   const packsUsed = new Set(picks.map((p) => p.pack));
   return { title: packsUsed.size === 1 ? picks[0].pack : 'Mixed Board', roots: shuffled(picks).map((p) => p.root) };
 }
@@ -261,7 +251,7 @@ function validate() {
   const problems = [];
   const globalSeen = new Map();
   PACKS.forEach((p) => {
-    if (!Array.isArray(p.three) || p.three.length < GROUPS_PER_BOARD) problems.push('Pack "' + p.title + '" needs at least ' + GROUPS_PER_BOARD + ' three-level groups so a single-pack Chaos board can be built');
+    if (!Array.isArray(p.three) || p.three.length < GROUPS_PER_BOARD) problems.push('Pack "' + p.title + '" needs at least ' + GROUPS_PER_BOARD + ' three-level groups so a single-theme round can be built');
     if (!Array.isArray(p.two) || p.two.length < 1) problems.push('Pack "' + p.title + '" needs at least 1 two-level group');
     [['three', 3, 10], ['two', 2, 7]].forEach(([key, lv, tiles]) => (p[key] || []).forEach((t) => {
       try {
@@ -276,24 +266,19 @@ function validate() {
       } catch (e) { problems.push(e.message); }
     }));
   });
-  Object.keys(LEVEL_SPECS).forEach((lv) => {
-    const sp = LEVEL_SPECS[lv];
-    if (sp.two + sp.three !== GROUPS_PER_BOARD) problems.push('Level ' + lv + ' must have exactly ' + GROUPS_PER_BOARD + ' groups');
-  });
+  if (BOARD.two + BOARD.three !== GROUPS_PER_BOARD) problems.push('BOARD must add up to exactly ' + GROUPS_PER_BOARD + ' groups');
   if (!problems.length) {
-    Object.keys(LEVEL_SPECS).forEach((lv) => {
-      ['mixed'].concat(PACKS.map((p) => p.title)).forEach((pk) => {
-        for (let i = 0; i < 5; i++) {
-          try {
-            const b = compose(Number(lv), pk, new Set());
-            const tiles = b.roots.reduce((n, r) => n + measure(r).leaves, 0);
-            if (b.roots.length !== GROUPS_PER_BOARD || tiles !== LEVEL_SPECS[lv].tiles) throw new Error('wrong group or tile count');
-          } catch (e) { problems.push('Level ' + lv + ' / ' + pk + ': ' + e.message); break; }
-        }
-      });
+    ['mixed'].concat(PACKS.map((p) => p.title)).forEach((pk) => {
+      for (let i = 0; i < 5; i++) {
+        try {
+          const b = compose(pk, new Set());
+          const tiles = b.roots.reduce((n, r) => n + measure(r).leaves, 0);
+          if (b.roots.length !== GROUPS_PER_BOARD || tiles !== BOARD.tiles) throw new Error('wrong group or tile count');
+        } catch (e) { problems.push(pk + ': ' + e.message); break; }
+      }
     });
   }
   return problems;
 }
 
-module.exports = { PACKS, POOL, measure, validate, compose, LEVEL_SPECS, GROUPS_PER_BOARD };
+module.exports = { PACKS, POOL, measure, validate, compose, BOARD, GROUPS_PER_BOARD };

@@ -1,5 +1,5 @@
 /**
- * FUSEDLE Live - Server  (8 independent groups per board, 2-level and 3-level fusion)
+ * FUSEDLE Live - Server  (one fixed build: 8 groups per round, 24 tiles on screen at a time)
  * Express (static) + Socket.IO (realtime) + MEMORY's hardened TikTok LIVE
  * connector (tiktok-connector.js) + MEMORY's viewer-photo service (avatars.js).
  *
@@ -19,7 +19,7 @@ process.on('uncaughtException', (err) => console.error('[FATAL-CAUGHT] uncaughtE
 process.on('unhandledRejection', (reason) => console.error('[FATAL-CAUGHT] unhandledRejection:', reason));
 
 const createTikTokConnector = require('./tiktok-connector');
-const { PACKS, validate: validatePuzzles, compose: composeBoard, LEVEL_SPECS } = require('./puzzles');
+const { PACKS, validate: validatePuzzles, compose: composeBoard, BOARD } = require('./puzzles');
 { const problems = validatePuzzles(); if (problems.length) { console.error('[puzzles] PROBLEMS:\n  ' + problems.join('\n  ')); process.exit(1); } }
 
 const DEFAULT_TIKTOK_USERNAME = String(process.env.TIKTOK_USERNAME || '').replace('@', '').trim();
@@ -40,17 +40,10 @@ app.use(express.static(path.join(__dirname, 'public'), {
 // ---------------------------------------------------------------------------
 // Settings tables
 // ---------------------------------------------------------------------------
-// Difficulty: EVERY level has exactly 8 independent groups (no chains of groups). Only the mix of 2-level fusion groups
-// (7 tiles each) and 3-level fusion groups (10 tiles each) changes. The recipe lives in puzzles.js (LEVEL_SPECS).
-const LEVEL_NAMES = { 1: 'Warmup', 2: 'Easy', 3: 'Medium', 4: 'Hard', 5: 'Chaos' };
-const LEVELS = {};
-Object.keys(LEVEL_SPECS).forEach((k) => {
-  const sp = LEVEL_SPECS[k];
-  LEVELS[k] = {
-    name: LEVEL_NAMES[k], rows: sp.rows, tiles: sp.tiles,
-    desc: '8 groups: ' + sp.two + ' x 2-level + ' + sp.three + ' x 3-level \u00B7 ' + sp.tiles + ' tiles',
-  };
-});
+// ONE fixed build, no difficulty levels: every round has 8 independent groups (see BOARD in puzzles.js).
+// Only SHOWN tiles (4 columns x 6 rows = 24) are on screen at any moment. When tiles are fused, the freed spaces are
+// refilled from the waiting tiles until every tile of the round has appeared and every group is discovered.
+const COLS = 4, ROWS = 6, SHOWN = COLS * ROWS;
 const TIMING = {
   autoNext: { min: 3, max: 300, def: 8 },
   mismatch: { min: 0.5, max: 5, def: 2 },
@@ -73,10 +66,10 @@ const shuffle = (arr) => {
 // State
 // ---------------------------------------------------------------------------
 const state = {
-  mode: 'test', level: 2, pack: 'mixed', cycle: 0, configured: false,
+  mode: 'test', pack: 'mixed', cycle: 0, configured: false,
   autoNext: true, autoNextDelaySeconds: TIMING.autoNext.def, autoNextAt: 0,
   mismatchSeconds: TIMING.mismatch.def, peekSeconds: TIMING.peek.def, pointsPerGroup: 10,
-  title: '', nodes: [], tiles: [], nextN: 1, completed: [], rootsTotal: 0, fusionsDone: 0, lastFusion: null, hint: '', peeking: false,
+  title: '', nodes: [], tiles: [], queues: {}, seq: [], nextN: 1, completed: [], rootsTotal: 0, fusionsDone: 0, lastFusion: null, hint: '', peeking: false,
   startedAt: 0, solvedAt: 0,
   scores: {}, allTimeScores: {}, rawEventCount: 0, lastEvent: null,
   bots: false,
@@ -107,43 +100,51 @@ function saveAllTimeSoon() { clearTimeout(saveTimer); saveTimer = setTimeout(sav
 // ---------------------------------------------------------------------------
 const recentGroups = [];   // names of groups used in the last few rounds, so rounds do not repeat
 
-function pickTrees(level, pack) {
-  const b = composeBoard(level, pack, new Set(recentGroups));
+function pickTrees(pack) {
+  const b = composeBoard(pack, new Set(recentGroups));
   b.roots.forEach((r) => { recentGroups.push(r.name); });
-  while (recentGroups.length > 16) recentGroups.shift();
+  while (recentGroups.length > 24) recentGroups.shift();
   return b;
 }
 
-// Turn the chosen fusion trees into nodes (groups) + starting tiles.
+// Turn the chosen fusion trees into nodes (groups) + the waiting tiles.
 //   node: { id, name, parent, ord, height, done, nested }
-//   tile: { n, w, parent, ord, node, alive, sub, height }
-//     parent = the group this tile belongs to; node = group it represents (fused tiles only)
+//   tile: { n, w, parent, ord, node, alive, sub, height, slot }
+//     parent = the group this tile belongs to; node = group it represents (fused tiles only); slot = position 0..23 on screen
+// Nothing is numbered or shown yet: tiles get their number and position when they appear (see refill()).
+// Inside one group the words appear lowest level first, so the board can never get stuck (see refill()).
 function buildBoard(roots) {
   state.nodes = []; state.completed = []; state.fusionsDone = 0; state.lastFusion = null;
+  state.tiles = []; state.queues = {}; state.seq = []; state.nextN = 1;
   const base = [];
-  const addNode = (def, parentId, ord) => {
+  const addNode = (def, parentId, ord, treeId) => {
     const id = state.nodes.length;
+    const tree = treeId === null ? id : treeId;
     const node = { id, name: def.name, parent: parentId, ord, height: 0, done: false, nested: null };
     state.nodes.push(node);
     let deepest = 0;
     def.kids.forEach((k, i) => {
-      if (typeof k === 'string') base.push({ w: k, parent: id, ord: i });
-      else deepest = Math.max(deepest, addNode(k, id, i));
+      if (typeof k === 'string') base.push({ w: k, parent: id, ord: i, tree });
+      else deepest = Math.max(deepest, addNode(k, id, i, tree));
     });
     node.height = deepest + 1;
     return node.height;
   };
-  roots.forEach((r) => addNode(r, null, 0));
-  state.tiles = shuffle(base).map((t, i) => ({ n: i + 1, w: t.w, parent: t.parent, ord: t.ord, node: null, alive: true, sub: '', height: 0 }));
-  state.nextN = state.tiles.length + 1;
+  roots.forEach((r) => addNode(r, null, 0, null));
+  shuffle(base).sort((a, b) => state.nodes[a.parent].height - state.nodes[b.parent].height);   // stable: lowest level first
+  base.forEach((t) => {
+    (state.queues[t.tree] = state.queues[t.tree] || []).push({ n: 0, w: t.w, parent: t.parent, ord: t.ord, node: null, alive: true, sub: '', height: 0, slot: -1 });
+    state.seq.push(t.tree);
+  });
+  shuffle(state.seq);   // the order in which groups send their next word onto the board
   state.rootsTotal = roots.length;
+  refill();
 }
 
-function newGame(level) {
+function newGame() {
   cancelAutoNext();
   clearTimeout(peekTimer); state.peeking = false;
-  if (Number(level) in LEVELS) state.level = Number(level);
-  const pick = pickTrees(state.level, state.pack);
+  const pick = pickTrees(state.pack);
   state.title = pick.title;
   buildBoard(pick.roots);
   state.hint = ''; state.solvedAt = 0; state.startedAt = Date.now();
@@ -157,9 +158,40 @@ const tilesOf = (nodeId) => state.tiles.filter((t) => t.alive && t.parent === no
 // A group can be fused only when ALL 4 of its children are tiles on the board right now.
 const fusableNodes = () => state.nodes.filter((nd) => !nd.done && tilesOf(nd.id).length === 4);
 
+// Does the board (plus an optional extra tile) contain at least one group whose 4 children are all on screen?
+function hasFusable(extra) {
+  const count = {};
+  openTiles().forEach((t) => { count[t.parent] = (count[t.parent] || 0) + 1; });
+  if (extra) count[extra.parent] = (count[extra.parent] || 0) + 1;
+  return state.nodes.some((nd) => !nd.done && count[nd.id] === 4);
+}
+
+// Fill the empty spaces (lowest position first) from the waiting tiles, each new tile with the next free number.
+// SAFETY: a group only sends its words lowest level first, so every group on screen holds at most 3 words of its
+// current fusion. The very last empty space is therefore only ever filled in a way that leaves at least one group
+// that can be fused, so a full board can never get stuck.
+function refill() {
+  while (state.seq.length) {
+    const taken = new Set(openTiles().map((t) => t.slot));
+    if (taken.size >= SHOWN) break;
+    let slot = 0; while (taken.has(slot)) slot++;
+    let at = 0;
+    if (taken.size === SHOWN - 1 && !hasFusable(null)) {
+      const good = [];
+      state.seq.forEach((treeId, i) => { if (!good.some((g) => g.treeId === treeId) && hasFusable(state.queues[treeId][0])) good.push({ treeId, i }); });
+      if (good.length) at = good[Math.floor(Math.random() * good.length)].i;
+    }
+    const treeId = state.seq.splice(at, 1)[0];
+    const tile = state.queues[treeId].shift();
+    tile.n = state.nextN++; tile.slot = slot;
+    state.tiles.push(tile);
+  }
+}
+
 // The heart of the game: destroy the 4 tiles, create ONE new tile with a NEW number.
 function doFuse(node, picked, by) {
   picked.sort((a, b) => a.ord - b.ord);
+  const freed = picked.map((t) => t.slot).sort((a, b) => a - b);
   picked.forEach((t) => { t.alive = false; });
   node.done = true;
   node.nested = { name: node.name, kids: picked.map((t) => (t.node !== null ? state.nodes[t.node].nested : t.w)) };
@@ -168,30 +200,32 @@ function doFuse(node, picked, by) {
     n: state.nextN++, w: node.name, parent: node.parent, ord: node.ord, node: node.id,
     alive: !isRoot,                       // a finished chain becomes a banner instead of a tile
     sub: picked.map((t) => t.w).join(' \u00B7 '), height: node.height,
+    slot: isRoot ? -1 : freed[0],         // the fused tile takes the first freed space, the other spaces get new tiles
   };
   state.tiles.push(tile);
   state.fusionsDone += 1;
   state.lastFusion = { newN: tile.n, at: Date.now() };
   if (isRoot) state.completed.push({ id: node.id, name: node.name, words: picked.map((t) => t.w), by: by || null });
   state.hint = '';
+  refill();
   return { tile, isRoot, from: picked.map((t) => t.n) };
 }
 
 function publicState() {
   return {
-    mode: state.mode, level: state.level, levelName: LEVELS[state.level].name, pack: state.pack,
+    mode: state.mode, pack: state.pack,
     title: state.title,
     fusionsDone: state.fusionsDone, fusionsTotal: state.nodes.length,
     chainsDone: state.completed.length, chainsTotal: state.rootsTotal,
     maxLevels: Math.max(0, ...state.nodes.filter((n) => n.parent === null).map((n) => n.height)),
     tiles: openTiles().map((t) => {
-      const o = { n: t.n, w: t.w };
+      const o = { n: t.n, w: t.w, s: t.slot };
       if (t.node !== null) { o.f = t.height; o.sub = t.sub; }   // f = fusion level of a fused tile
       if (state.peeking) o.g = t.parent;                        // peek: tile's group id
       return o;
     }),
     solved: state.completed.map((c) => ({ g: c.id, name: c.name, words: c.words, by: c.by })),   // only the 4 latest words, no nested tree
-    rows: LEVELS[state.level].rows,
+    cols: COLS, rows: ROWS, shown: SHOWN, waiting: state.seq.length,
     lastFusion: state.lastFusion,
     hint: state.hint, peeking: state.peeking,
     startedAt: state.startedAt, solvedAt: state.solvedAt, now: Date.now(),
@@ -229,7 +263,7 @@ function scheduleAutoNext() {
   cancelAutoNext();
   if (!state.autoNext) return;
   state.autoNextAt = Date.now() + state.autoNextDelaySeconds * 1000;
-  autoNextTimer = setTimeout(() => newGame(state.level), state.autoNextDelaySeconds * 1000);
+  autoNextTimer = setTimeout(() => newGame(), state.autoNextDelaySeconds * 1000);
 }
 function finishGame() {
   if (state.solvedAt) return;
@@ -415,7 +449,6 @@ io.on('connection', (socket) => {
   socket.emit('liveConfig', {
     hasDefaultSignApiKey: !!DEFAULT_SIGN_API_KEY, defaultUsername: DEFAULT_TIKTOK_USERNAME || '',
     packs: [{ id: 'mixed', label: 'Mixed (rotate all)' }].concat(PACKS.map((p) => ({ id: p.title, label: p.title }))),
-    levels: Object.keys(LEVELS).map((k) => ({ level: Number(k), name: LEVELS[k].name, desc: LEVELS[k].desc })),
   });
 
   socket.on('host:applyDefaults', safe((p) => {
@@ -428,17 +461,16 @@ io.on('connection', (socket) => {
     if (p.mismatchSeconds !== undefined) state.mismatchSeconds = clampSeconds(p.mismatchSeconds, TIMING.mismatch);
     if (p.peekSeconds !== undefined) state.peekSeconds = clampSeconds(p.peekSeconds, TIMING.peek);
     if (p.pointsPerGroup !== undefined) state.pointsPerGroup = Math.round(clampSeconds(p.pointsPerGroup, { min: 1, max: 100, def: 10 }));
-    if (typeof p.pack === 'string' && (p.pack === 'mixed' || PACKS.some((x) => x.title === p.pack))) state.pack = p.pack;
-    if (Number(p.level) in LEVELS) newGame(p.level);
+    if (typeof p.pack === 'string' && p.pack !== state.pack && (p.pack === 'mixed' || PACKS.some((x) => x.title === p.pack))) { state.pack = p.pack; newGame(); }
     if (typeof p.bots === 'boolean') setBots(p.bots && state.mode === 'test');
     broadcast();
   }));
 
-  socket.on('host:newGame', safe((p) => newGame(p.level), true));
+  socket.on('host:newGame', safe(() => newGame(), true));
   socket.on('host:setMode', safe((p) => setMode(p.mode), true));
   socket.on('host:setPack', safe((p) => {
     const id = String(p.pack || '');
-    if (id === 'mixed' || PACKS.some((x) => x.title === id)) { state.pack = id; newGame(state.level); }
+    if (id === 'mixed' || PACKS.some((x) => x.title === id)) { state.pack = id; newGame(); }
   }, true));
   socket.on('host:setAutoNext', safe((p) => {
     state.autoNext = !!p.enabled;
@@ -483,7 +515,7 @@ io.on('connection', (socket) => {
 });
 
 loadAllTime();
-newGame(state.level);
+newGame();
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {

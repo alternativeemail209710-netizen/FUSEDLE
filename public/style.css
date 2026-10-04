@@ -1185,7 +1185,9 @@ html, body {
 .fuse-banner span{font-size:.8rem;font-weight:700;opacity:.85}
 .fuse-banner small{display:block;font-size:.7rem;opacity:.75;margin-top:1px}
 @keyframes fusePop{from{transform:scale(.9);opacity:0}to{transform:none;opacity:1}}
-.tile-grid{--avail:calc((min(100vw,520px) - 35px)/4 - 27px);display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:var(--row-h,48px);gap:5px}
+.tile-grid{--avail:calc((min(100vw,520px) - 35px)/4 - 27px);display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:var(--row-h,54px);gap:5px}
+.tile.drop{animation:tileDrop .55s cubic-bezier(.2,.9,.3,1.15) both}
+@keyframes tileDrop{from{transform:translateY(-70px) scale(.9);opacity:0}to{transform:none;opacity:1}}
 .tile{position:relative;border:1px solid var(--border);border-radius:12px;background:var(--given);color:var(--text);font:800 clamp(7px,min(3.1vw,14px,calc(var(--avail) * var(--k,1))),14px) system-ui,sans-serif;line-height:1.1;padding:2px 2px 2px 2px;display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:3px;text-align:center;overflow:hidden;cursor:pointer;box-shadow:0 3px 0 var(--border);transition:transform .1s}
 .tile:active{transform:translateY(2px);box-shadow:0 1px 0 var(--border)}
 /* number circle: its own column on the left (never over the word), number centered, 6 shades of gray, white ring so it is clear on every theme */
@@ -1204,7 +1206,7 @@ html, body {
 @keyframes tileShake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 .board-stage .live-status-mini{margin-right:auto}
 .tile-grid.live-view .tile{cursor:default}
-@media (prefers-reduced-motion:reduce){.fuse-banner,.tile.wrong,.tile.fresh,.chain-banner{animation:none}}
+@media (prefers-reduced-motion:reduce){.fuse-banner,.tile.wrong,.tile.fresh,.tile.drop,.chain-banner{animation:none}}
 
 /* ===================== MULTI-LEVEL FUSION ===================== */
 /* Fused tiles: a tile that was CREATED by a fusion (new number). Colour = fusion level. */

@@ -6,7 +6,6 @@
   let cfg = { hasDefaultSignApiKey: false, defaultUsername: '', packs: [] };
   let lb = { round: [], allTime: [] };
   let selected = [];            // tiles tapped in the guess bar
-  let pendingLevel = 2;
   let appliedDefaults = false;
   let lbTab = 'round';
 
@@ -47,20 +46,7 @@
   function closeMenus() { document.querySelectorAll('.toolbar-dropdown-menu').forEach((m) => { m.hidden = true; }); }
   document.addEventListener('click', closeMenus);
   wireDropdown('themeDropdown', applyTheme);
-  wireDropdown('difficultyDropdown', (v) => setPendingLevel(Number(v)));
   document.querySelectorAll('.theme-choice-btn').forEach((b) => b.addEventListener('click', () => applyTheme(b.dataset.themeChoice)));
-
-  const LEVEL_NAMES = { 1: 'Warmup', 2: 'Easy', 3: 'Medium', 4: 'Hard', 5: 'Chaos' };
-  function setPendingLevel(n) {
-    pendingLevel = n;
-    const icon = $('difficultyDropdownIcon');
-    icon.className = 'diff-badge level-' + n; icon.textContent = n;
-    $('difficultyDropdownBtn').title = 'Difficulty: ' + LEVEL_NAMES[n] + ' (tap New Game to apply)';
-    $('difficultySelect').value = String(n);
-    document.querySelectorAll('#difficultyDropdownMenu li').forEach((li) => {
-      const on = Number(li.dataset.value) === n; li.classList.toggle('dd-active', on); li.setAttribute('aria-selected', on);
-    });
-  }
 
   // ---- Avatars (real TikTok photo, initials circle as backup) -------------
   function hue(str) { let h = 0; str = String(str || '?'); for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0; return h % 360; }
@@ -107,7 +93,7 @@
   }
 
   // ---- Board -------------------------------------------------------------
-  // Colour per group (peek tint + finished-chain banners) and per fusion level (fused tiles).
+  // Colour per group (peek tint + finished-group cards) and per fusion level (fused tiles).
   const groupColor = (g) => 'hsl(' + ((g * 47 + 8) % 360) + ' 72% 64%)';
   let wrongNums = [], wrongTimer = null;
   const tileEls = new Map();      // tile number -> button element (kept between renders so animations play once)
@@ -163,27 +149,33 @@
 
     // tile grid: keyed diff so only NEW fused tiles animate and nothing flickers
     const grid = $('tileGrid'); grid.classList.toggle('live-view', live);
-    if (renderedStart !== S.startedAt) { grid.innerHTML = ''; tileEls.clear(); renderedStart = S.startedAt; }
+    const newRound = renderedStart !== S.startedAt;   // first draw of this round: nothing animates in
+    if (newRound) { grid.innerHTML = ''; tileEls.clear(); renderedStart = S.startedAt; }
     const present = new Set(S.tiles.map((t) => t.n));
     tileEls.forEach((el, n) => { if (!present.has(n)) { el.remove(); tileEls.delete(n); } });
     selected = selected.filter((n) => present.has(n));
-    S.tiles.forEach((t, idx) => {
+    S.tiles.forEach((t) => {
       let el = tileEls.get(t.n);
       if (!el) {
         const fresh = !!(S.lastFusion && S.lastFusion.newN === t.n && (S.now - S.lastFusion.at) < 3000);
         el = makeTile(t, fresh); tileEls.set(t.n, el);
+        if (!newRound && !t.f) el.classList.add('drop');   // a waiting tile drops into a freed space
+        grid.appendChild(el);
       }
+      el.style.gridColumn = String((t.s % (S.cols || 4)) + 1); el.style.gridRow = String(Math.floor(t.s / (S.cols || 4)) + 1);
       el.classList.toggle('sel', selected.includes(t.n));
       el.classList.toggle('wrong', wrongNums.includes(t.n));
       const peeking = S.peeking && t.g !== undefined;
       el.classList.toggle('peek', peeking);
       if (peeking) el.style.setProperty('--gc', groupColor(t.g)); else el.style.removeProperty('--gc');
-      if (grid.children[idx] !== el) grid.insertBefore(el, grid.children[idx] || null);
     });
 
-    // big boards (many tiles): slightly shorter rows so the whole board stays on screen
-    grid.style.setProperty('--row-h', (S.rows >= 18 ? 34 : S.rows >= 15 ? 36 : 38) + 'px');   // 8 groups = 56 to 80 tiles, so rows are compact
-    $('pairsCounter').textContent = '\u26A1 ' + S.fusionsDone + '/' + S.fusionsTotal + ' fusions \u00B7 \u{1F9E9} ' + S.chainsDone + '/' + S.chainsTotal + ' groups';
+    // always 4 columns x 6 rows while tiles are still waiting; once the last tile has appeared the grid shrinks to what is left
+    const cols = S.cols || 4, maxSlot = S.tiles.reduce((m, t) => Math.max(m, t.s), 0);
+    const rowsShown = S.waiting > 0 ? (S.rows || 6) : Math.max(1, Math.ceil((maxSlot + 1) / cols));
+    grid.style.setProperty('--row-h', '54px');
+    grid.style.gridTemplateRows = 'repeat(' + rowsShown + ', var(--row-h))';
+    $('pairsCounter').textContent = '\u26A1 ' + S.fusionsDone + '/' + S.fusionsTotal + ' fusions \u00B7 \u{1F9E9} ' + S.chainsDone + '/' + S.chainsTotal + ' groups' + (S.waiting > 0 ? ' \u00B7 \u23EC ' + S.waiting + ' more to come' : '');
     $('solvedBanner').hidden = !S.solvedAt;
     const hl = $('hintLine'); hl.hidden = !S.hint; hl.textContent = S.hint || '';
   }
@@ -288,7 +280,7 @@
     }, timingPrefs.roundWindowSeconds * 1000));
   });
   $('roundEndCloseBtn').addEventListener('click', closeRoundEnd);
-  $('roundEndNewGameBtn').addEventListener('click', () => { closeRoundEnd(); socket.emit('host:newGame', { level: pendingLevel }); });
+  $('roundEndNewGameBtn').addEventListener('click', () => { closeRoundEnd(); socket.emit('host:newGame', {}); });
 
   // ---- Leaderboard window ----------------------------------------------------
   function showLbTab(t) {
@@ -342,7 +334,7 @@
   $('saveDefaultSettingsBtn').addEventListener('click', () => {
     pushSettings();
     writeJson('fusedle-defaults', {
-      theme: currentTheme(), mode: S ? S.mode : 'test', level: pendingLevel, pack: S ? S.pack : 'mixed',
+      theme: currentTheme(), mode: S ? S.mode : 'test', pack: S ? S.pack : 'mixed',
       autoNext: $('autoNextToggle').checked, autoNextDelaySeconds: parseFloat($('autoNextDelayInput').value) || 8,
       mismatchSeconds: parseFloat($('mismatchDelayInput').value) || 2, peekSeconds: parseFloat($('peekDurationInput').value) || 4,
       pointsPerGroup: parseFloat($('pointsInput').value) || 10, bots: $('botsToggle').checked, username: $('tiktokUsername').value.trim(),
@@ -357,8 +349,7 @@
   function syncTimingInputs() { $('toastDurationInput').value = timingPrefs.toastSeconds; $('roundWindowDurationInput').value = timingPrefs.roundWindowSeconds; $('allTimeWindowDurationInput').value = timingPrefs.allTimeWindowSeconds; }
   $('botsToggle').addEventListener('change', () => socket.emit('host:setBots', { enabled: $('botsToggle').checked }));
   $('autoNextToggle').addEventListener('change', () => socket.emit('host:setAutoNext', { enabled: $('autoNextToggle').checked, delaySeconds: parseFloat($('autoNextDelayInput').value) || 8 }));
-  $('difficultySelect').addEventListener('change', () => setPendingLevel(Number($('difficultySelect').value)));
-  const newGame = () => socket.emit('host:newGame', { level: pendingLevel });
+  const newGame = () => socket.emit('host:newGame', {});
   $('newGameBtn').addEventListener('click', () => { newGame(); closeSettings(); });
   $('newGameTopBtn').addEventListener('click', newGame);
 
@@ -414,7 +405,6 @@
   socket.on('leaderboard', (d) => { lb = d; renderLists(); });
   socket.on('state', (s) => {
     const first = !S; S = s;
-    if (first) setPendingLevel(s.level);
     renderBoard(); renderStatus(); renderPacks(); syncControls(); showPanelsOnce();
     $('playerGuessBar').hidden = s.mode !== 'offline';
     $('rawEventCount').textContent = s.rawEventCount;
@@ -422,7 +412,7 @@
     tick();
     if (first && !appliedDefaults) {
       appliedDefaults = true; const d = readJson('fusedle-defaults');
-      if (d && d.mode) { if (d.theme) applyTheme(d.theme); if (d.level) setPendingLevel(d.level); socket.emit('host:applyDefaults', d); }
+      if (d && d.mode) { if (d.theme) applyTheme(d.theme); socket.emit('host:applyDefaults', d); }
     }
   });
   let panelsMode = null;
