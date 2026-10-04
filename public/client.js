@@ -120,6 +120,196 @@
   }
   buildFusedPickers();
 
+  // ---- Tile & display options (saved on this device) ------------------------
+  // Every option is a class or a variable on <html>; style.css (PART 19) does the rest.
+  const DISPLAY_DEFAULTS = {
+    sub1: false, sub2: false,            // show the words inside Level 1 / Level 2 fused tiles (off = name sits in the exact centre)
+    center: true,                        // centre the word on the whole tile (number circle floats at the left edge)
+    longWide: true,                      // a word that would get tiny when centred may use the wider layout (off = always centred, smaller)
+    tsize: 100, font: 'system', upper: false, corner: 'soft', badge: 'normal',
+    cardWords: true, cardPlayer: true, cardAvatar: true,
+    showChatFmt: true, showCounter: true, showTimer: true, showScores: true, sbRows: 5, showToasts: true, showStreak: true, anim: true,
+    sound: false, volume: 60,
+  };
+  const FONT_STACKS = {
+    system: 'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif',
+    rounded: 'ui-rounded,"Nunito","Varela Round","Trebuchet MS",system-ui,sans-serif',
+    serif: 'Georgia,"Times New Roman",serif',
+    mono: 'ui-monospace,"Roboto Mono","SF Mono",Menlo,Consolas,monospace',
+  };
+  // Width of a word in "em" (1 = as wide as the font size), measured with the font the tile really uses.
+  const measCtx = document.createElement('canvas').getContext('2d');
+  function emWidth(word) {
+    measCtx.font = '900 100px ' + (FONT_STACKS[displayPrefs.font] || FONT_STACKS.system);
+    return measCtx.measureText(displayPrefs.upper ? String(word).toUpperCase() : String(word)).width / 100;
+  }
+  function longestEm(text) { return String(text || '').split(/\s+/).reduce((m, x) => (x ? Math.max(m, emWidth(x)) : m), 1.2); }
+  const kFor = (text) => (1 / (longestEm(text) * 1.04)).toFixed(4);   // 4% safety margin
+  // Re-measure every tile (after a font / capitals / size change, a resize, or a new board). A word so long that it would
+  // become tiny in the centred layout gets the wider layout (number circle beside the word) on that one tile only.
+  function refitTiles() {
+    const list = document.querySelectorAll('#tileGrid .tile, #tilePreview .tile'); if (!list.length) return;
+    const bdv = parseFloat(document.documentElement.style.getPropertyValue('--bd')), bd = Number.isFinite(bdv) ? bdv : 15;
+    const scale = Math.min(1, displayPrefs.tsize / 100);
+    list.forEach((el) => {
+      if (el._w === undefined) return;
+      const em = longestEm(el._w); el.style.setProperty('--k', (1 / (em * 1.04)).toFixed(4));
+      if (!displayPrefs.center) { el.classList.remove('wide'); return; }
+      const availC = el.getBoundingClientRect().width - 2 * (bd + 4) - 3;
+      el.classList.toggle('wide', displayPrefs.longWide && availC > 0 && (availC / (em * 1.04)) * scale < 7.2);
+    });
+  }
+  const clampNum = (v, a, b) => Math.min(b, Math.max(a, v));
+  function cleanDisplay(src) {
+    const o = Object.assign({}, DISPLAY_DEFAULTS); src = src || {};
+    Object.keys(DISPLAY_DEFAULTS).forEach((k) => {
+      const dv = DISPLAY_DEFAULTS[k], v = src[k];
+      if (typeof dv === 'boolean') { if (typeof v === 'boolean') o[k] = v; }
+      else if (typeof dv === 'number') { const n = Number(v); if (v !== undefined && v !== null && v !== '' && Number.isFinite(n)) o[k] = n; }
+      else if (typeof v === 'string') o[k] = v;
+    });
+    o.tsize = clampNum(o.tsize, 70, 125); o.volume = clampNum(o.volume, 0, 100); o.sbRows = o.sbRows >= 5 ? 5 : 3;
+    if (!FONT_STACKS[o.font]) o.font = 'system';
+    if (['square', 'soft', 'round'].indexOf(o.corner) < 0) o.corner = 'soft';
+    if (['small', 'normal', 'large'].indexOf(o.badge) < 0) o.badge = 'normal';
+    return o;
+  }
+  let displayPrefs = cleanDisplay(readJson('fusedle-display'));
+
+  function buildTilePreview() {
+    const box = $('tilePreview'); if (!box) return;
+    box.innerHTML = '';
+    [{ n: 7, w: 'Ford' },
+     { n: 25, w: 'Car', f: 1, sub: 'Ford \u00B7 Toyota \u00B7 Honda \u00B7 BMW' },
+     { n: 41, w: 'Land Transport', f: 2, sub: 'Car \u00B7 Bus \u00B7 Tram \u00B7 Bicycle' }].forEach((t) => box.appendChild(makeTile(t, false)));
+  }
+  function applyDisplay(save) {
+    const d = displayPrefs, root = document.documentElement, st = root.style;
+    const tg = (c, on) => root.classList.toggle(c, !!on);
+    tg('nosub1', !d.sub1); tg('nosub2', !d.sub2); tg('ctr', d.center); tg('upper', d.upper);
+    tg('hide-chatfmt', !d.showChatFmt); tg('hide-counter', !d.showCounter); tg('hide-timer', !d.showTimer); tg('hide-scores', !d.showScores);
+    tg('hide-toasts', !d.showToasts); tg('nostreak', !d.showStreak); tg('noanim', !d.anim);
+    tg('nocardwords', !d.cardWords); tg('nocardplayer', !d.cardPlayer); tg('nocardavatar', !d.cardAvatar);
+    const ts = d.tsize / 100;
+    st.setProperty('--ts', String(ts)); st.setProperty('--tsl', String(Math.min(1, ts)));
+    if (d.font === 'system') st.removeProperty('--tile-font'); else st.setProperty('--tile-font', FONT_STACKS[d.font]);
+    if (d.corner === 'soft') st.removeProperty('--tile-r'); else st.setProperty('--tile-r', d.corner === 'square' ? '4px' : '20px');
+    const bdSizes = d.center ? { small: 12, normal: 15, large: 18 } : { small: 13, normal: 17, large: 21 };
+    if (d.badge === 'normal') { st.removeProperty('--bd'); tg('bdset', false); } else { st.setProperty('--bd', bdSizes[d.badge] + 'px'); tg('bdset', true); }
+    // sync the controls in Settings
+    document.querySelectorAll('[data-pref]').forEach((el) => {
+      const k = el.dataset.pref, v = d[k];
+      if (el.type === 'checkbox') el.checked = !!v; else if (document.activeElement !== el || el.tagName === 'SELECT') el.value = String(v);
+    });
+    const tv = $('tsizeVal'); if (tv) tv.textContent = d.tsize + '%';
+    const vv = $('volumeVal'); if (vv) vv.textContent = d.volume + '%';
+    buildTilePreview();
+    refitTiles();
+    if (save !== false) writeJson('fusedle-display', displayPrefs);
+    if (typeof renderLists === 'function') renderLists();
+    queueFit();
+  }
+  document.querySelectorAll('[data-pref]').forEach((el) => {
+    const k = el.dataset.pref;
+    const onChange = () => {
+      let v;
+      if (el.type === 'checkbox') v = el.checked;
+      else if (typeof DISPLAY_DEFAULTS[k] === 'number') v = Number(el.value);
+      else v = el.value;
+      displayPrefs[k] = v; displayPrefs = cleanDisplay(displayPrefs);
+      if (k === 'sound' && v) { audio(); }
+      applyDisplay();
+    };
+    el.addEventListener('input', onChange); el.addEventListener('change', onChange);
+  });
+
+  // ---- Sound effects (little tones made in the browser, no files needed) ----
+  let audioCtx = null;
+  function audio() {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    } catch (e) { audioCtx = null; }
+    return audioCtx;
+  }
+  function tone(freq, at, dur, type, vol) {
+    const c = audio(); if (!c) return;
+    const o = c.createOscillator(), g = c.createGain(), t = c.currentTime + at, v = Math.max(0.0002, (displayPrefs.volume / 100) * (vol || 0.25));
+    o.type = type || 'sine'; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + dur + 0.05);
+  }
+  function playSound(kind) {
+    if (!displayPrefs.sound || displayPrefs.volume <= 0) return;
+    if (kind === 'fuse') { tone(523, 0, 0.14, 'triangle'); tone(784, 0.1, 0.22, 'triangle'); }
+    else if (kind === 'final') { [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.1, 0.28, 'triangle', 0.28)); }
+    else if (kind === 'near') { tone(440, 0, 0.12, 'sine'); tone(440, 0.16, 0.12, 'sine'); }
+    else if (kind === 'wrong') { tone(190, 0, 0.22, 'sawtooth', 0.14); }
+  }
+  $('soundTestBtn').addEventListener('click', () => {
+    const was = displayPrefs.sound; displayPrefs.sound = true;
+    audio(); playSound('fuse'); setTimeout(() => playSound('final'), 500); setTimeout(() => playSound('near'), 1500); setTimeout(() => playSound('wrong'), 2000);
+    displayPrefs.sound = was;
+  });
+  document.addEventListener('pointerdown', () => { if (displayPrefs.sound) audio(); }, { passive: true });
+
+  // ---- Game rules (shared by every screen; the server keeps them) ----
+  const RULE_DEFAULTS = { groupsPerRound: 8, twoLevel: 4, comboEnabled: true, comboMax: 4, showNear: true, finalBonus: 0, guessCooldown: 0 };
+  function rulesPayload() {
+    const num = (id, d) => { const v = parseFloat($(id).value); return Number.isFinite(v) ? v : d; };
+    const groups = clampNum(Math.round(num('rulesGroups', 8)), 1, 8);
+    return {
+      groupsPerRound: groups, twoLevel: clampNum(Math.round(num('rulesTwo', 4)), 0, groups),
+      comboEnabled: $('comboToggle').checked, comboMax: clampNum(Math.round(num('comboMaxInput', 4)), 1, 10),
+      showNear: $('nearToggle').checked, finalBonus: clampNum(Math.round(num('finalBonusInput', 0)), 0, 100),
+      guessCooldown: clampNum(num('cooldownInput', 0), 0, 30),
+    };
+  }
+  function updateRulesShape() {
+    const r = rulesPayload(), three = r.groupsPerRound - r.twoLevel, tiles = r.twoLevel * 7 + three * 10, fusions = r.twoLevel * 2 + three * 3;
+    const el = $('rulesShape'); if (el) el.textContent = 'Next game: ' + r.groupsPerRound + ' groups (' + r.twoLevel + ' two-level + ' + three + ' three-level) = ' + tiles + ' tiles and ' + fusions + ' fusions.';
+  }
+  ['rulesGroups', 'rulesTwo', 'comboMaxInput', 'finalBonusInput', 'cooldownInput', 'comboToggle', 'nearToggle'].forEach((id) => {
+    $(id).addEventListener('input', updateRulesShape);
+    $(id).addEventListener('change', () => { updateRulesShape(); socket.emit('host:setRules', rulesPayload()); });
+  });
+  function fillRules(r) {
+    $('rulesGroups').value = r.groupsPerRound; $('rulesTwo').value = r.twoLevel; $('comboToggle').checked = !!r.comboEnabled;
+    $('comboMaxInput').value = r.comboMax; $('nearToggle').checked = !!r.showNear; $('finalBonusInput').value = r.finalBonus; $('cooldownInput').value = r.guessCooldown;
+    updateRulesShape();
+  }
+  $('resetRulesBtn').addEventListener('click', () => { fillRules(RULE_DEFAULTS); socket.emit('host:setRules', rulesPayload()); });
+
+  // ---- Backup / reset of the look settings ----
+  function backupMsg(t) { const c = $('backupMsg'); c.textContent = t; c.hidden = false; setTimeout(() => { c.hidden = true; }, 4000); }
+  $('exportSettingsBtn').addEventListener('click', () => {
+    const data = { app: 'fusedle-live', version: 1, display: displayPrefs, fusedColours: fusedPrefs, timing: timingPrefs, theme: currentTheme(), yarn: document.documentElement.classList.contains('yarn'), rules: rulesPayload() };
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+    a.download = 'fusedle-settings.json'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    backupMsg('Settings file created.');
+  });
+  $('importSettingsBtn').addEventListener('click', () => $('importSettingsFile').click());
+  $('importSettingsFile').addEventListener('change', (e) => {
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    const rd = new FileReader();
+    rd.onload = () => {
+      try {
+        const d = JSON.parse(String(rd.result || '{}'));
+        if (!d || d.app !== 'fusedle-live') throw new Error('not a FUSEDLE settings file');
+        if (d.display) { displayPrefs = cleanDisplay(d.display); }
+        if (d.fusedColours) [1, 2].forEach((k) => { const v = d.fusedColours[k]; if (v === 'none' || hexOk(v)) fusedPrefs[k] = v; });
+        if (d.timing) { ['toastSeconds', 'roundWindowSeconds', 'allTimeWindowSeconds'].forEach((k) => { const n = Number(d.timing[k]); if (Number.isFinite(n) && n > 0 && n <= 60) timingPrefs[k] = n; }); writeJson('fusedle-timing', timingPrefs); syncTimingInputs(); }
+        if (typeof d.theme === 'string') applyTheme(d.theme);
+        if (typeof d.yarn === 'boolean') applyYarn(d.yarn);
+        applyFusedColors(); applyDisplay();
+        if (d.rules) { fillRules(Object.assign({}, RULE_DEFAULTS, d.rules)); socket.emit('host:setRules', rulesPayload()); }
+        backupMsg('Settings loaded.');
+      } catch (err) { backupMsg('That file could not be read: ' + err.message); }
+    };
+    rd.readAsText(f); e.target.value = '';
+  });
+  $('resetDisplayBtn').addEventListener('click', () => { if (confirm('Reset all tile & display options to the defaults?')) { displayPrefs = cleanDisplay({}); applyDisplay(); backupMsg('Tile & display options reset.'); } });
+
   // ---- Dropdowns ----------------------------------------------------------
   function wireDropdown(rootId, onPick) {
     const root = $(rootId), btn = root.querySelector('.toolbar-dropdown-trigger'), menu = root.querySelector('.toolbar-dropdown-menu');
@@ -190,7 +380,7 @@
     });
   }
   function renderLists() {
-    fillList($('liveRoundList'), lb.round, false, 5); fillList($('liveAllTimeList'), lb.allTime, false, 5);
+    const rows = displayPrefs.sbRows || 5; fillList($('liveRoundList'), lb.round, false, rows); fillList($('liveAllTimeList'), lb.allTime, false, rows);
     fillList($('leaderboardList'), lb.round, false); fillList($('allTimeLeaderboardList'), lb.allTime, false);
     fillList($('leaderboardModalRoundList'), lb.round, true); fillList($('leaderboardModalAllTimeList'), lb.allTime, true);
   }
@@ -235,9 +425,8 @@
     } else {
       body.appendChild(mk('span', 'tile-word', t.w));
     }
-    // font size follows the longest single word, so a word is never cut in the middle
-    const longest = String(t.w || '').split(/\s+/).reduce((m, x) => Math.max(m, x.length), 4);
-    b.style.setProperty('--k', (1 / (0.69 * Math.max(4, longest))).toFixed(4));
+    // font size follows the REAL width of the longest single word (measured in the tile's own font), so a word is never cut off
+    b._w = t.w; b.style.setProperty('--k', kFor(t.w));
     b.appendChild(body);
     return b;
   }
@@ -264,7 +453,7 @@
     tileEls.forEach((el, n) => {
       if (!present.has(n)) { removed.push({ node: el.cloneNode(true), r: el.getBoundingClientRect(), fused: el.classList.contains('fused') }); el.remove(); tileEls.delete(n); }
     });
-    const merging = removed.length > 0 && removed.length <= 12 && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const merging = displayPrefs.anim && removed.length > 0 && removed.length <= 12 && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     selected = selected.filter((n) => present.has(n));
     const rank = new Map(); S.tiles.slice().sort((a, b) => a.s - b.s).forEach((t, i) => rank.set(t.n, i));
     S.tiles.forEach((t) => {
@@ -328,6 +517,7 @@
     let fs = parseFloat(getComputedStyle(pc).fontSize) || 12;
     while (pc.scrollWidth > pc.clientWidth + 1 && fs > 8.5) { fs -= 0.5; pc.style.fontSize = fs + 'px'; }
     if (fb.scrollHeight > fb.clientHeight + 1) fb.scrollTop = fb.scrollHeight;
+    refitTiles();
   }
   let fitQueued = false;
   function queueFit() { if (fitQueued) return; fitQueued = true; requestAnimationFrame(() => { fitQueued = false; if (S) fitLayout(); }); }
@@ -399,7 +589,7 @@
     const nums = r.nums ? r.nums.join(' ') : '';
     switch (r.kind) {
       case 'correct': {
-        const combo = r.streak >= 2 ? ' (\u{1F525}\u00D7' + Math.min(4, r.streak) + ')' : '';
+        const combo = r.streak >= 2 ? ' (\u{1F525}\u00D7' + Math.min((S && S.comboMax) || 4, r.streak) + ')' : '';
         if (r.final) return { tone: 'correct', text: '\u{1F3C6} completed ' + r.group + '!', feed: nums + ' \u2014 completed ' + r.group + '! +' + r.gained + combo, points: '+' + r.gained };
         return { tone: 'correct', text: 'fused ' + r.group + ' \u2192 new tile ' + r.newN, feed: nums + ' \u2014 fused ' + r.group + ' \u2192 new tile #' + r.newN + ' (level ' + r.height + ') +' + r.gained + combo, points: '+' + r.gained };
       }
@@ -415,7 +605,7 @@
     toastTimer = setTimeout(() => { t.classList.add('leaving'); setTimeout(() => { if (t.parentNode) t.parentNode.removeChild(t); }, 350); }, Math.round(timingPrefs.toastSeconds * 1000));
   }
   function guessToast(r, d) {
-    clearToast();
+    clearToast(); if (!displayPrefs.showToasts) return;
     const t = document.createElement('div'); t.className = 'guess-toast toast-' + d.tone;
     t.appendChild(avatarImg(r.avatar, r.uniqueId, r.name));
     const n = document.createElement('span'); n.className = 'guess-name'; n.textContent = r.name; t.appendChild(n);
@@ -425,7 +615,7 @@
     $('liveGuessToastArea').appendChild(t); scheduleToastRemoval(t);
   }
   function noticeToast(text) {
-    clearToast(); const t = document.createElement('div'); t.className = 'guess-toast toast-notice';
+    clearToast(); if (!displayPrefs.showToasts) return; const t = document.createElement('div'); t.className = 'guess-toast toast-notice';
     const n = document.createElement('span'); n.className = 'guess-name'; n.textContent = text; t.appendChild(n);
     $('liveGuessToastArea').appendChild(t); scheduleToastRemoval(t);
   }
@@ -438,6 +628,7 @@
   }
   socket.on('guessResult', (r) => {
     const d = describe(r); feedItem(r, d); guessToast(r, d);
+    playSound(r.kind === 'correct' ? (r.final ? 'final' : 'fuse') : r.kind === 'near' ? 'near' : (r.kind === 'wrong' || r.kind === 'invalid') ? 'wrong' : '');
     if (r.kind === 'wrong' || r.kind === 'near') {
       wrongNums = r.nums || []; if (S) renderBoard();
       clearTimeout(wrongTimer); wrongTimer = setTimeout(() => { wrongNums = []; if (S) renderBoard(); }, ((S && S.mismatchSeconds) || 2) * 1000);
@@ -501,6 +692,7 @@
     $('autoNextToggle').checked = S.autoNext; $('botsToggle').checked = S.bots;
     $('autoNextDelayInput').value = S.autoNextDelaySeconds; $('mismatchDelayInput').value = S.mismatchSeconds;
     $('peekDurationInput').value = S.peekSeconds; $('pointsInput').value = S.pointsPerGroup;
+    fillRules({ groupsPerRound: S.groupsPerRound, twoLevel: S.twoLevel, comboEnabled: S.comboEnabled, comboMax: S.comboMax, showNear: S.showNear, finalBonus: S.finalBonus, guessCooldown: S.guessCooldown });
     $('toastDurationInput').value = timingPrefs.toastSeconds; $('roundWindowDurationInput').value = timingPrefs.roundWindowSeconds; $('allTimeWindowDurationInput').value = timingPrefs.allTimeWindowSeconds;
   }
   function pushSettings() {
@@ -508,18 +700,19 @@
     timingPrefs.toastSeconds = num('toastDurationInput', 4); timingPrefs.roundWindowSeconds = num('roundWindowDurationInput', 8); timingPrefs.allTimeWindowSeconds = num('allTimeWindowDurationInput', 8);
     writeJson('fusedle-timing', timingPrefs);
     socket.emit('host:setAutoNext', { enabled: $('autoNextToggle').checked, delaySeconds: num('autoNextDelayInput', 8) });
+    socket.emit('host:setRules', rulesPayload());
     socket.emit('host:setTiming', { autoNextDelaySeconds: num('autoNextDelayInput', 8), mismatchSeconds: num('mismatchDelayInput', 2), peekSeconds: num('peekDurationInput', 4), pointsPerGroup: num('pointsInput', 1) });
   }
   function confirmMsg(text) { const c = $('saveSettingsConfirm'); c.textContent = text; c.hidden = false; setTimeout(() => { c.hidden = true; }, 3500); }
   $('saveSettingsBtn').addEventListener('click', () => { pushSettings(); confirmMsg('Settings applied.'); });
   $('saveDefaultSettingsBtn').addEventListener('click', () => {
     pushSettings();
-    writeJson('fusedle-defaults', {
+    writeJson('fusedle-defaults', Object.assign({
       theme: currentTheme(), mode: S ? S.mode : 'test', pack: S ? S.pack : 'mixed',
       autoNext: $('autoNextToggle').checked, autoNextDelaySeconds: parseFloat($('autoNextDelayInput').value) || 8,
       mismatchSeconds: parseFloat($('mismatchDelayInput').value) || 2, peekSeconds: parseFloat($('peekDurationInput').value) || 4,
       pointsPerGroup: parseFloat($('pointsInput').value) || 1, bots: $('botsToggle').checked, username: $('tiktokUsername').value.trim(),
-    });
+    }, rulesPayload()));
     confirmMsg('Saved. These settings are re-applied whenever this page opens on a fresh server.');
   });
   $('clearDefaultSettingsBtn').addEventListener('click', () => { try { localStorage.removeItem('fusedle-defaults'); } catch (e) { /* ignore */ } confirmMsg('Saved default cleared.'); });
@@ -598,6 +791,7 @@
       if (d && d.mode) { if (d.theme) applyTheme(d.theme); socket.emit('host:applyDefaults', d); }
     }
   });
+  applyDisplay(false);
   let panelsMode = null;
   function showPanelsOnce() { if (panelsMode !== S.mode) { panelsMode = S.mode; showPanels(S.mode); } }
 })();

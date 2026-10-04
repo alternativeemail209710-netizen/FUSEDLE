@@ -55,7 +55,7 @@ const clampSeconds = (v, cfg) => {
 };
 const BOTS = ['Fay', 'Dax', 'Ava', 'Cleo', 'Milo', 'Zara'].map((n) => ({ uniqueId: 'bot-' + n.toLowerCase(), name: n, avatar: null }));
 const HOST_PLAYER = { uniqueId: 'host', name: 'Host', avatar: null };
-const comboMultiplier = (streak) => Math.min(4, Math.max(1, streak));
+const comboMultiplier = (streak) => (state.comboEnabled ? Math.min(state.comboMax, Math.max(1, streak)) : 1);
 
 const shuffle = (arr) => {
   for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; }
@@ -69,6 +69,8 @@ const state = {
   mode: 'test', pack: 'mixed', cycle: 0, configured: false,
   autoNext: true, autoNextDelaySeconds: TIMING.autoNext.def, autoNextAt: 0,
   mismatchSeconds: TIMING.mismatch.def, peekSeconds: TIMING.peek.def, pointsPerGroup: 1,
+  // Game rules the host can change in Settings > Game rules (see applyRules)
+  comboEnabled: true, comboMax: 4, showNear: true, finalBonus: 0, guessCooldown: 0, groupsPerRound: BOARD.two + BOARD.three, twoLevel: BOARD.two,
   title: '', nodes: [], tiles: [], queues: {}, seq: [], nextN: 1, completed: [], rootsTotal: 0, fusionsDone: 0, lastFusion: null, hint: '', peeking: false,
   startedAt: 0, solvedAt: 0,
   scores: {}, allTimeScores: {}, rawEventCount: 0, lastEvent: null,
@@ -77,6 +79,7 @@ const state = {
 };
 let autoNextTimer = null, peekTimer = null, botTimer = null, currentTikTokUser = '', lastConnectorError = '';
 const avatarCache = {};
+const lastGuessAt = {};   // uniqueId -> time of the last counted guess (for the guess cooldown)
 
 // ---------------------------------------------------------------------------
 // All-time scores saved to a file (survives sleep/wake; wiped by new deploys
@@ -114,7 +117,8 @@ function rememberBoard(sig) {
 }
 
 function pickTrees(pack) {
-  const b = composeBoard(pack, new Set(recentGroups), playedSet);
+  const groups = Math.min(8, Math.max(1, state.groupsPerRound)), two = Math.min(groups, Math.max(0, state.twoLevel));
+  const b = composeBoard(pack, new Set(recentGroups), playedSet, { two, three: groups - two });
   rememberBoard(boardSig(b.roots));
   b.roots.forEach((r) => { recentGroups.push(r.name); });
   while (recentGroups.length > 24) recentGroups.shift();
@@ -245,6 +249,8 @@ function publicState() {
     startedAt: state.startedAt, solvedAt: state.solvedAt, now: Date.now(),
     autoNext: state.autoNext, autoNextDelaySeconds: state.autoNextDelaySeconds, autoNextAt: state.autoNextAt,
     mismatchSeconds: state.mismatchSeconds, peekSeconds: state.peekSeconds, pointsPerGroup: state.pointsPerGroup,
+    comboEnabled: state.comboEnabled, comboMax: state.comboMax, showNear: state.showNear, finalBonus: state.finalBonus,
+    guessCooldown: state.guessCooldown, groupsPerRound: state.groupsPerRound, twoLevel: state.twoLevel,
     rawEventCount: state.rawEventCount, lastEvent: state.lastEvent, bots: state.bots,
     tiktok: state.tiktok, configured: state.configured,
   };
@@ -254,7 +260,7 @@ function rankList(table, limit, withStreak) {
   return Object.values(table).filter((p) => p.points > 0)
     .sort((a, b) => b.points - a.points || a.name.localeCompare(b.name))
     .slice(0, limit)
-    .map((p) => { const r = { uniqueId: p.uniqueId, name: p.name, avatar: p.avatar, points: p.points }; if (withStreak) r.streak = p.streak || 0; return r; });
+    .map((p) => { const r = { uniqueId: p.uniqueId, name: p.name, avatar: p.avatar, points: p.points }; if (withStreak) r.streak = state.comboEnabled ? (p.streak || 0) : 0; return r; });
 }
 function emitLeaderboards() {
   io.emit('leaderboard', { round: rankList(state.scores, 500, true), allTime: rankList(state.allTimeScores, 1000) });
@@ -318,18 +324,18 @@ function attemptFuse(nums, player) {
     const node = state.nodes[picked[0].parent];
     row.streak = (row.streak || 0) + 1;
     // Every fusion is worth the same, whatever its level: base points x combo (streak) multiplier.
-    const gained = state.pointsPerGroup * comboMultiplier(row.streak);
+    const gained = state.pointsPerGroup * comboMultiplier(row.streak) + (node.parent === null ? state.finalBonus : 0);
     row.points += gained;
     const all = ensurePlayer(state.allTimeScores, player);
     all.points += gained;
     saveAllTimeSoon();
     const f = doFuse(node, picked, { name: player.name, uniqueId: player.uniqueId, avatar: player.avatar || null });
-    const result = { kind: 'correct', streak: row.streak, gained, group: node.name, newN: f.tile.n, height: node.height, final: f.isRoot, nums };
+    const result = { kind: 'correct', streak: state.comboEnabled ? row.streak : 0, gained, group: node.name, newN: f.tile.n, height: node.height, final: f.isRoot, nums };
     if (state.completed.length >= state.rootsTotal) finishGame();
     return result;
   }
   row.streak = 0;
-  return { kind: best === 3 ? 'near' : 'wrong', nums };
+  return { kind: best === 3 && state.showNear ? 'near' : 'wrong', nums };
 }
 
 function handleIncomingComment(player, text, opts) {
@@ -339,6 +345,17 @@ function handleIncomingComment(player, text, opts) {
     else player.avatar = avatarCache[player.uniqueId] || null;
     if (!opts || opts.countsAsRawEvent !== false) state.rawEventCount += 1;
     const nums = parseNumbers(text);
+    // Guess cooldown (Settings > Game rules): a viewer who guesses again too soon is quietly ignored. The host is never limited.
+    if (nums && state.guessCooldown > 0 && player.uniqueId !== HOST_PLAYER.uniqueId) {
+      const now = Date.now(), last = lastGuessAt[player.uniqueId] || 0;
+      if (now - last < state.guessCooldown * 1000) {
+        state.lastEvent = { user: player.name, text: text.slice(0, 80), read: nums.join(' '), kind: 'cooldown' };
+        broadcast();
+        return;
+      }
+      lastGuessAt[player.uniqueId] = now;
+      if (Object.keys(lastGuessAt).length > 5000) Object.keys(lastGuessAt).forEach((k) => { if (now - lastGuessAt[k] > 60000) delete lastGuessAt[k]; });
+    }
     const result = nums ? attemptFuse(nums, player) : { kind: 'format' };
     state.lastEvent = { user: player.name, text: text.slice(0, 80), read: nums ? nums.join(' ') : null, kind: result.kind };
     io.emit('guessResult', {
@@ -410,6 +427,19 @@ function botTick() {
   const text = botGuessText();
   if (text) handleIncomingComment({ ...BOTS[Math.floor(Math.random() * BOTS.length)] }, text);
 }
+// Game rules the host can change (Settings > Game rules). Scoring rules work at once; the round shape
+// (groups per round / how many are 2-level) is used the next time a game is built.
+function applyRules(p) {
+  const int = (v, min, max, def) => { const n = Math.round(Number(v)); return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : def; };
+  if (typeof p.comboEnabled === 'boolean') state.comboEnabled = p.comboEnabled;
+  if (p.comboMax !== undefined) state.comboMax = int(p.comboMax, 1, 10, 4);
+  if (typeof p.showNear === 'boolean') state.showNear = p.showNear;
+  if (p.finalBonus !== undefined) state.finalBonus = int(p.finalBonus, 0, 100, 0);
+  if (p.guessCooldown !== undefined) state.guessCooldown = clampSeconds(p.guessCooldown, { min: 0, max: 30, def: 0 });
+  if (p.groupsPerRound !== undefined) state.groupsPerRound = int(p.groupsPerRound, 1, 8, 8);
+  if (p.twoLevel !== undefined) state.twoLevel = int(p.twoLevel, 0, 8, 4);
+  state.twoLevel = Math.min(state.twoLevel, state.groupsPerRound);
+}
 function setBots(enabled) {
   clearInterval(botTimer); botTimer = null;
   state.bots = !!enabled;
@@ -475,6 +505,7 @@ io.on('connection', (socket) => {
     if (p.mismatchSeconds !== undefined) state.mismatchSeconds = clampSeconds(p.mismatchSeconds, TIMING.mismatch);
     if (p.peekSeconds !== undefined) state.peekSeconds = clampSeconds(p.peekSeconds, TIMING.peek);
     if (p.pointsPerGroup !== undefined) state.pointsPerGroup = Math.round(clampSeconds(p.pointsPerGroup, { min: 1, max: 100, def: 1 }));
+    applyRules(p);
     if (typeof p.pack === 'string' && p.pack !== state.pack && (p.pack === 'mixed' || PACKS.some((x) => x.title === p.pack))) { state.pack = p.pack; newGame(); }
     if (typeof p.bots === 'boolean') setBots(p.bots && state.mode === 'test');
     broadcast();
@@ -499,6 +530,7 @@ io.on('connection', (socket) => {
     if (p.pointsPerGroup !== undefined) state.pointsPerGroup = Math.round(clampSeconds(p.pointsPerGroup, { min: 1, max: 100, def: 1 }));
     broadcast();
   }, true));
+  socket.on('host:setRules', safe((p) => { applyRules(p); broadcast(); }, true));
   socket.on('host:setBots', safe((p) => setBots(!!p.enabled && state.mode === 'test'), true));
   socket.on('host:resetRoundScores', safe(() => { state.scores = {}; broadcast(); }, true));
   socket.on('host:resetAllTimeScores', safe(() => { state.allTimeScores = {}; saveAllTimeNow(); broadcast(); }, true));

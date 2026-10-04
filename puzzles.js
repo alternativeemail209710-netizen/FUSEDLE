@@ -253,15 +253,19 @@ function pickPieces(packs, bucket, count, used, picked, recent, avoidRecent) {
 
 // Returns { title, roots:[8 trees] }
 const boardSig = (roots) => roots.map((r) => r.name).sort().join('|');
-function compose(pack, recent, seen) {
+// `mix` (optional) = { two, three }: how many 2-level and 3-level groups this round has. Default = BOARD.
+// The host can change it in Settings > Game rules; every combination from 1 to 8 groups is allowed.
+function compose(pack, recent, seen, mix) {
   recent = recent || new Set();
   seen = seen || new Set();
+  const nThree = mix && Number.isInteger(mix.three) && mix.three >= 0 ? mix.three : BOARD.three;
+  const nTwo = mix && Number.isInteger(mix.two) && mix.two >= 0 ? mix.two : BOARD.two;
   const attempt = (packs, avoidRecent) => {
     for (let i = 0; i < 60; i++) {
       const used = new Set(), picked = new Set();
-      const threes = pickPieces(packs, 'd3', BOARD.three, used, picked, recent, avoidRecent);
+      const threes = pickPieces(packs, 'd3', nThree, used, picked, recent, avoidRecent);
       if (!threes) continue;
-      const twos = pickPieces(packs, 'd2', BOARD.two, used, picked, recent, avoidRecent);
+      const twos = pickPieces(packs, 'd2', nTwo, used, picked, recent, avoidRecent);
       if (!twos) continue;
       const picks = threes.concat(twos);
       if (seen.has(boardSig(picks.map((p) => p.root)))) continue;   // this exact board was already played

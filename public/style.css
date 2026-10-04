@@ -1639,3 +1639,67 @@ html.fc2 .tile.fused[data-f="2"]:not(.sel):not(.wrong):not(.peek):active { box-s
 .toolbar-dropdown-menu { padding: 4px; }
 .toolbar-dropdown-menu li { min-height: 32px; padding: 5px 8px; gap: 9px; font-size: 13px; }
 .toolbar-dropdown-menu .dd-head { padding: 5px 8px 1px; }
+
+
+/* =====================================================================
+   PART 19 - HOST CUSTOMISATION (v7.8)
+   Everything below is switched by classes / variables that client.js sets on <html>
+   from Settings > Tile & display options. With no class set the game looks as before.
+   ===================================================================== */
+
+/* --- tile text: size, font, corners, capitals ---------------------------------- */
+/* --ts = text size (1 = 100%), --tsl = same but never above 1 (so long words still fit), --k = 1 / measured width of the longest word */
+html .tile {
+  font-family: var(--tile-font, system-ui, sans-serif);
+  border-radius: var(--tile-r, 12px);
+  font-size: clamp(6px, min(calc(3.1vw * var(--ts, 1)), calc(14px * var(--ts, 1)), calc(var(--avail) * var(--k, 1) * var(--tsl, 1))), 20px);
+}
+html .tile::before { border-radius: calc(var(--tile-r, 12px) - 3px); }
+html.upper .tile-word, html.upper .tile-name { text-transform: uppercase; }
+
+/* --- the words inside a fused tile can be hidden per level: the name then sits in the exact centre --- */
+html.nosub1 .tile.fused[data-f="1"] .tile-sub,
+html.nosub2 .tile.fused[data-f="2"] .tile-sub { display: none !important; }
+
+/* --- centre the word on the WHOLE tile: the number circle floats at the left edge, text has equal space both sides --- */
+html.ctr .tile-grid { --avail: calc((min(100vw, 520px) - 35px) / 4 - 2 * (var(--bd, 15px) + 4px) - 3px); }
+html.ctr .tile { justify-content: center; padding-left: calc(var(--bd, 15px) + 4px); padding-right: calc(var(--bd, 15px) + 4px); }
+html.ctr .tile i { position: absolute; left: 3px; top: 50%; transform: translateY(-50%); width: var(--bd, 15px); height: var(--bd, 15px); font-size: calc(var(--bd, 15px) * .55); }
+html.ctr .tile-text { flex: 1 1 auto; }
+/* a very long word (e.g. Paddleboarding) would become tiny in the centred layout, so that one tile uses the wider layout */
+html.ctr .tile.wide { --avail: calc((min(100vw, 520px) - 35px) / 4 - var(--bd, 15px) - 12px); justify-content: flex-start; padding-left: 2px; padding-right: 2px; }
+html.ctr .tile.wide i { position: relative; left: auto; top: auto; transform: none; }
+/* number circle size when the host picks Small / Large and the word is NOT centred on the whole tile */
+html.bdset:not(.ctr) .tile-grid { --avail: calc((min(100vw, 520px) - 35px) / 4 - var(--bd, 17px) - 10px); }
+html.bdset:not(.ctr) .tile i { width: var(--bd, 17px); height: var(--bd, 17px); font-size: calc(var(--bd, 17px) * .53); }
+
+/* --- screen items the host can hide --- */
+html.hide-chatfmt #chatFormatHint { display: none !important; }
+html.hide-timer #stopwatch { display: none !important; }
+html.hide-counter #pairsCounter { visibility: hidden; }
+html.hide-scores .live-scoreboard { display: none !important; }
+html.hide-toasts #liveGuessToastArea { display: none !important; }
+html.nostreak .streak-badge { display: none !important; }
+html.nocardwords .solved-words { display: none !important; }
+html.nocardplayer .solved-by { display: none !important; }
+html.nocardavatar .solved-card .avatar-circle, html.nocardavatar .solved-card .solved-host { display: none !important; }
+html.noanim .tile, html.noanim .solved-card, html.noanim .tile.fresh, html.noanim .tile.drop, html.noanim .tile.wrong, html.noanim .guess-toast { animation: none !important; transition: none !important; }
+
+/* --- settings: option groups, rows, sample tiles --- */
+.opt-wrap { border: 2px dashed var(--border); border-radius: 12px; padding: 10px 12px; margin: 0 0 12px; background: var(--bg-panel); }
+.opt-wrap .hints-title { margin: 0 0 4px; }
+.tile-preview { --row-h: 54px; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 8px 0 10px; }
+.tile-preview .tile { pointer-events: none; }
+.opt-box { border-top: 1px dashed var(--border); padding: 6px 0 2px; }
+.opt-box > summary { cursor: pointer; font-weight: 800; font-size: 13px; color: var(--text); padding: 6px 0; list-style-position: inside; }
+.opt-box[open] > summary { color: var(--cyan); }
+.opt-box .auto-next-toggle { margin-bottom: 8px; }
+.opt-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 8px 0; font-size: 13px; font-weight: 700; color: var(--text); }
+.opt-row select { flex: 0 1 55%; min-width: 0; padding: 7px 8px; border: 2px dashed var(--border); border-radius: 10px; background: var(--bg-input); color: var(--text); font: inherit; font-weight: 700; }
+.opt-range { flex: 0 1 60%; display: flex; align-items: center; gap: 8px; min-width: 0; }
+.opt-range input[type="range"] { flex: 1 1 auto; min-width: 0; accent-color: var(--pink, #d9608a); }
+.opt-range b { flex: 0 0 auto; min-width: 40px; text-align: right; font-variant-numeric: tabular-nums; }
+.rules-box { margin-bottom: 12px; }
+.rules-box .auto-next-toggle { margin-top: 8px; }
+/* the three sample tiles in Settings are wider than board tiles, so give them their own text width */
+html .tile-grid.tile-preview, html.ctr .tile-grid.tile-preview { --avail: calc((min(100vw, 520px) - 32px) / 3 - 45px); }

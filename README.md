@@ -1,6 +1,20 @@
-# FUSEDLE Live (TikTok LIVE) - 8 Groups per Round, 24 Tiles on Screen
+# FUSEDLE Live (TikTok LIVE) - Up to 8 Groups per Round, 24 Tiles on Screen
 
 This folder is the complete, finished app. You do not need to edit any code.
+
+> **v7.8 - host customisation (new Settings boxes)**
+> - **Words inside fused tiles can be hidden.** Settings > *Tile & display options* > *Tile text* has one switch for **Level 1** tiles (e.g. "Car") and one for
+>   **Level 2** tiles (e.g. "Land Transport"). Off (the default) = only the name is shown and it sits in the exact centre of the tile. On = the small
+>   "Ford - Toyota - Honda - BMW" line appears under the name. Three sample tiles at the top of the box show the result at once.
+> - **Words are centred on the whole tile.** The number circle now floats at the left edge and the word is centred on the full tile (switch: *Centre words on the whole tile*).
+>   A very long word such as "Paddleboarding" would become tiny if it had to stay centred, so by default that one tile uses the wider layout (switch: *Give very long words extra room*).
+> - **Words never get cut off.** Tile text is now sized from the real width of the longest word in the chosen font (before, about 13 words such as "Mammoth" or "Lemonade" were clipped on a 390px phone).
+> - **More look options (saved on this device, change at once):** text size 70-125%, font (Standard / Rounded / Serif / Typewriter), CAPITAL LETTERS, tile corners, number-circle size;
+>   finished-group cards (show or hide the 4 words, viewer name, viewer photo); screen items (Chat format line, fusions counter, timer, both leaderboards, leaderboard rows 3 or 5,
+>   guess pop-ups, streak flames, animations); **sound effects** with volume; **Export / Import settings** file and a reset button.
+> - **Game rules box (shared by every screen):** groups per round (1-8) and how many are 2-level, combo streak on/off and its biggest multiplier (1-10),
+>   "one away" message on/off, bonus points for finishing a group, and a guess cooldown per viewer (the host is never limited).
+>   Scoring rules work at once; the round shape is used from the next game. *Save & Apply as Default* also remembers the rules.
 
 > **v7.7.1 - theme menu fix:** the theme (round colour button) menu was opening partly off the right edge of the phone, so names were cut off and it covered
 > the right side of the board. It is now placed under the button, always fully inside the screen, and scrolls inside itself on short phones.
@@ -73,12 +87,12 @@ Upload every file from this folder again on top of the old ones (same names, sam
 Render updates the game by itself in a minute or two.
 
 ## Using it
-- **Settings (gear):** theme (8 looks), mode (**Offline**, **Test**, **Live**), TikTok connect, Puzzle Pack,
+- **Settings (gear):** theme (8 looks), Tile & display options, Game rules, mode (**Offline**, **Test**, **Live**), TikTok connect, Puzzle Pack,
   Hints and Reveals, Reset Scores, Auto Next Game, Timing, and Save & Apply as Default.
 - **Modes:** *Offline* = you play alone with the Player Guess Bar (tap 4 tiles or type them). *Test* = fake
   viewers (turn on **Auto-Play Bots**) so you can rehearse. *Live* = real TikTok chat counts.
-- **One fixed build (no difficulty levels):** every round has exactly **8 groups**: **4 two-level** groups (7 tiles each) and
-  **4 three-level** groups (10 tiles each), so **68 tiles** and **20 fusions** in total.
+- **One build, no difficulty levels:** by default every round has **8 groups**: **4 two-level** groups (7 tiles each) and
+  **4 three-level** groups (10 tiles each), so **68 tiles** and **20 fusions** in total. (Settings > Game rules can change the number of groups and the 2-level / 3-level mix.)
   **Only 24 tiles (4 columns x 6 rows) are on the screen at any moment.** When viewers fuse a group, 4 tiles disappear and 1 new fused tile
   takes the first freed space; the other freed spaces are filled by **new tiles dropping in** from the waiting pile, until every tile of
   the round has appeared and all 8 groups are discovered. The counter above the board shows how many tiles are still to come.

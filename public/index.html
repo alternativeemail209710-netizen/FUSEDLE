@@ -229,6 +229,151 @@
         <button id="fcResetBtn" type="button" class="btn btn-secondary timing-reset-btn">Reset fused colours</button>
       </div>
 
+      <div class="opt-wrap" id="displayOptions">
+        <h3 class="hints-title">&#127899;&#65039; Tile &amp; display options</h3>
+        <p class="hint">These are saved on <b>this device</b> and change at once. The three sample tiles show exactly how your tiles will look.</p>
+        <div id="tilePreview" class="tile-grid tile-preview" aria-hidden="true"></div>
+
+        <details class="opt-box" open>
+          <summary>Tile text</summary>
+          <label class="auto-next-toggle">
+            <input type="checkbox" data-pref="sub1">
+            <span class="toggle-switch" aria-hidden="true"></span>
+            <span class="toggle-label">Show the words inside Level 1 tiles<small>Small line under the name, e.g. &ldquo;Ford &middot; Toyota &middot; Honda &middot; BMW&rdquo;. Off = the name sits in the exact centre.</small></span>
+          </label>
+          <label class="auto-next-toggle">
+            <input type="checkbox" data-pref="sub2">
+            <span class="toggle-switch" aria-hidden="true"></span>
+            <span class="toggle-label">Show the words inside Level 2 tiles<small>Same, for Level 2 tiles such as &ldquo;Land Transport&rdquo;.</small></span>
+          </label>
+          <label class="auto-next-toggle">
+            <input type="checkbox" data-pref="center">
+            <span class="toggle-switch" aria-hidden="true"></span>
+            <span class="toggle-label">Centre words on the whole tile<small>The number circle sits at the left edge and the word is centred on the full tile. Off = word is centred in the space beside the number.</small></span>
+          </label>
+          <label class="auto-next-toggle">
+            <input type="checkbox" data-pref="longWide">
+            <span class="toggle-switch" aria-hidden="true"></span>
+            <span class="toggle-label">Give very long words extra room<small>A word like &ldquo;Paddleboarding&rdquo; would shrink to a tiny size if it had to stay centred. On = that one tile uses the wider layout (slightly off-centre) so it stays readable. Off = always centred, smaller.</small></span>
+          </label>
+          <label class="opt-row">Text size <span class="opt-range"><input type="range" min="70" max="125" step="5" data-pref="tsize"><b id="tsizeVal">100%</b></span></label>
+          <label class="opt-row">Font
+            <select data-pref="font">
+              <option value="system">Standard</option>
+              <option value="rounded">Rounded</option>
+              <option value="serif">Serif</option>
+              <option value="mono">Typewriter</option>
+            </select>
+          </label>
+          <label class="auto-next-toggle">
+            <input type="checkbox" data-pref="upper">
+            <span class="toggle-switch" aria-hidden="true"></span>
+            <span class="toggle-label">CAPITAL LETTERS<small>Show every tile word in capitals.</small></span>
+          </label>
+          <label class="opt-row">Tile corners
+            <select data-pref="corner">
+              <option value="square">Square</option>
+              <option value="soft">Soft</option>
+              <option value="round">Very round</option>
+            </select>
+          </label>
+          <label class="opt-row">Number circle size
+            <select data-pref="badge">
+              <option value="small">Small</option>
+              <option value="normal">Normal</option>
+              <option value="large">Large</option>
+            </select>
+          </label>
+        </details>
+
+        <details class="opt-box">
+          <summary>Finished-group cards</summary>
+          <label class="auto-next-toggle">
+            <input type="checkbox" data-pref="cardWords">
+            <span class="toggle-switch" aria-hidden="true"></span>
+            <span class="toggle-label">Show the 4 latest words<small>The small line of words under the category name.</small></span>
+          </label>
+          <label class="auto-next-toggle">
+            <input type="checkbox" data-pref="cardPlayer">
+            <span class="toggle-switch" aria-hidden="true"></span>
+            <span class="toggle-label">Show the viewer&rsquo;s name</span>
+          </label>
+          <label class="auto-next-toggle">
+            <input type="checkbox" data-pref="cardAvatar">
+            <span class="toggle-switch" aria-hidden="true"></span>
+            <span class="toggle-label">Show the viewer&rsquo;s photo</span>
+          </label>
+        </details>
+
+        <details class="opt-box">
+          <summary>Screen items</summary>
+          <label class="auto-next-toggle">
+            <input type="checkbox" data-pref="showChatFmt">
+            <span class="toggle-switch" aria-hidden="true"></span>
+            <span class="toggle-label">&ldquo;Chat format&rdquo; line at the top</span>
+          </label>
+          <label class="auto-next-toggle">
+            <input type="checkbox" data-pref="showCounter">
+            <span class="toggle-switch" aria-hidden="true"></span>
+            <span class="toggle-label">Fusions / groups counter</span>
+          </label>
+          <label class="auto-next-toggle">
+            <input type="checkbox" data-pref="showTimer">
+            <span class="toggle-switch" aria-hidden="true"></span>
+            <span class="toggle-label">Round timer</span>
+          </label>
+          <label class="auto-next-toggle">
+            <input type="checkbox" data-pref="showScores">
+            <span class="toggle-switch" aria-hidden="true"></span>
+            <span class="toggle-label">The two leaderboards under the board</span>
+          </label>
+          <label class="opt-row">Leaderboard rows
+            <select data-pref="sbRows">
+              <option value="3">Top 3</option>
+              <option value="5">Top 5</option>
+            </select>
+          </label>
+          <label class="auto-next-toggle">
+            <input type="checkbox" data-pref="showToasts">
+            <span class="toggle-switch" aria-hidden="true"></span>
+            <span class="toggle-label">Guess pop-ups<small>The pill that shows who guessed and the result.</small></span>
+          </label>
+          <label class="auto-next-toggle">
+            <input type="checkbox" data-pref="showStreak">
+            <span class="toggle-switch" aria-hidden="true"></span>
+            <span class="toggle-label">Streak flames (&#128293;&times;3)</span>
+          </label>
+          <label class="auto-next-toggle">
+            <input type="checkbox" data-pref="anim">
+            <span class="toggle-switch" aria-hidden="true"></span>
+            <span class="toggle-label">Animations<small>Merging tiles, dropping tiles and pop-in cards. Off = tiles just change.</small></span>
+          </label>
+        </details>
+
+        <details class="opt-box">
+          <summary>Sound effects</summary>
+          <label class="auto-next-toggle">
+            <input type="checkbox" data-pref="sound">
+            <span class="toggle-switch" aria-hidden="true"></span>
+            <span class="toggle-label">Play sounds<small>Short tones for a fusion, a finished group, &ldquo;one away&rdquo; and a wrong guess. Plays on this device only.</small></span>
+          </label>
+          <label class="opt-row">Volume <span class="opt-range"><input type="range" min="0" max="100" step="5" data-pref="volume"><b id="volumeVal">60%</b></span></label>
+          <button id="soundTestBtn" type="button" class="btn btn-secondary timing-reset-btn">Test sound</button>
+        </details>
+
+        <details class="opt-box">
+          <summary>Backup &amp; reset</summary>
+          <p class="hint">Save every look setting of this device to a file, and load it on another phone or computer.</p>
+          <div class="hints-buttons">
+            <button id="exportSettingsBtn" type="button" class="btn btn-secondary">Export settings</button>
+            <button id="importSettingsBtn" type="button" class="btn btn-secondary">Import settings</button>
+            <button id="resetDisplayBtn" type="button" class="btn btn-danger">Reset tile &amp; display options</button>
+          </div>
+          <input type="file" id="importSettingsFile" accept="application/json,.json" hidden>
+          <div id="backupMsg" class="save-settings-confirm" hidden></div>
+        </details>
+      </div>
+
       <div class="mode-tabs">
         <button class="mode-btn active" data-mode="offline">Offline</button>
         <button class="mode-btn" data-mode="test">Test</button>
@@ -313,6 +458,45 @@
         </span>
       </label>
 
+      <div class="timing-box rules-box" id="rulesBox">
+        <h3 class="hints-title">&#127918; Game rules</h3>
+        <p class="hint">Scoring rules work immediately and are shared with every screen. The round shape is used the next time a game is built (tap <b>New Game</b>).</p>
+        <div class="timing-grid">
+          <label class="timing-field">
+            Groups per round (1-8)
+            <input type="number" id="rulesGroups" min="1" max="8" step="1">
+          </label>
+          <label class="timing-field">
+            How many are 2-level
+            <input type="number" id="rulesTwo" min="0" max="8" step="1">
+          </label>
+          <label class="timing-field">
+            Biggest combo multiplier
+            <input type="number" id="comboMaxInput" min="1" max="10" step="1">
+          </label>
+          <label class="timing-field">
+            Bonus for finishing a group
+            <input type="number" id="finalBonusInput" min="0" max="100" step="1">
+          </label>
+          <label class="timing-field">
+            Guess cooldown per viewer (sec)
+            <input type="number" id="cooldownInput" min="0" max="30" step="0.5">
+          </label>
+        </div>
+        <p class="hint" id="rulesShape"></p>
+        <label class="auto-next-toggle">
+          <input type="checkbox" id="comboToggle" checked>
+          <span class="toggle-switch" aria-hidden="true"></span>
+          <span class="toggle-label">Combo streak<small>Back-to-back fusions earn 1x, 2x, 3x ... up to the biggest multiplier. Off = every fusion is the base points only.</small></span>
+        </label>
+        <label class="auto-next-toggle">
+          <input type="checkbox" id="nearToggle" checked>
+          <span class="toggle-switch" aria-hidden="true"></span>
+          <span class="toggle-label">Tell viewers &ldquo;one away&rdquo;<small>Off = a guess with 3 of 4 right is simply marked wrong (harder).</small></span>
+        </label>
+        <button id="resetRulesBtn" type="button" class="btn btn-secondary timing-reset-btn">Reset game rules</button>
+      </div>
+
       <div class="timing-box">
         <h3 class="hints-title">Timing</h3>
         <p class="hint">How long each floating window stays up, how long a wrong guess stays marked, and the pause before the next game. The first three are saved on this device; the other three are shared with every screen.</p>
@@ -365,8 +549,8 @@
           <li><span class="htp-icon">&#129513;</span><span>If all four share a link (Ford, Toyota, Honda, BMW), they are <b>destroyed</b> and <b>fuse into one new tile</b> (&ldquo;Car&rdquo;) with a brand-new number</span></li>
           <li><span class="htp-icon">&#9889;</span><span><b>Fuse again:</b> the new &ldquo;Car&rdquo; tile can now join Boat, Plane and Train to fuse into the final group &ldquo;Transportation&rdquo;. A 3-level group goes one step further: the new tile fuses into another new tile, which then fuses into the final group</span></li>
           <li><span class="htp-icon">&#128064;</span><span>Three of four right shows <b>&ldquo;one away&rdquo;</b>. Anything else is marked wrong</span></li>
-          <li><span class="htp-icon">&#11088;</span><span>Every fusion earns points &mdash; <b>deeper levels are worth more</b> (x1, x2, x3)</span></li>
-          <li><span class="htp-icon">&#128293;</span><span>Fuse <b>back-to-back</b> for a combo streak: 1x, 2x, 3x, up to 4x. A wrong guess resets it</span></li>
+          <li><span class="htp-icon">&#11088;</span><span>Every fusion earns points, the same for every level (the host can add a bonus for finishing a group)</span></li>
+          <li><span class="htp-icon">&#128293;</span><span>Fuse <b>back-to-back</b> for a combo streak: 1x, 2x, 3x, up to 4x by default. A wrong guess resets it</span></li>
           <li><span class="htp-icon">&#9200;</span><span>No time limit. The clock only shows how long each puzzle takes</span></li>
         </ol>
       </div>
