@@ -1223,13 +1223,13 @@ html, body {
 
 /* Finished group: one compact card (category, round photo + name of the viewer, the 4 latest words).
    Two cards per row on a phone, so five finished groups use about three short rows. */
-#solvedList{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:5px}
+#solvedList{display:grid;grid-template-columns:1fr;gap:5px}   /* one finished group per row */
 #solvedList:empty{display:none}
 .solved-card{display:flex;align-items:center;gap:6px;min-width:0;padding:4px 7px;border-radius:11px;background:var(--gc,#4fd1c5);color:#10131c}
 .solved-card.is-new{animation:fusePop .5s ease-out both}
 .solved-card .avatar-circle{flex:0 0 26px;width:26px;height:26px;border:2px solid #fff;box-sizing:border-box}
 .solved-host{flex:0 0 26px;width:26px;height:26px;border-radius:50%;background:#10131c;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px}
-.solved-text{display:flex;flex-direction:column;min-width:0;line-height:1.15}
+.solved-text{display:flex;flex-direction:column;flex:1 1 auto;min-width:0;line-height:1.15}
 .solved-cat{font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .solved-by{font-size:10px;font-weight:800;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .solved-words{font-size:9.5px;font-weight:700;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

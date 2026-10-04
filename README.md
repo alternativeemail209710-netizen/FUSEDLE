@@ -20,7 +20,7 @@ Each group is either a **2-level fusion** (7 starting tiles) or a **3-level fusi
 > You cannot skip ahead: "Car" does not exist until the car brands are fused. Trying it early shows "one away" or "not on the board".
 
 **When a group is completely finished** it shows as one small card: the category name, the viewer who fused it (their round TikTok
-photo and name) and only the **4 latest words** that made it. The cards stay small (two per row on a phone), so the unsolved tiles and
+photo and name) and only the **4 latest words** that made it. Each card takes one row of its own and stays small, so the unsolved tiles and
 the leaderboards stay on the screen. If the host used Reveal, the card says "Host reveal".
 
 > **Before you go live:** in the TikTok app open LIVE settings, then **Comments > Filtered**, and turn **OFF**
