@@ -64,7 +64,7 @@ Render updates the game by itself in a minute or two.
 
   The round ends when every top-level group is finished.
 
-- **Fused tiles** are coloured by level (L1 teal, L2 violet, L3 gold), show their new number and what is inside them. The last fusion of a group becomes its finished card.
+- **Tiles:** every tile has its number in a gray circle on the left (6 shades of gray, white ring, never over the word). Fused tiles are coloured by level (teal, violet, gold), show their new number and what is inside them. The last fusion of a group becomes its finished card.
 - **Toolbar:** difficulty, new game, leaderboard, **Hint** (names one group you can fuse right now), **Peek** (tints tiles by group for
   a few seconds), **Reveal 1 Fusion**, theme, full screen, settings. Nobody earns points from hints or reveals.
 - **Scoring:** points per fusion = **10 x fusion level x combo**. A level-1 fusion is worth 10, level 2 is worth 20, level 3 is worth 30.

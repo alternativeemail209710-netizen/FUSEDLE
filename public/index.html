@@ -54,7 +54,7 @@
   </header>
 
   <div class="quick-hint" id="chatFormatHint">
-    Chat format: <span class="mono highlight">2 5 8 12</span> fuses tiles <b>2</b>, <b>5</b>, <b>8</b> and <b>12</b> into <b>one new tile</b> &mdash; then fuse that again!
+    Chat format: <span class="mono highlight">2 5 8 12</span> fuses tiles <b>2</b>, <b>5</b>, <b>8</b> and <b>12</b> into <b>one new tile</b>
   </div>
 
   <!-- Player Guess Bar: the ongoing way every player enters guesses in
@@ -83,8 +83,8 @@
     <div id="liveGuessToastArea" class="live-guess-toast-area" aria-live="polite"></div>
 
     <div class="puzzle-topline">
-      <span id="liveStatusMini" class="live-status-mini status-idle">&#9679; Offline</span>
-      <span id="pairsCounter" class="pairs-counter">&#129513; 0/0 groups</span>
+      <span id="liveStatusMini" class="live-status-mini status-idle" hidden>&#9679; Offline</span>
+      <span id="pairsCounter" class="pairs-counter">&#9889; 0/0 fusions &middot; &#129513; 0/0 groups</span>
       <span id="solvedBanner" class="solved-banner" hidden>ALL FUSED!</span>
       <span id="stopwatch" class="stopwatch" title="Time elapsed - there is no time limit">&#9201; 00:00</span>
     </div>
@@ -356,5 +356,21 @@
 
 <script src="/socket.io/socket.io.js"></script>
 <script src="/client.js"></script>
+<script>
+// Chat-format hint: always ONE row (the text shrinks a little on narrow screens)
+(function () {
+  const el = document.getElementById('chatFormatHint');
+  if (!el) return;
+  function fit() {
+    el.style.fontSize = '';
+    let size = parseFloat(getComputedStyle(el).fontSize) || 12.5;
+    while (el.scrollWidth > el.clientWidth && size > 7) { size -= 0.25; el.style.fontSize = size + 'px'; }
+  }
+  window.addEventListener('resize', fit);
+  document.addEventListener('fullscreenchange', fit);
+  window.addEventListener('load', fit);
+  setTimeout(fit, 0); setTimeout(fit, 400);
+})();
+</script>
 </body>
 </html>

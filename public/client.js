@@ -131,16 +131,21 @@
 
   function makeTile(t, fresh) {
     const b = mk('button', 'tile'); b.type = 'button'; b.dataset.n = t.n;
-    b.appendChild(mk('i', '', t.n));
+    b.dataset.s = String(Number(t.n) % 6);                 // 6 shades of gray for the number circle
+    b.appendChild(mk('i', '', t.n));                      // number circle (its own column, never over the word)
+    const body = mk('span', 'tile-text');
     if (t.f) {
       b.classList.add('fused'); b.dataset.f = Math.min(4, t.f);
-      b.appendChild(mk('em', 'tile-lvl', 'L' + t.f));
-      b.appendChild(mk('span', 'tile-name', t.w));
-      b.appendChild(mk('span', 'tile-sub', t.sub || ''));
+      body.appendChild(mk('span', 'tile-name', t.w));
+      body.appendChild(mk('span', 'tile-sub', t.sub || ''));
       if (fresh) b.classList.add('fresh');
     } else {
-      b.appendChild(document.createTextNode(t.w));
+      body.appendChild(mk('span', 'tile-word', t.w));
     }
+    // font size follows the longest single word, so a word is never cut in the middle
+    const longest = String(t.w || '').split(/\s+/).reduce((m, x) => Math.max(m, x.length), 4);
+    b.style.setProperty('--k', (1 / (0.69 * Math.max(4, longest))).toFixed(4));
+    b.appendChild(body);
     return b;
   }
 
@@ -178,9 +183,7 @@
 
     // big boards (many tiles): slightly shorter rows so the whole board stays on screen
     grid.style.setProperty('--row-h', ({ 4: 58, 5: 52, 6: 47, 7: 43, 8: 40 })[S.rows || 5] + 'px');
-    let counter = '\u26A1 ' + S.fusionsDone + '/' + S.fusionsTotal + ' fusions \u00B7 ' + S.title + ' \u00B7 ' + (S.maxLevels > 1 ? 'up to ' + S.maxLevels + ' fusion levels' : 'classic');
-    if (S.chainsTotal > 1) counter += ' \u00B7 ' + S.chainsDone + '/' + S.chainsTotal + ' groups';
-    $('pairsCounter').textContent = counter;
+    $('pairsCounter').textContent = '\u26A1 ' + S.fusionsDone + '/' + S.fusionsTotal + ' fusions \u00B7 \u{1F9E9} ' + S.chainsDone + '/' + S.chainsTotal + ' groups';
     $('solvedBanner').hidden = !S.solvedAt;
     const hl = $('hintLine'); hl.hidden = !S.hint; hl.textContent = S.hint || '';
   }
