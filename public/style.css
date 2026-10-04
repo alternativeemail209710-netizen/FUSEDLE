@@ -888,10 +888,12 @@ html, body {
    changes the box's height. */
 .live-guess-toast-area {
   width: 100%;
-  max-width: 520px;
+  max-width: var(--grid-max, 520px);
   position: relative;
-  height: 34px;
-  margin-bottom: 2px;
+  flex: 0 0 auto;
+  height: 38px;            /* taller than the pill (34px), so the pill can never touch the row below */
+  margin-bottom: 6px;
+  overflow: hidden;
 }
 .guess-toast {
   position: absolute;
@@ -1246,3 +1248,15 @@ html, body {
 .player-guess-hint{margin:2px 0 6px}
 .player-guess-input-row{display:flex;gap:6px}
 .player-guess-input-row input{flex:1;min-width:0}
+
+/* ---- Guess pill: fixed one-line height, long text is cut with "..." instead of wrapping onto other sections ---- */
+.guess-toast { height: 34px; box-sizing: border-box; padding: 0 12px 0 5px; white-space: nowrap; overflow: hidden; }
+.guess-toast .avatar-circle { flex: 0 0 24px; width: 24px; height: 24px; }
+.guess-toast .guess-name { flex: 0 1 auto; min-width: 0; max-width: 38%; overflow: hidden; text-overflow: ellipsis; }
+.guess-toast .guess-detail { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.guess-toast .streak-badge, .guess-toast .guess-points { flex: 0 0 auto; }
+
+/* ---- Merge animation: tiles slide into the new tile ---- */
+.tile.ghost { position: fixed; margin: 0; z-index: 70; pointer-events: none; animation: none; outline: 0;
+  transition: transform .5s cubic-bezier(.55,0,.35,1), opacity .5s ease-in; will-change: transform, opacity; }
+@media (prefers-reduced-motion: reduce) { .tile.ghost { display: none; } }

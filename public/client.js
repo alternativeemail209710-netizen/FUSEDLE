@@ -152,7 +152,12 @@
     const newRound = renderedStart !== S.startedAt;   // first draw of this round: nothing animates in
     if (newRound) { grid.innerHTML = ''; tileEls.clear(); renderedStart = S.startedAt; }
     const present = new Set(S.tiles.map((t) => t.n));
-    tileEls.forEach((el, n) => { if (!present.has(n)) { el.remove(); tileEls.delete(n); } });
+    // tiles that just left the board: remember a copy + position so they can fly into the new tile
+    const removed = [];
+    tileEls.forEach((el, n) => {
+      if (!present.has(n)) { removed.push({ node: el.cloneNode(true), r: el.getBoundingClientRect(), fused: el.classList.contains('fused') }); el.remove(); tileEls.delete(n); }
+    });
+    const merging = removed.length > 0 && removed.length <= 12 && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     selected = selected.filter((n) => present.has(n));
     S.tiles.forEach((t) => {
       let el = tileEls.get(t.n);
@@ -160,6 +165,7 @@
         const fresh = !!(S.lastFusion && S.lastFusion.newN === t.n && (S.now - S.lastFusion.at) < 3000);
         el = makeTile(t, fresh); tileEls.set(t.n, el);
         if (!newRound && !t.f) el.classList.add('drop');   // a waiting tile drops into a freed space
+        if (merging) el.style.animationDelay = t.f ? '.5s' : '.6s';   // wait until the merging tiles have arrived
         grid.appendChild(el);
       }
       el.style.gridColumn = String((t.s % (S.cols || 4)) + 1); el.style.gridRow = String(Math.floor(t.s / (S.cols || 4)) + 1);
@@ -170,6 +176,8 @@
       if (peeking) el.style.setProperty('--gc', groupColor(t.g)); else el.style.removeProperty('--gc');
     });
 
+    if (merging) playMerge(removed);
+
     // always 4 columns x 6 rows while tiles are still waiting; once the last tile has appeared the grid shrinks to what is left
     const cols = S.cols || 4, maxSlot = S.tiles.reduce((m, t) => Math.max(m, t.s), 0);
     const rowsShown = S.waiting > 0 ? (S.rows || 6) : Math.max(1, Math.ceil((maxSlot + 1) / cols));
@@ -179,6 +187,28 @@
     $('solvedBanner').hidden = !S.solvedAt;
     const hl = $('hintLine'); hl.hidden = !S.hint; hl.textContent = S.hint || '';
   }
+  // Merge animation: the 4 fused tiles slide together into the new tile (or into the finished-group card).
+  function playMerge(removed) {
+    const fresh = S.lastFusion && tileEls.get(S.lastFusion.newN);
+    const card = document.querySelector('#solvedList .solved-card.is-new:last-child');
+    let target = fresh && fresh.classList.contains('fresh') ? fresh : card;
+    if (!target) return;
+    if (target === card) card.style.animationDelay = '.5s';
+    const tr = target.getBoundingClientRect(), tx = tr.left + tr.width / 2, ty = tr.top + tr.height / 2;
+    const shell = document.querySelector('.app-shell') || document.body;   // inside the shell so it also shows in full screen
+    const ghosts = removed.map((g, i) => {
+      const c = g.node; c.className = 'tile ghost' + (g.fused ? ' fused' : '');
+      c.style.cssText = (g.node.style.cssText || '').replace(/grid-(column|row):[^;]*;?/g, '');
+      c.style.left = g.r.left + 'px'; c.style.top = g.r.top + 'px'; c.style.width = g.r.width + 'px'; c.style.height = g.r.height + 'px';
+      c.style.transitionDelay = (i * 50) + 'ms';
+      shell.appendChild(c);
+      return { c, dx: tx - (g.r.left + g.r.width / 2), dy: ty - (g.r.top + g.r.height / 2) };
+    });
+    void shell.offsetWidth;   // lock the start position, then slide
+    ghosts.forEach((g) => { g.c.style.transform = 'translate(' + g.dx + 'px,' + g.dy + 'px) scale(.3)'; g.c.style.opacity = '0.2'; });
+    setTimeout(() => ghosts.forEach((g) => g.c.remove()), 900);
+  }
+
   $('tileGrid').addEventListener('click', (e) => {
     const b = e.target.closest('.tile'); if (!b || !S || S.mode === 'live' || S.solvedAt) return;
     const n = Number(b.dataset.n), k = selected.indexOf(n);
