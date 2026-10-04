@@ -11,7 +11,7 @@ When the board is empty: victory screen, then the next puzzle loads by itself.
 ## Deploy (GitHub -> Render)
 1. Push this folder to a GitHub repo.
 2. Render -> New -> Web Service -> pick the repo (or New -> Blueprint to use `render.yaml`).
-   - Build command: `npm install && npm run build`
+   - Build command: `npm install` (the React build runs automatically via the `postinstall` script)
    - Start command: `npm start`
    - Instance type: Starter or higher (free instances sleep and drop the chat connection)
 3. Environment: `TIKTOK_USERNAME` = your handle without `@`. Optional: `TIKTOK_SESSION_ID`, `ADMIN_KEY`.

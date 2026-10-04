@@ -4,12 +4,14 @@
   "private": true,
   "type": "module",
   "description": "Fusion Associations Live - automated multi-level association game for TikTok Live (Mobile Gaming screen share).",
-  "engines": { "node": ">=18.18" },
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "dev": "concurrently -k -n server,client -c blue,green \"node --watch server/index.js\" \"vite\"",
     "build": "vite build",
-    "start": "node server/index.js",
-    "render-build": "npm install && npm run build"
+    "postinstall": "vite build",
+    "start": "node server/index.js"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.1",

@@ -37,7 +37,11 @@ app.post('/admin/skip', (req, res) => {
 
 // Built React app
 app.use(express.static(DIST));
-app.use((_req, res) => res.sendFile(path.join(DIST, 'index.html')));
+app.use((_req, res) => {
+  const index = path.join(DIST, 'index.html');
+  if (!fs.existsSync(index)) return res.status(503).send('Frontend build missing - the build step (vite build) did not run.');
+  res.sendFile(index);
+});
 
 io.on('connection', (socket) => {
   socket.emit('state', game.getState());
