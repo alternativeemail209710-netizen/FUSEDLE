@@ -1,5 +1,5 @@
 /**
- * FUSEDLE Live - Server  (classic 4-group board + MULTI-LEVEL FUSION)
+ * FUSEDLE Live - Server  (8 independent groups per board, 2-level and 3-level fusion)
  * Express (static) + Socket.IO (realtime) + MEMORY's hardened TikTok LIVE
  * connector (tiktok-connector.js) + MEMORY's viewer-photo service (avatars.js).
  *
@@ -19,7 +19,7 @@ process.on('uncaughtException', (err) => console.error('[FATAL-CAUGHT] uncaughtE
 process.on('unhandledRejection', (reason) => console.error('[FATAL-CAUGHT] unhandledRejection:', reason));
 
 const createTikTokConnector = require('./tiktok-connector');
-const { PACKS, validate: validatePuzzles, compose: composeBoard } = require('./puzzles');
+const { PACKS, validate: validatePuzzles, compose: composeBoard, LEVEL_SPECS } = require('./puzzles');
 { const problems = validatePuzzles(); if (problems.length) { console.error('[puzzles] PROBLEMS:\n  ' + problems.join('\n  ')); process.exit(1); } }
 
 const DEFAULT_TIKTOK_USERNAME = String(process.env.TIKTOK_USERNAME || '').replace('@', '').trim();
@@ -40,15 +40,17 @@ app.use(express.static(path.join(__dirname, 'public'), {
 // ---------------------------------------------------------------------------
 // Settings tables
 // ---------------------------------------------------------------------------
-// Difficulty = a FIXED number of starting tiles (4 columns x N rows). Levels 1-2 use 2-level fusion chains and
-// levels 3-5 use 3-level fusion chains. The exact recipe lives in puzzles.js (LEVEL_SPECS).
-const LEVELS = {
-  1: { name: 'Warmup', desc: '4 x 4 = 16 tiles, 2-level fusion', rows: 4 },
-  2: { name: 'Easy',   desc: '4 x 5 = 20 tiles, 2-level fusion', rows: 5 },
-  3: { name: 'Medium', desc: '4 x 6 = 24 tiles, 3-level fusion', rows: 6 },
-  4: { name: 'Hard',   desc: '4 x 7 = 28 tiles, 3-level fusion', rows: 7 },
-  5: { name: 'Chaos',  desc: '4 x 8 = 32 tiles, 3-level fusion', rows: 8 },
-};
+// Difficulty: EVERY level has exactly 8 independent groups (no chains of groups). Only the mix of 2-level fusion groups
+// (7 tiles each) and 3-level fusion groups (10 tiles each) changes. The recipe lives in puzzles.js (LEVEL_SPECS).
+const LEVEL_NAMES = { 1: 'Warmup', 2: 'Easy', 3: 'Medium', 4: 'Hard', 5: 'Chaos' };
+const LEVELS = {};
+Object.keys(LEVEL_SPECS).forEach((k) => {
+  const sp = LEVEL_SPECS[k];
+  LEVELS[k] = {
+    name: LEVEL_NAMES[k], rows: sp.rows, tiles: sp.tiles,
+    desc: '8 groups: ' + sp.two + ' x 2-level + ' + sp.three + ' x 3-level \u00B7 ' + sp.tiles + ' tiles',
+  };
+});
 const TIMING = {
   autoNext: { min: 3, max: 300, def: 8 },
   mismatch: { min: 0.5, max: 5, def: 2 },
@@ -481,7 +483,7 @@ io.on('connection', (socket) => {
 });
 
 loadAllTime();
-newGame(2);
+newGame(state.level);
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {

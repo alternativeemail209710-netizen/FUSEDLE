@@ -1,7 +1,7 @@
 {
   "name": "fusedle-live",
-  "version": "5.1.0",
-  "description": "FUSEDLE Live: fixed-size word board (16 to 32 tiles) with 2-level (difficulty 1-2) and 3-level (difficulty 3-5) fusion chains for TikTok LIVE. Audience types four tile numbers in chat; groups fuse into new tiles that can fuse again.",
+  "version": "6.0.0",
+  "description": "FUSEDLE Live: every board has 8 independent groups (2-level or 3-level fusion) for TikTok LIVE. Audience types four tile numbers in chat; groups fuse into new tiles that can fuse again.",
   "main": "server.js",
   "engines": {
     "node": ">=18.0.0"

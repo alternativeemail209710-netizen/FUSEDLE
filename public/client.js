@@ -182,7 +182,7 @@
     });
 
     // big boards (many tiles): slightly shorter rows so the whole board stays on screen
-    grid.style.setProperty('--row-h', ({ 4: 58, 5: 52, 6: 47, 7: 43, 8: 40 })[S.rows || 5] + 'px');
+    grid.style.setProperty('--row-h', (S.rows >= 18 ? 34 : S.rows >= 15 ? 36 : 38) + 'px');   // 8 groups = 56 to 80 tiles, so rows are compact
     $('pairsCounter').textContent = '\u26A1 ' + S.fusionsDone + '/' + S.fusionsTotal + ' fusions \u00B7 \u{1F9E9} ' + S.chainsDone + '/' + S.chainsTotal + ' groups';
     $('solvedBanner').hidden = !S.solvedAt;
     const hl = $('hintLine'); hl.hidden = !S.hint; hl.textContent = S.hint || '';
