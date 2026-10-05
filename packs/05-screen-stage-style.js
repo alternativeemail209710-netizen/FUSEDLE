@@ -1,0 +1,93 @@
+'use strict';
+// Batch 5 - Cinema, performing arts, fashion and media (4 packs).
+module.exports = ({ T, D }) => [
+
+  { title: 'Movies & Cinema',
+    three: [
+      T('Film Genres', 'Movie Types', 'Genres', 'Comedy Film,Horror Film,Western,Musical Film', 'Documentary,Animation Film,Science Fiction Film', 'Action Film,Romance Film,War Film'),
+      T('Film Making', 'Film Crew', 'Crew Roles', 'Director,Film Producer,Cinematographer,Film Editor', 'Gaffer,Boom Operator,Clapper Loader', 'Stunt Double,Make-up Artist,Costume Designer'),
+      T('Cinema Visit', 'Movie Theatre', 'Cinema Snacks', 'Salted Popcorn,Nachos,Ice Lolly,Fizzy Drink Cup', 'Ticket Booth,Big Screen,Cinema Seat', 'Trailer Reel,Usher,Interval'),
+      T('Awards Night', 'Film Awards', 'Awards', 'Oscar,Golden Globe,BAFTA,Palme d Or', 'Red Carpet,Sealed Envelope,Acceptance Speech', 'Nominee,Winner Trophy,After Party'),
+      T('Animation', 'Animated Films', 'Animation Types', 'Cartoon,Stop Motion,Claymation,Computer Animation', 'Storyboard,Keyframe,Voice Cast', 'Flipbook,Zoetrope,Cel Painting'),
+      T('Special Effects', 'Movie Magic', 'Effects Tools', 'Green Screen,Motion Capture,Explosion Effect,Wire Work', 'Prosthetics,Miniature Set,Matte Painting', 'Slow Motion,Fast Forward,Rewind'),
+      T('Classic Hollywood', 'Golden Age Cinema', 'Early Cinema', 'Silent Film,Black and White,Flickering Reel,Piano Accompaniment', 'Charlie Chaplin,Buster Keaton,Marilyn Monroe', 'Hollywood Sign,Talkies,Technicolor'),
+      T('Movie Scripts', 'Screenwriting', 'Script Parts', 'Dialogue,Scene Heading,Stage Direction,Monologue', 'Screenplay,Treatment,Elevator Pitch', 'Plot Twist Script,Rewrite,Final Draft'),
+      T('Soundtrack', 'Film Music', 'Score Parts', 'Orchestra Score,Theme Tune,Sound Effect,Overture', 'Composer,Orchestra Leader,Recording Session', 'Leitmotif,Credits Song,Musical Number'),
+      T('Film Festivals', 'Festival World', 'Festival Cities', 'Cannes,Venice,Sundance,Berlin Film', 'Premiere,Short Film Prize,Indie Film', 'Critic,Critic Rating,Press Screening'),
+      T('Movie Roles', 'Casting', 'Role Types', 'Leading Actor,Supporting Actor,Extra,Cameo', 'Stuntman,Film Voice Actor,Child Actor', 'Understudy,Body Double,Double Act'),
+      T('Movie Night', 'Watching at Home', 'Home Viewing', 'DVD,Blu-ray,Projector Screen,Surround Sound', 'Sofa Movie Night,Blanket Fort,Popcorn Bowl', 'Film Club,Boxset,Movie Marathon'),
+    ],
+    two: [
+      D('Superheroes', 'Hero Gear', 'Cape,Hero Mask,Utility Belt,Secret Identity', 'Sidekick Hero,Lair,Villain Plot'),
+      D('Spy Films', 'Secret Agents', 'Gadget Pen,Fake Passport,Secret Code,Safe House', 'Double Agent,Cover Story,Briefcase Switch'),
+      D('Disaster Movies', 'Big Screen Chaos', 'Asteroid Strike,Alien Invasion,Tidal Wave Film,Zombie Outbreak', 'Last Survivor,Escape Plan,Countdown Clock'),
+      D('Western Props', 'Old West Film', 'Ten Gallon Hat,Six Shooter,Tumbleweed,Duel at Noon', 'Horse Chase,Bar Brawl,Sunset Ride'),
+    ] },
+
+  { title: 'Stage & Dance',
+    three: [
+      T('Playhouse', 'Stage Areas', 'Stage Parts', 'Wings,Backdrop,Footlights,Stage Trapdoor', 'Orchestra Pit,Balcony Circle,Stalls', 'Box Seat,Green Room,Fly Tower'),
+      T('Acting', 'Actor Skills', 'Acting Craft', 'Rehearsal,Cue,Improvisation,Audition', 'Prompter,Understudy Role,Stage Manager', 'Costume Fitting,Dress Rehearsal,Curtain Call'),
+      T('Ballroom Dancing', 'Social Dances', 'Latin Dances', 'Mambo,Bossa Nova,Merengue,Bachata', 'Lindy Hop,Charleston,Boogie-woogie', 'Line Dance,Square Dance,Conga Line'),
+      T('Ballet Class', 'Ballet Terms', 'Ballet Moves', 'Plie,Pirouette,Arabesque,Jete', 'Tutu,Pointe Shoes,Barre', 'Swan Lake,Nutcracker Suite,Giselle'),
+      T('Street Dance', 'Urban Dance', 'Hip Hop Moves', 'B-boying,Popping,Locking,Krump', 'Moonwalk,Windmill,Headspin', 'Freestyle,Cypher,Dance Battle'),
+      T('Folk Dance', 'World Dance', 'Dances of the World', 'Flamenco,Morris Dance,Highland Fling,Hula', 'Bhangra,Belly Dance,Irish Jig', 'Maypole Dance,Hoedown,Ceilidh'),
+      T('Musical Theatre', 'Musicals', 'Musical Parts', 'Show Overture,Chorus Line,Solo Song,Duet Number', 'Show Encore,Curtain Up,Standing Ovation', 'Libretto,Lyricist,Choreographer'),
+      T('Circus', 'Big Top', 'Circus Acts', 'Clown,Acrobat,Juggler,Trapeze Artist', 'Ringmaster,Tightrope Walker,Fire Eater', 'Stilt Walker,Unicyclist,Human Cannonball'),
+      T('Magic Show', 'Illusions', 'Magic Tricks', 'Card Trick,Rabbit from Hat,Sawing Assistant,Disappearing Coin', 'Magician,Wand Wave,Magic Top Hat', 'Assistant,Misdirection,Illusion Box'),
+      T('Puppets', 'Puppet Theatre', 'Puppet Types', 'Glove Puppet,Marionette,Shadow Puppet,Finger Puppet', 'Puppeteer,Punch and Judy,Ventriloquist', 'Sock Puppet,Ventriloquist Dummy,Puppet Stage'),
+      T('Grand Opera', 'Opera House Life', 'Opera Voices', 'Soprano Voice,Mezzo,Contralto,Baritone Voice', 'Aria,Recitative,Opera Libretto', 'Diva,Opera Chorus,Opera Glasses'),
+      T('Comedy', 'Stand-up', 'Comedy Types', 'Slapstick,Satire,Parody,Sketch Show', 'Punchline,Heckler,Open Mic', 'Joke Book,Christmas Panto,Clown Shoes'),
+    ],
+    two: [
+      D('Stage Costumes', 'Costumes', 'Wig,Greasepaint,Sequins,Feather Boa', 'Tights,Corset,Costume Cloak'),
+      D('Pantomime', 'Panto Features', 'Dame,Principal Boy,Behind You,Oh No It Isnt', 'Custard Pie,Sing-along,Slapstick Sword'),
+      D('Variety Show', 'Acts of Variety', 'Compere,Talent Act,Stand-up Spot,Dance Troupe', 'Buzzer,Judges Table,Golden Ticket'),
+      D('Backstage Jobs', 'Crew Jobs', 'Lighting Technician,Sound Engineer,Prop Master,Stagehand', 'Wardrobe Mistress,Dresser,Script Prompter'),
+    ] },
+
+  { title: 'Fashion & Style',
+    three: [
+      T('Fabrics', 'Cloth Types', 'Heavy Fabrics', 'Denim,Velvet,Satin,Tweed', 'Leather,Suede,Lace', 'Corduroy,Chiffon,Fleece'),
+      T('Hats', 'Headwear', 'Hat Types', 'Beret,Fedora,Bowler,Trilby', 'Baseball Cap,Beanie,Sun Hat', 'Tiara,Turban,Veil'),
+      T('Shoes', 'Shoe Styles', 'Boot Types', 'Wellington,Cowboy Boot,Hiking Boot,Chelsea Boot', 'Sneakers,Loafer,Stiletto', 'Flip-flop,Clog,Moccasin'),
+      T('Jewels', 'Accessories', 'Jewellery Items', 'Necklace,Bracelet,Earring,Brooch', 'Cufflink,Tie Pin,Anklet', 'Tiara Jewel,Crown Jewel,Locket'),
+      T('Hair Fashion', 'Hairstyles', 'Hair Styles', 'Ponytail,Plait,Bun,Mohican', 'Bob,Afro,Quiff', 'Fringe,Pigtails,Dreadlocks'),
+      T('Makeup', 'Beauty Products', 'Face Makeup', 'Lipstick,Mascara,Eyeliner,Blusher', 'Face Foundation,Concealer,Powder', 'Nail Varnish,Perfume,Moisturiser'),
+      T('Fashion Houses', 'Designer Labels', 'Fashion Names', 'Chanel,Dior,Gucci,Prada', 'Armani,Versace,Burberry', 'Levis,Sports Brand,Trainer Brand'),
+      T('Fashion Show', 'Catwalk', 'Show Features', 'Runway,Model,Photographer Row,Front Row', 'Backstage Fitting,Mannequin,Lookbook', 'Collection,Fashion Trend,Season Launch'),
+      T('Sewing', 'Dressmaking', 'Sewing Kit', 'Thimble,Bobbin,Tailor Tape,Pin Cushion', 'Pattern Paper,Hem,Seam', 'Zip,Button,Velcro'),
+      T('Uniforms', 'Work Wear', 'Uniform Types', 'School Blazer,Chef Whites,Lab Coat Uniform,Overalls', 'Nurse Scrubs,Police Uniform,Fire Suit', 'Hi-Vis Jacket,Pilot Wings,Judge Wig'),
+      T('Traditional Dress', 'World Costume', 'Costumes of the World', 'Kimono,Sari,Kilt,Sombrero', 'Poncho,Kaftan,Dirndl', 'Hanbok,Cheongsam,Lederhosen'),
+      T('Winter Wear', 'Cold Weather Clothes', 'Warm Layers', 'Scarf,Mittens,Earmuffs,Bobble Hat', 'Duffel Coat,Parka,Thermal Vest', 'Snow Boots,Ski Mask,Balaclava'),
+    ],
+    two: [
+      D('Night Clothes', 'Nightwear', 'Pyjama Set,Dressing Gown,Night Slippers,Nightie', 'Sleep Mask,Cuddly Toy,Bedside Book'),
+      D('Swimwear', 'Beach Clothes', 'Bikini,Trunks,Wetsuit,Swimsuit', 'Swim Goggles,Armbands,Flippers'),
+      D('Spa Day', 'Pamper Time', 'Face Mask,Massage,Sauna,Manicure', 'Bath Salts,Cucumber Slices,Robe'),
+      D('Hair Salon', 'Barber and Salon', 'Hair Scissors,Hair Dryer,Clippers,Curling Tongs', 'Shampoo Basin,Mirror Chair,Appointment Book'),
+    ] },
+
+  { title: 'TV & Media',
+    three: [
+      T('Television Shows', 'TV Genres', 'Show Types', 'Sitcom,Soap Opera,Quiz Show,Reality Show', 'Cookery Show,Talent Show,Chat Show', 'News Bulletin,Weather Forecast,Documentary Series'),
+      T('News Broadcast', 'Newsroom Broadcast', 'News Team', 'Presenter,Live Reporter,Weather Presenter,Sports Reporter', 'Autocue,Studio Desk,Breaking News Banner', 'Headlines,Bulletin,Press Conference'),
+      T('Wireless Radio', 'Radio Station', 'Radio Shows', 'DJ,Phone-in,Breakfast Show,Radio Drama', 'Radio Frequency,FM,Radio Aerial', 'Jingle,Radio Playlist,Traffic Report'),
+      T('Podcasting', 'Audio Shows', 'Podcast Gear', 'Studio Mic,Pop Filter,Audio Interface,Boom Arm', 'Episode,Season,Listener Review', 'Subscribe Button,Theme Music,Download Count'),
+      T('Advertising', 'Adverts', 'Advert Types', 'Billboard,Jingle Ad,Banner Ad,Flyer', 'Slogan,Logo,Brand', 'Campaign,Sponsor,Product Placement'),
+      T('Cartoons', 'Cartoon Shows', 'Cartoon Features', 'Cartoon Character,Theme Song,Saturday Morning,Catchphrase', 'Animated Series,Pilot Episode,Season Finale', 'Mascot,Sticker Pack,Merch'),
+      T('Game Shows', 'Quiz Programmes', 'Quiz Features', 'Buzzer Round,Lifeline,Jackpot,Final Question', 'Host,Contestant,Studio Audience', 'Prize Money,Wheel Spin,Golden Buzzer'),
+      T('Soap Operas', 'Serial Drama', 'Drama Parts', 'Cliffhanger Episode,Love Triangle,Evil Twin,Wedding Day Drama', 'Pub Scene,Market Street,Cafe Set', 'Soap Theme Tune,Omnibus,Spoiler'),
+      T('Sports Broadcasting', 'Sports Coverage', 'Sports TV', 'Commentator,Replay,Slow Motion Replay,Pundit', 'Half-time Show,Scoreboard Graphic,Camera Angle', 'Highlights,Live Feed,Trophy Lift'),
+      T('Magazines', 'Magazine Sections', 'Magazine Content', 'Cover Star,Horoscope,Agony Aunt,Problem Page', 'Glossy Pages,Advert Page,Feature Article', 'Subscription,Back Issue,Newsstand'),
+      T('Photography', 'Photo Types', 'Photo Genres', 'Portrait Photo,Landscape Photo,Macro Photo,Action Shot', 'Aperture,Shutter Speed,ISO', 'Darkroom,Film Negative,Contact Sheet'),
+      T('Celebrity News', 'Press Events', 'Red Carpet Media', 'Paparazzi Flash,Autograph,Fan Club,Fan Mail', 'Celebrity,Tabloid,Gossip Column', 'Press Release,Photo Call,Interview Chair'),
+    ],
+    two: [
+      D('Broadcast Voices', 'Broadcast Voice', 'Narrator Broadcast,Announcer,Voiceover Artist,Newsreader', 'Tannoy,Loudspeaker,Megaphone'),
+      D('Binge Culture', 'Streaming Culture', 'Boxset Binge,Cliffhanger Night,Spoiler Alert,Series Marathon', 'Watch Party,Fan Theory,Recap'),
+      D('Documentaries', 'Documentary Types', 'Nature Documentary,True Crime,History Documentary,Sports Documentary', 'Voice of God,Archive Footage,Talking Head'),
+      D('Comics Page', 'Newspaper Funnies', 'Comic Strip,Cartoonist,Caption Contest,Political Cartoon', 'Doodle,Sketch Pad,Ink Wash'),
+    ] },
+
+];

@@ -1,0 +1,93 @@
+'use strict';
+// Batch 4 - Literature, language, visual art and architecture (4 packs).
+module.exports = ({ T, D }) => [
+
+  { title: 'Books & Writing',
+    three: [
+      T('Literature', 'Book Genres', 'Fiction Genres', 'Mystery Novel,Romance Novel,Thriller,Fantasy Novel', 'Biography,Memoir,Autobiography', 'Poetry Book,Anthology,Reference Book'),
+      T('Poetry', 'Poem Forms', 'Short Forms', 'Haiku,Limerick,Sonnet,Couplet', 'Ode,Elegy,Epic', 'Rhyme,Poetic Verse,Stanza'),
+      T('Shakespeare', 'Shakespeare Plays', 'Tragedies', 'Hamlet,Macbeth,Othello,King Lear', 'Romeo and Juliet,Twelfth Night,Tempest', 'Globe Theatre,Stratford,First Folio'),
+      T('Classic Authors', 'Famous Writers', 'Novelists', 'Dickens,Austen,Orwell,Tolstoy', 'Hemingway,Twain,Bronte', 'Homer,Dante,Chaucer'),
+      T('Childrens Books', 'Story Time', 'Story Types', 'Fable,Nursery Rhyme,Picture Book,Pop-up Book', 'Bedtime Tale,Storyteller,Read Aloud', 'Book Fair,Story Hour,Reading Corner'),
+      T('Writing Tools', 'Writers Desk', 'Pens and Paper', 'Fountain Pen,Biro,Ink Pen Set,Journal', 'Typewriter Keys,Inkwell,Blotter', 'First Draft,Manuscript Page,Editor'),
+      T('Newspapers', 'Newsroom', 'Newspaper Sections', 'Headline,Editorial,Obituary,Crossword Page', 'Reporter,Press Photographer,Chief Editor', 'Scoop,Deadline,Front Page'),
+      T('Book Lending', 'Library Visit', 'Library Features', 'Shelf,Catalogue,Borrowing Card,Reading Room', 'Fiction Section,Reference Desk,Quiet Zone', 'Overdue Fine,Library Bookmark,Return Slot'),
+      T('Story Structure', 'Plot Parts', 'Story Elements', 'Hero,Villain,Sidekick,Narrator', 'Beginning,Middle,Ending', 'Climax,Twist,Cliffhanger'),
+      T('Book Parts', 'Anatomy of a Book', 'Book Features', 'Book Spine,Blurb,Dust Jacket,Chapter', 'Index,Glossary,Contents Page', 'Preface,Epilogue,Appendix'),
+      T('Comics and Manga', 'Comic Style', 'Comic Features', 'Speech Balloon,Panel,Sound Effect Word,Splash Page', 'Manga,Graphic Novel,Cartoon Strip', 'Superhero Comic,Anime Style,Caricature'),
+      T('Mystery Fiction', 'Detective Stories', 'Whodunit Items', 'Magnifying Glass,Fingerprint,Alibi,Red Herring', 'Sherlock Holmes,Hercule Poirot,Miss Marple', 'Locked Room,Butler Did It,Final Reveal'),
+    ],
+    two: [
+      D('Spelling Bee', 'Spelling Tools', 'Word Dictionary,Thesaurus,Spell Checker,Syllable', 'Vowel,Consonant,Silent Letter'),
+      D('Book Awards', 'Prizes', 'Booker,Pulitzer,Nobel Literature,Carnegie Medal', 'Bestseller,Shortlist,Winner Stamp'),
+      D('Journalism', 'Press Roles', 'Anchor,Columnist,Correspondent,Paparazzi', 'Interview,Press Pass,Boom Microphone'),
+      D('Storytelling', 'Oral Tradition', 'Campfire Story,Folk Tale,Tall Tale,Urban Legend', 'Bard,Griot,Town Crier'),
+    ] },
+
+  { title: 'Language & Words',
+    three: [
+      T('Grammar', 'Parts of Speech', 'Word Types', 'Noun,Verb,Adjective,Adverb', 'Pronoun,Preposition,Conjunction', 'Interjection,Article,Determiner'),
+      T('Punctuation', 'Punctuation Marks', 'Stops and Pauses', 'Full Stop,Comma,Semicolon,Colon', 'Question Mark,Exclamation Mark,Apostrophe', 'Hyphen,Dash,Ellipsis'),
+      T('World Languages', 'Spoken Languages', 'Big Languages', 'English,Mandarin,Spanish,Hindi', 'Arabic,Portuguese,Russian', 'French Speech,German Speech,Swahili'),
+      T('Alphabet Families', 'Writing Systems', 'Alphabet Types', 'Roman Alphabet,Cyrillic,Greek Letters,Hebrew Letters', 'Braille,Morse Code,Sign Alphabet', 'Emoji Script,Shorthand,Fancy Lettering'),
+      T('Figures of Speech', 'Language Devices', 'Comparisons', 'Simile,Metaphor,Hyperbole,Personification', 'Idiom,Pun,Proverb', 'Alliteration,Onomatopoeia,Irony'),
+      T('Greetings', 'Worldwide Hellos', 'Hellos', 'Hola,Bonjour,Ciao,Namaste', 'Konnichiwa,Salaam,Aloha', 'Guten Tag,Shalom,G Day'),
+      T('Word Games', 'Word Puzzles', 'Puzzle Games', 'Anagram,Wordsearch,Word Tiles,Hangman', 'Cryptic Clue,Rebus,Tongue Twister', 'Palindrome,Acrostic,Spoonerism'),
+      T('Dialects', 'Accents', 'British Accents', 'Cockney,Scouse,Geordie,Brummie', 'Southern Drawl,Aussie Twang,Irish Lilt', 'Slang,Jargon,Dialect Word'),
+      T('Translation', 'Interpreting', 'Language Services', 'Translator,Interpreter,Dictionary App,Phrasebook', 'Subtitle Track,Dubbing,Voiceover', 'Fluent,Bilingual,Accent Coach'),
+      T('Silent Signals', 'Wordless Talk', 'Hand Language', 'Sign Language,Fingerspelling,Lip Reading,Gesture', 'Smoke Signal,Semaphore,Flag Wave', 'Wink,Nod,Shrug'),
+      T('Vocabulary', 'Word Origins', 'Word Roots', 'Prefix,Suffix,Root Word,Compound Word', 'Synonym,Antonym,Homophone', 'Etymology,Lexicon,Glossary Terms'),
+      T('Public Speaking', 'Speeches', 'Speech Parts', 'Opening Line,Main Point,Closing Line,Applause', 'Podium,Cue Cards,Microphone Stand', 'Debate Team,Toastmaster,Stage Fright'),
+    ],
+    two: [
+      D('Letters', 'Alphabet Letters', 'Capital Letter,Lower Case,Initial,Monogram', 'Typeface,Serif,Italic'),
+      D('Text Talk', 'Short Messages', 'LOL,BRB,OMG,TTYL', 'Abbreviation,Acronym Text,Initials'),
+      D('Naming', 'Names', 'First Name,Surname,Nickname,Middle Name', 'Pen Name,Maiden Name,Stage Name'),
+      D('Audiobook Time', 'Listening to Stories', 'Narrator Voice,Audiobook,Radio Play,Voice Actor', 'Sound Effects Studio,Script Reading,Recording Booth'),
+    ] },
+
+  { title: 'Art Studio',
+    three: [
+      T('Painting', 'Painting Styles', 'Art Movements', 'Impressionism,Cubism,Surrealism,Pop Art', 'Realism,Abstract,Expressionism', 'Renaissance,Baroque,Modernism'),
+      T('Famous Painters', 'Great Artists', 'Old Masters', 'Da Vinci,Rembrandt,Michelangelo,Raphael', 'Van Gogh,Monet,Picasso', 'Dali,Warhol,Matisse'),
+      T('Art Supplies', 'Painting Gear', 'Paints', 'Watercolour,Oil Paint,Acrylic,Gouache', 'Easel,Palette,Canvas', 'Sketchbook,Charcoal,Pastels'),
+      T('Colours', 'Colour Wheel', 'Primary Colours', 'Red,Blue,Yellow,Olive', 'Tangerine,Purple,Pink', 'Turquoise,Magenta,Indigo'),
+      T('Sculpture', 'Sculpting', 'Sculpture Materials', 'Marble Block,Bronze Cast,Clay Model,Wood Carving', 'Chisel Set,Mallet Tool,Armature', 'Stone Statue,Bust,Relief'),
+      T('Drawing', 'Sketching', 'Pencil and Pen Tools', 'Graphite Pencil,Eraser,Ink Pen,Felt Tip', 'Perspective,Shading,Outline', 'Portrait,Landscape Art,Still Life'),
+      T('Art Galleries', 'Famous Museums', 'World Art Museums', 'Louvre,Prado,Tate,Uffizi', 'Mona Lisa,Starry Night,The Scream', 'Guggenheim,Hermitage,Rijksmuseum'),
+      T('Street Art', 'Urban Art', 'Street Art Types', 'Graffiti,Mural Wall,Stencil Art,Sticker Art', 'Spray Can,Wall Tag,Paste-up', 'Banksy,Skatepark Art,Chalk Art'),
+      T('Printmaking', 'Prints', 'Print Types', 'Woodcut,Etching,Lithograph,Screen Print', 'Linocut,Stamp,Poster Print', 'Press,Edition,Signed Copy'),
+      T('Crafts Art', 'Handmade Art', 'Craft Forms', 'Origami,Collage,Mosaic,Papier-mache', 'Weaving,Embroidery,Quilting', 'Patchwork,Macrame,Basketry'),
+      T('Modern Art', 'Art Today', 'Modern Art Forms', 'Installation,Performance Art,Video Art,Sound Art', 'Digital Painting,Animation Art,Photomontage', 'Land Art,Kinetic Art,Pixel Art'),
+      T('Art Class', 'Art Room', 'Art Room Items', 'Smock,Paint Pot,Jam Jar,Paint Sponge', 'Teacher Easel,Drying Rack,Clay Bin', 'Gallery Wall,Art Show,Exhibition Day'),
+    ],
+    two: [
+      D('Famous Artworks', 'Masterpieces', 'The Kiss,Pearl Earring Girl,Sunflowers,Water Lilies', 'Last Supper,Guernica,Birth of Venus'),
+      D('Portraits', 'Faces in Art', 'Self Portrait,Profile,Miniature,Caricature Sketch', 'Picture Frame,Sitter,Likeness'),
+      D('Calligraphy', 'Beautiful Writing', 'Nib,Ink Bottle,Brush Pen,Lettering Guide', 'Flourish,Italic Hand,Illumination'),
+      D('Pottery Class', 'Wheel Throwing', 'Clay Slab,Pinch Pot,Coil Pot,Slip', 'Firing,Bisque,Glaze Test'),
+    ] },
+
+  { title: 'Architecture',
+    three: [
+      T('Architecture', 'Building Styles', 'Classic Styles', 'Gothic,Baroque Style,Romanesque,Art Deco', 'Modern Style,Brutalist,Bauhaus', 'Victorian Style,Tudor Style,Georgian'),
+      T('Famous Buildings', 'World Landmarks', 'Landmarks', 'Eiffel Tower,Big Ben,Statue of Liberty,Sydney Opera House', 'Taj Mahal Tomb,Leaning Tower,Sagrada Familia', 'Kremlin Walls,Brandenburg Gate,Forbidden City'),
+      T('House Types', 'Dwellings', 'Home Styles', 'Chalet,Log Cabin,Semi-detached,Terraced House', 'Maisonette,Mansion,Penthouse Flat', 'Hut,Tipi,Yurt'),
+      T('Church Architecture', 'Cathedral Parts', 'Cathedral Features', 'Spire,Nave,Aisle,Transept', 'Stained Glass Window,Pulpit,Baptismal Font', 'Gargoyle,Flying Buttress,Cloister'),
+      T('Columns and Arches', 'Classical Elements', 'Column Styles', 'Doric,Ionic,Corinthian,Tuscan', 'Arch,Domed Roof,Arched Vault', 'Pediment,Frieze,Capital'),
+      T('Interior Design', 'Room Design', 'Design Elements', 'Colour Scheme,Texture,Pattern,Lighting Plan', 'Moodboard,Swatch,Floor Plan Layout', 'Minimalist,Cosy,Industrial Look'),
+      T('Parks and Gardens', 'Landscape Design', 'Garden Styles', 'Zen Garden Style,Cottage Garden,Formal Garden,Rock Garden', 'Maze Hedge,Water Fountain,Bandstand', 'Topiary,Gazebo Garden,Orangery'),
+      T('Palaces', 'Royal Buildings', 'Famous Palaces', 'Versailles,Buckingham,Windsor Castle,Alhambra', 'Throne Room,Balcony Wave,Guard Post', 'Crown Room,Royal Gardens,State Coach'),
+      T('Towers and Beacons', 'Tall Structures', 'Tower Types', 'Great Clock Tower,Bell Tower,Watchtower,Water Tower', 'Lighthouse Lamp,Minaret,Windmill Tower', 'Radio Mast,Pylon Tower,Observation Tower'),
+      T('Eco Buildings', 'Green Design', 'Green Features', 'Solar Roof,Green Roof,Rainwater Tank,Wind Catcher', 'Insulation Wall,Triple Glazing,Heat Pump', 'Passive House,Treehouse Home,Earthship'),
+      T('Big Venues', 'Venue Buildings', 'Venue Types', 'Amphitheatre,Opera House,Concert Hall,Exhibition Hall', 'Theatre Foyer,Box Office,Backstage Door', 'Crowd Barrier,Turnstile Gate,Floodlight Tower'),
+      T('Designing Cities', 'Urban Planning', 'City Planning', 'Zoning,Skyline,Ring Road Plan,Car-free Zone', 'Park Bench Planning,Bike Lane,Tram Line', 'Slum Clearance,Suburb,Garden City'),
+    ],
+    two: [
+      D('Bridges of the World', 'Famous Bridges', 'Golden Gate,Tower Bridge,Brooklyn Bridge,Rialto', 'Sydney Harbour Bridge,Ponte Vecchio,Millau Viaduct'),
+      D('Doors of Note', 'Famous Doors', 'Red Door,Door Knocker,Revolving Door,Trapdoor', 'Stable Door,Cat Flap,Secret Passage'),
+      D('Traditional Materials', 'Old Building Stuff', 'Thatch Straw,Adobe,Cob,Wattle', 'Sandstone,Slate Stone,Limestone Block'),
+      D('Model Making', 'Architect Models', 'Scale Model,Balsa Wood,Foam Board,Cutting Mat', 'Tiny Tree,Model Figure,Model Display Case'),
+    ] },
+
+];

@@ -178,6 +178,25 @@ const PACKS = [
 // ---------------------------------------------------------------------------
 // Helpers + start-up validation
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// Extra theme packs: every .js file in the ./packs folder is loaded automatically (alphabetical order).
+// Each file exports a function that receives the T and D helpers and returns a list of packs:
+//   module.exports = ({ T, D }) => [ { title: 'My Theme', three: [ T(...), ... ], two: [ D(...), ... ] } ];
+// Pack titles must be unique. The same start-up check applies to them as to the packs above.
+// ---------------------------------------------------------------------------
+(function loadExtraPacks() {
+  const fs = require('fs'), path = require('path');
+  const dir = path.join(__dirname, 'packs');
+  if (!fs.existsSync(dir)) return;
+  fs.readdirSync(dir).filter((f) => /\.js$/.test(f)).sort().forEach((f) => {
+    const list = require(path.join(dir, f))({ T, D, N, W });
+    list.forEach((pk) => {
+      if (PACKS.some((x) => x.title === pk.title)) throw new Error('Duplicate pack title "' + pk.title + '" in packs/' + f);
+      PACKS.push(pk);
+    });
+  });
+})();
+
 const lc = (s) => String(s).trim().toLowerCase();
 
 // Walk a tree: returns { levels, leaves, fusions, words:[...], names:[...] }

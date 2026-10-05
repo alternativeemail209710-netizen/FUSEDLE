@@ -633,6 +633,10 @@ html, body {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 8px;
+  max-height: 340px;          /* many themes: the list scrolls inside its own box */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 2px;
 }
 .emoji-pack-btn {
   background: var(--bg-input);

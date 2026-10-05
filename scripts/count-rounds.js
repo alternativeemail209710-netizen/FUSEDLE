@@ -1,27 +1,37 @@
 // Counts how many different rounds (boards) the puzzle library can build.
 // Run:  npm run count-rounds
-// A round = 4 three-level groups + 4 two-level groups, with no word or group name used twice (same rule the game uses).
+// A round = 4 three-level groups + 4 two-level groups, with no word or group name used twice (the same rule the game uses).
+// Two rounds are "different" when their set of 8 groups differs (the same rule the game uses to avoid repeats).
+//   - Single-theme counts are EXACT (every combination is enumerated).
+//   - Mixed-theme counts are ESTIMATED by random sampling (exact enumeration would take far too long). The estimate is
+//     (all possible picks) x (share of random picks that have no word clash), measured on 400,000 samples.
 'use strict';
 const { PACKS, POOL, keysOf, BOARD } = require('../puzzles');
 
-function countRounds(titles) {
+const fmt = (n) => Math.round(n).toLocaleString('en-US');
+const comb = (n, k) => { let r = 1; for (let i = 1; i <= k; i++) r = (r * (n - k + i)) / i; return r; };
+
+function prep(titles) {
   const d3 = [].concat(...titles.map((t) => POOL[t].d3));
   const d2 = [].concat(...titles.map((t) => POOL[t].d2));
-  const k3 = d3.map((c) => new Set(keysOf(c))), k2 = d2.map((c) => new Set(keysOf(c)));
-  const clash = (a, b) => { for (const x of a) if (b.has(x)) return true; return false; };
-  // pairwise clash tables
+  return { d3, d2, k3: d3.map((c) => new Set(keysOf(c))), k2: d2.map((c) => new Set(keysOf(c))) };
+}
+const clash = (a, b) => { for (const x of a) if (b.has(x)) return true; return false; };
+
+// Exact count for ONE theme.
+function countExact(title) {
+  const { d3, d2, k3, k2 } = prep([title]);
   const c33 = d3.map((_, i) => d3.map((__, j) => i === j || clash(k3[i], k3[j])));
   const c32 = d3.map((_, i) => d2.map((__, j) => clash(k3[i], k2[j])));
   const c22 = d2.map((_, i) => d2.map((__, j) => i === j || clash(k2[i], k2[j])));
   let total = 0;
-  const need3 = BOARD.three, need2 = BOARD.two;
   const rec3 = (start, chosen) => {
-    if (chosen.length === need3) {
+    if (chosen.length === BOARD.three) {
       const ok = []; for (let j = 0; j < d2.length; j++) if (chosen.every((i) => !c32[i][j])) ok.push(j);
       const rec2 = (from, picked) => {
-        if (picked.length === need2) { total++; return; }
+        if (picked.length === BOARD.two) { total++; return; }
         for (let a = from; a < ok.length; a++) {
-          if (ok.length - a < need2 - picked.length) return;
+          if (ok.length - a < BOARD.two - picked.length) return;
           if (picked.every((p) => !c22[p][ok[a]])) { picked.push(ok[a]); rec2(a + 1, picked); picked.pop(); }
         }
       };
@@ -33,19 +43,43 @@ function countRounds(titles) {
   return total;
 }
 
-const fmt = (n) => n.toLocaleString('en-US');
+// Sampling estimate for a MIX of several themes.
+function estimateMixed(titles, samples) {
+  const { d3, d2, k3, k2 } = prep(titles);
+  if (d3.length < BOARD.three || d2.length < BOARD.two) return 0;
+  let seed = 123456789; const rnd = () => { seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5; return ((seed >>> 0) / 4294967296); };
+  const pick = (n, k) => { const s = new Set(); while (s.size < k) s.add(Math.floor(rnd() * n)); return [...s]; };
+  let good = 0;
+  for (let t = 0; t < samples; t++) {
+    const a = pick(d3.length, BOARD.three), b = pick(d2.length, BOARD.two);
+    const used = new Set(); let ok = true;
+    for (const i of a) { for (const x of k3[i]) { if (used.has(x)) { ok = false; break; } used.add(x); } if (!ok) break; }
+    if (ok) for (const j of b) { for (const x of k2[j]) { if (used.has(x)) { ok = false; break; } used.add(x); } if (!ok) break; }
+    if (ok) good++;
+  }
+  return comb(d3.length, BOARD.three) * comb(d2.length, BOARD.two) * (good / samples);
+}
+
 const all = PACKS.map((p) => p.title);
-const oldPacks = all.slice(0, 6), newPacks = all.slice(6);
-console.log('Distinct rounds the library can build (each round = 8 groups, 68 tiles):\n');
-let oldSingle = 0, newSingle = 0;
+const ORIGINAL = 8;                       // the first 8 themes shipped with the game (defined in puzzles.js)
+const oldPacks = all.slice(0, ORIGINAL), newPacks = all.slice(ORIGINAL);
+
+console.log('FUSEDLE round library (each round = ' + (BOARD.two + BOARD.three) + ' groups, ' + BOARD.tiles + ' tiles)\n');
+console.log('Themes: ' + all.length + ' (' + oldPacks.length + ' original + ' + newPacks.length + ' new)\n');
+console.log('Exact count of rounds per single theme:\n');
+let oldSingle = 0, newSingle = 0, groupsNew = 0, minNew = Infinity;
 all.forEach((t) => {
-  const n = countRounds([t]); if (newPacks.includes(t)) newSingle += n; else oldSingle += n;
-  console.log('  ' + (newPacks.includes(t) ? 'NEW ' : '    ') + t.padEnd(18) + fmt(n) + ' rounds (single theme)');
+  const n = countExact(t); const isNew = newPacks.includes(t);
+  if (isNew) { newSingle += n; groupsNew += PACKS.find((p) => p.title === t).three.length + PACKS.find((p) => p.title === t).two.length; minNew = Math.min(minNew, n); } else oldSingle += n;
+  console.log('  ' + (isNew ? 'NEW ' : '    ') + t.padEnd(26) + fmt(n).padStart(10) + ' rounds');
 });
-const newMixed = countRounds(newPacks);
-console.log('\n  Existing 6 themes, one theme per round:        ' + fmt(oldSingle));
-console.log('  NEW 2 themes, one theme per round:             ' + fmt(newSingle));
-console.log('  NEW 2 themes mixed together (new groups only): ' + fmt(newMixed));
-console.log('  Brand-new rounds counted above:                ' + fmt(newSingle + newMixed) + '   (target: at least 10,000)');
-console.log('\n  Mixed rounds that combine old and new groups are new as well, and are not counted here, so the real total is far higher.');
+const mixNew = estimateMixed(newPacks, 400000);
+const mixAll = estimateMixed(all, 400000);
+console.log('\nSummary');
+console.log('  New themes, one theme per round (exact):         ' + fmt(newSingle));
+console.log('  Smallest single new theme (exact):               ' + fmt(minNew) + '  (every new theme alone is above 50,000: ' + (minNew >= 50000 ? 'YES' : 'NO') + ')');
+console.log('  New themes mixed together (estimate):            ' + fmt(mixNew));
+console.log('  Whole library, all ' + all.length + ' themes mixed (estimate):    ' + fmt(mixAll));
+console.log('  Original 8 themes, one theme per round (exact):  ' + fmt(oldSingle));
+console.log('\n  Brand-new rounds counted from the new themes alone: at least ' + fmt(newSingle) + ' (target: 50,000)');
 console.log('  The game never repeats an exact board until every possible board has been played.');

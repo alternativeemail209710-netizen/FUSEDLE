@@ -2,6 +2,13 @@
 
 This folder is the complete, finished app. You do not need to edit any code.
 
+> **v8.2 - 38 new themes (46 in total), over 9 million new rounds**
+> - **38 new Puzzle Packs** across many subjects: *Physics Lab, Chemistry Class, Biology Basics, Medicine & Health, Deep Space, Mathematics, Computer Corner, Online World, Robots & AI, Gadgets & Phones, Building Site, Factory Floor, Ancient World, Middle Ages, Modern History, Myths & Legends, World Beliefs, Explorers & Discovery, Books & Writing, Language & Words, Art Studio, Architecture, Movies & Cinema, Stage & Dance, Fashion & Style, TV & Media, Politics & Government, Law & Order, Business & Money, Learning & Education, Jobs & Careers, Mind & Emotions, Cooking Skills, World Cuisine, Garden & Plants, Hobbies & Crafts, Festivals & Parties, Environment & Climate.*
+> - Each new theme has **12 three-level groups and 4 two-level groups** (608 new groups, 5,624 new starting words in total). Every word and group name is unique across the whole game, so no board can ever contain a clash.
+> - **Every new theme on its own builds 245,025 different rounds** (about 9.3 million for the 38 new themes, one theme per round). Mixed rounds add far more. Run `npm run count-rounds` for the exact and estimated figures.
+> - **New `packs/` folder:** every `.js` file in it is loaded automatically at start-up. To add your own theme, drop a new file in `packs/` (see "Adding your own puzzles").
+> - The **Puzzle Pack** list in Settings now scrolls inside its own box because it is longer. The round counter was rewritten so it still finishes quickly with 46 themes. Files changed: `puzzles.js`, `scripts/count-rounds.js`, `public/style.css`, new `packs/` folder. Server and game rules are untouched.
+
 > **v8.1 - more host customisation (new Settings boxes, all under Tile & display options)**
 > - **Quick styles:** one tap sets many look options at once: *Standard* (all defaults), *Clean stream* (hides the chat-format line and counter, 3 leaderboard rows, no flames, no word line on cards), *Big & bold* (large rounded capital text, big number circles) and *Show details* (words inside fused tiles). Every option can still be changed afterwards.
 > - **Branding & colours:** your own **game title** (up to 24 letters, also used as the browser tab title), your own **instruction line** under the title (up to 90 letters), an **accent colour** for buttons and chosen options (letters on it switch between dark and white by themselves), and the **highlight colour of a tapped tile**. Empty box / "theme default" = the built-in look.
@@ -137,18 +144,18 @@ Render updates the game by itself in a minute or two.
   (Change the base 1 in Settings > Timing.)
 - **Viewer photos:** real TikTok profile pictures show in circles next to names in Live mode.
 - **Host Console** at the bottom lets you type guesses yourself. Tap **Hide** to hide it.
-- **Puzzle Pack:** 8 themes (Getting Around, Animal Kingdom, Food & Drink, Music Room, Game On, Around Town, Planet Earth, Home & Body) or Mixed.
-  Each theme has 8 three-level groups and 4 two-level groups (the middle part of every 3-level group can also be used as a 2-level group). Every fusion is a plain "kind of / part of" link made from everyday words.
+- **Puzzle Pack:** 46 themes (the 8 original ones: Getting Around, Animal Kingdom, Food & Drink, Music Room, Game On, Around Town, Planet Earth, Home & Body, plus the 38 new ones listed in the v8.2 note) or Mixed.
+  Each original theme has 8 three-level groups and 4 two-level groups; each new theme has 12 and 4 (the middle part of every 3-level group can also be used as a 2-level group). Every fusion is a plain "kind of / part of" link made from everyday words.
   Mixed pulls groups from all themes. No word or group name ever repeats in one round.
 
 ## How many different rounds are there?
-Run `npm run count-rounds` on your computer for the exact numbers. With the two newest themes (Planet Earth and Home & Body) the library
-builds **more than 8.8 million brand-new rounds** (9,800 single-theme rounds plus 8,817,900 rounds mixing the two new themes), and every
-Mixed round that uses at least one new group is new too. The game remembers the boards it has played (file `played-boards.json`, saved
-next to the all-time scores) and never repeats an exact board until all of them have been played.
+Run `npm run count-rounds` for the numbers. A round is a set of 8 groups; two rounds differ when their set of groups differs.
+- Each of the 38 new themes alone builds **245,025** different rounds (exact count), about **9.3 million** in total for the new themes one theme per round.
+- Rounds that mix several themes are counted by sampling and run into the billions of billions, so you will not run out.
+- The game remembers the boards it has played (file `played-boards.json`, saved next to the all-time scores) and never repeats an exact board until all of them have been played.
 
 ## Adding your own puzzles
-Open `puzzles.js`. Good groups: all 4 pieces clearly belong to the new tile's name, with everyday words and no piece that also fits another group. Every group has **exactly 4 children**. Words are written in one string, separated by commas (a word may contain spaces).
+**Easiest way:** create a new file in the `packs/` folder (copy `packs/07-lifestyle-world.js` as a template). It exports a function that returns a list of packs; the `T(...)` and `D(...)` helpers are passed in. Files load in alphabetical order. You can also edit `puzzles.js` directly. Good groups: all 4 pieces clearly belong to the new tile's name, with everyday words and no piece that also fits another group. Every group has **exactly 4 children**. Words are written in one string, separated by commas (a word may contain spaces).
 Add lines inside a pack's `three: [ ... ]` list (3-level groups) or `two: [ ... ]` list (2-level groups).
 
 **2-level group (7 tiles):**
