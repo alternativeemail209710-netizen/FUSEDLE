@@ -341,6 +341,24 @@ function attemptFuse(nums, player) {
   return { kind: best === 3 && state.showNear ? 'near' : 'wrong', nums };
 }
 
+// ---------------------------------------------------------------------------
+// Live chat box: every comment (TikTok, Test bots, Host console, chat box) is kept in a short log and shown under the tiles.
+// ---------------------------------------------------------------------------
+const CHAT_MAX = 80;
+const chatLog = [];
+let chatSeq = 0;
+function pushChat(player, text, kind, nums) {
+  const entry = {
+    id: ++chatSeq, uniqueId: player.uniqueId, name: String(player.name || 'Viewer').slice(0, 30), avatar: player.avatar || null,
+    text: String(text == null ? '' : text).replace(/[\u0000-\u001f\u007f]+/g, ' ').trim().slice(0, 140),
+    kind: kind || 'chat', guess: !!(nums && nums.length), ts: Date.now(),
+  };
+  if (!entry.text) return;
+  chatLog.push(entry);
+  while (chatLog.length > CHAT_MAX) chatLog.shift();
+  io.emit('chat', entry);
+}
+
 function handleIncomingComment(player, text, opts) {
   try {
     text = text == null ? '' : String(text);
@@ -353,6 +371,7 @@ function handleIncomingComment(player, text, opts) {
       const now = Date.now(), last = lastGuessAt[player.uniqueId] || 0;
       if (now - last < state.guessCooldown * 1000) {
         state.lastEvent = { user: player.name, text: text.slice(0, 80), read: nums.join(' '), kind: 'cooldown' };
+        pushChat(player, text, 'cooldown', nums);
         broadcast();
         return;
       }
@@ -361,6 +380,7 @@ function handleIncomingComment(player, text, opts) {
     }
     const result = nums ? attemptFuse(nums, player) : { kind: 'format' };
     state.lastEvent = { user: player.name, text: text.slice(0, 80), read: nums ? nums.join(' ') : null, kind: result.kind };
+    pushChat(player, text, result.kind, nums);
     io.emit('guessResult', {
       uniqueId: player.uniqueId, name: player.name, avatar: player.avatar, text: text.slice(0, 60),
       kind: result.kind, nums: nums && nums.length === 4 ? nums : null,
@@ -503,6 +523,21 @@ io.on('connection', (socket) => {
     hasDefaultSignApiKey: !!DEFAULT_SIGN_API_KEY, defaultUsername: DEFAULT_TIKTOK_USERNAME || '',
     packs: [{ id: 'mixed', label: 'Mixed (rotate all)' }].concat(PACKS.map((p) => ({ id: p.title, label: p.title }))),
   });
+
+  socket.emit('chatHistory', chatLog.slice(-CHAT_MAX));
+  let lastChatAt = 0;
+  // Messages typed into the chat box on the page. They are read exactly like a TikTok comment (so "2 5 8 12" also works as a guess).
+  socket.on('chat:send', safe((p) => {
+    const now = Date.now();
+    if (now - lastChatAt < 600) return;            // simple flood guard: one message per 0.6 s per screen
+    lastChatAt = now;
+    const text = String(p.text == null ? '' : p.text).trim().slice(0, 140);
+    if (!text) return;
+    const name = String(p.user || 'Host').replace(/[\u0000-\u001f\u007f]+/g, ' ').trim().slice(0, 24) || 'Host';
+    const player = name === 'Host' ? { ...HOST_PLAYER } : { uniqueId: 'named-' + name.toLowerCase(), name, avatar: null };
+    handleIncomingComment(player, text);
+  }));
+  socket.on('host:clearChat', safe(() => { chatLog.length = 0; io.emit('chatHistory', []); }, true));
 
   socket.on('host:applyDefaults', safe((p) => {
     if (state.configured) return;

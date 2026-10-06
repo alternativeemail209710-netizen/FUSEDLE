@@ -1816,3 +1816,106 @@ html.noanim .live-status-box .live-status-icon, html.noanim .live-modal { animat
 #presetBtns { margin-top: 4px; }
 #wakeNote[hidden] { display: none !important; }
 .top-bar h1 { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+
+/* =====================================================================
+   PART 21 - LARGER TILE NUMBERS, FUSED-COLOUR LEGENDS, LIVE CHAT BOX
+   Number size / font / colours come from Settings > Tile numbers.
+   client.js (fitTile) works out a pixel font size and number size for EVERY tile
+   from its real width and height, so the number stays inside the tile border and
+   never touches the word.
+   ===================================================================== */
+
+/* per-tile pixel font size from fitTile() */
+html .tile-grid .tile.fit { font-size: var(--fs); padding-left: 5px; padding-right: 3px; gap: 3px; }
+
+/* the number badge */
+html .app-shell .tile i {
+  box-sizing: border-box; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; overflow: hidden;
+  width: var(--bd, 24px); height: var(--bd, 24px); padding: 0; margin: 0;
+  border-radius: var(--num-r, 50%);
+  font-family: var(--num-font, Verdana, "DejaVu Sans", Tahoma, system-ui, sans-serif);
+  font-weight: var(--num-w, 800); font-style: normal; font-variant-numeric: tabular-nums;
+  font-size: calc(var(--bd, 24px) * .6); line-height: 1; letter-spacing: 0; text-align: center; text-shadow: none;
+  background: var(--num-bg, #5B4636); color: var(--num-fg, #FFFFFF);
+  border: 2px solid #FFFFFF; box-shadow: 0 0 0 1px rgba(0, 0, 0, .35);
+}
+html .app-shell .tile i.d2 { font-size: calc(var(--bd, 24px) * .5); }
+html .app-shell .tile i.d3 { font-size: calc(var(--bd, 24px) * .36); }
+html.num-noring .app-shell .tile i { border: 0; box-shadow: none; }
+html.num-none .app-shell .tile i { background: transparent !important; border: 0; box-shadow: none; color: var(--num-fg, inherit); }
+html.num-none .app-shell .tile i.d1 { font-size: calc(var(--bd, 24px) * .8); }
+html.num-none .app-shell .tile i.d2 { font-size: calc(var(--bd, 24px) * .66); }
+html.num-none .app-shell .tile i.d3 { font-size: calc(var(--bd, 24px) * .5); }
+
+/* centred layout: number floats at the left edge, text keeps equal room on both sides */
+html.ctr .tile-grid .tile.fit { padding-left: calc(var(--bd, 24px) + 8px); padding-right: calc(var(--bd, 24px) + 8px); justify-content: center; }
+html.ctr .app-shell .tile i { position: absolute; left: 5px; top: 50%; transform: translateY(-50%); }
+html.ctr .tile-grid .tile.fit.wide { padding-left: 5px; padding-right: 3px; justify-content: flex-start; }
+html.ctr .app-shell .tile.wide i { position: relative; left: auto; top: auto; transform: none; }
+
+/* the sub line of fused tiles (a little bigger and clearer) */
+.tile-sub { font: 700 9px/1.15 system-ui, sans-serif; }
+
+/* ---- the two fused-colour legends ---- */
+.fused-legend { flex: 0 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: min(100%, var(--grid-max, 520px)); margin-top: 6px; }
+.fl-item { display: flex; align-items: flex-start; gap: 6px; min-width: 0; padding: 4px 6px; border: 2px dashed var(--border); border-radius: 10px; background: var(--bg-panel); color: var(--text); }
+.fl-sw {
+  flex: 0 0 auto; box-sizing: border-box; width: 26px; height: 20px; margin-top: 1px; border-radius: 6px; border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center; font: 800 12px/1 Verdana, "DejaVu Sans", system-ui, sans-serif;
+}
+.fl-sw.plain { background: var(--given); border-color: var(--border); color: var(--text); }
+.fl-sw.lv2 { outline: 2px solid var(--border); outline-offset: -5px; }
+.fl-text { display: flex; flex-direction: column; min-width: 0; font-size: 10.5px; line-height: 1.2; font-weight: 600; color: var(--text); }
+.fl-text b { font-size: 11.5px; font-weight: 900; margin-bottom: 1px; }
+html.hide-legend .fused-legend { display: none !important; }
+@media (max-width: 340px) { .fl-text { font-size: 9.5px; } .fl-text b { font-size: 10.5px; } .fl-sw { width: 22px; } }
+@media (max-height: 700px) { .fused-legend { margin-top: 4px; } .fl-item { padding: 2px 5px; } }
+
+/* ---- live chat box (under the tiles) ---- */
+html[data-chat-h="s"] { --chat-lines: 3; }
+html[data-chat-h="m"] { --chat-lines: 5; }
+html[data-chat-h="l"] { --chat-lines: 8; }
+@media (max-height: 720px) { html[data-chat-h="s"] { --chat-lines: 2; } html[data-chat-h="m"] { --chat-lines: 3; } html[data-chat-h="l"] { --chat-lines: 5; } }
+@media (max-height: 620px) { html[data-chat-h="s"] { --chat-lines: 2; } html[data-chat-h="m"] { --chat-lines: 2; } html[data-chat-h="l"] { --chat-lines: 3; } }
+.chat-box {
+  flex: 0 0 auto; box-sizing: border-box; width: min(100%, var(--grid-max, 520px)); margin-top: 6px; overflow: hidden;
+  border: 2px dashed var(--border); border-radius: 12px; background: var(--chat-bg, var(--bg-panel));
+  color: var(--chat-fg, var(--text)); font-family: var(--chat-font, system-ui, sans-serif);
+}
+.chat-head { display: flex; align-items: center; gap: 6px; padding: 2px 8px; font-size: 12px; font-weight: 800; }
+.chat-count { font-size: 10.5px; font-weight: 800; opacity: .7; }
+.chat-count:not(:empty)::before { content: "\00B7  "; }
+.chat-toggle { margin-left: auto; padding: 1px 8px; border: 1px dashed currentColor; border-radius: 99px; background: transparent; color: inherit; font: 800 11px/1.4 system-ui, sans-serif; cursor: pointer; opacity: .85; }
+.chat-body { display: flex; flex-direction: column; }
+.chat-box.collapsed .chat-body { display: none; }
+.chat-log {
+  list-style: none; margin: 0; padding: 2px 8px; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+  height: calc(var(--chat-lines, 5) * (var(--chat-fs, 13px) * 1.35 + 5px) + 4px); scrollbar-width: thin;
+}
+.chat-log:empty::before { content: "Chat messages from your viewers show up here."; display: block; padding: 6px 0; font-size: calc(var(--chat-fs, 13px) * .9); opacity: .65; }
+.chat-msg { display: flex; align-items: flex-start; gap: 6px; padding: 2px 0; font-size: var(--chat-fs, 13px); line-height: 1.35; }
+.chat-msg .avatar-circle { flex: 0 0 auto; width: calc(var(--chat-fs, 13px) * 1.5); height: calc(var(--chat-fs, 13px) * 1.5); margin-top: 0; }
+html.chat-noavatar .chat-msg .avatar-circle { display: none; }
+.chat-body-text { min-width: 0; overflow-wrap: anywhere; }
+.chat-name { margin-right: 6px; font-weight: 900; color: var(--cyan); }
+html.chat-custom .chat-name { color: inherit; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+.chat-text { font-weight: 600; }
+.chat-tag { margin-left: 6px; padding: 0 7px; border-radius: 99px; font-size: .78em; font-weight: 800; white-space: nowrap; background: rgba(120, 120, 120, .22); }
+.chat-msg.k-correct .chat-tag { background: color-mix(in srgb, #2e9e5b 38%, transparent); }
+.chat-msg.k-near .chat-tag { background: color-mix(in srgb, #e0a100 40%, transparent); }
+.chat-msg.k-wrong .chat-tag, .chat-msg.k-invalid .chat-tag { background: color-mix(in srgb, #d13438 32%, transparent); }
+.chat-input-row { display: flex; gap: 6px; padding: 2px 8px 5px; }
+.chat-input-row input {
+  flex: 1 1 auto; min-width: 0; box-sizing: border-box; padding: 4px 10px; border: 2px dashed var(--border); border-radius: 10px;
+  background: var(--bg-input); color: var(--text); font: 600 14px/1.2 system-ui, sans-serif;
+}
+.chat-input-row input:focus { border-style: solid; outline: none; }
+.chat-input-row .btn { flex: 0 0 auto; padding: 4px 14px; }
+html.chat-noinput .chat-input-row { display: none; }
+html.hide-chat .chat-box { display: none !important; }
+
+/* very long word: the number sits in the top-left corner and the word gets the full tile width underneath (never overlapping) */
+html .tile-grid .tile.fit.stack { flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 3px; padding: 3px 5px 3px 5px; }
+html .app-shell .tile.stack i { position: relative; left: auto; top: auto; transform: none; align-self: flex-start; }
+html .tile.stack .tile-text { flex: 1 1 0; width: 100%; min-height: 0; }

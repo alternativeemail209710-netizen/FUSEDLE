@@ -15,6 +15,8 @@
   function readJson(k) { try { return JSON.parse(localStorage.getItem(k) || '{}') || {}; } catch (e) { return {}; } }
   function writeJson(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* private mode */ } }
 
+  const LEGEND_DEFAULTS = { 1: 'Fused once. Still usable: add 3 more tiles.', 2: 'Fused twice. Still usable: add 3 more tiles to finish the group.' };
+
   // ---- Themes -------------------------------------------------------------
   const KNIT_THEMES = { knit_cream: 'Cream Wool', knit_blue: 'Sky Blue Wool', knit_green: 'Meadow Green Wool', knit_pink: 'Blossom Pink Wool', knit_violet: 'Lavender Wool', knit_honey: 'Honey Gold Wool', knit_night: 'Night Wool (dark)' };
   const THEMES = Object.assign({}, KNIT_THEMES, { dark: 'Dark', light: 'Light', cream: 'Cream', sky: 'Sky Blue', meadow: 'Meadow Green', blossom: 'Blossom Pink', lavender: 'Lavender Violet', honey: 'Honey Gold' });
@@ -100,6 +102,7 @@
       });
     });
     writeJson('fusedle-fused', fusedPrefs);
+    renderLegend();
   }
   function buildFusedPickers() {
     [1, 2].forEach((k) => {
@@ -209,9 +212,12 @@
   // Every option is a class or a variable on <html>; style.css (PART 19) does the rest.
   const DISPLAY_DEFAULTS = {
     sub1: false, sub2: false,            // show the words inside Level 1 / Level 2 fused tiles (off = name sits in the exact centre)
-    center: true,                        // centre the word on the whole tile (number circle floats at the left edge)
+    center: false,                       // centre the word on the whole tile (number floats at the left edge). Off = word centred beside the (larger) number
     longWide: true,                      // a word that would get tiny when centred may use the wider layout (off = always centred, smaller)
-    tsize: 100, font: 'system', upper: false, corner: 'soft', badge: 'normal',
+    tsize: 100, font: 'system', upper: false, corner: 'soft',
+    numSize: 100, numFont: 'clear', numShape: 'circle', numBold: true, numRing: true, numColor: '', numBg: '',   // tile number: size %, font, shape, digits colour ('' = automatic), background colour ('' = default)
+    legendShow: true, legend1: '', legend2: '',                                                              // the 2 fused-colour legends
+    chatShow: true, chatHeight: 's', chatSize: 100, chatFont: 'system', chatColor: '', chatBg: '', chatAvatar: true, chatGuesses: true, chatInput: true, chatName: '',   // live chat box
     cardWords: true, cardPlayer: true, cardAvatar: true,
     showChatFmt: true, showCounter: true, showTimer: true, showScores: true, sbRows: 5, showToasts: true, showStreak: true, anim: true,
     sound: false, volume: 60,
@@ -219,6 +225,7 @@
   };
   const FONT_STACKS = {
     system: 'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif',
+    clear: 'Verdana,"DejaVu Sans",Tahoma,"Segoe UI",system-ui,sans-serif',
     rounded: 'ui-rounded,"Nunito","Varela Round","Trebuchet MS",system-ui,sans-serif',
     serif: 'Georgia,"Times New Roman",serif',
     mono: 'ui-monospace,"Roboto Mono","SF Mono",Menlo,Consolas,monospace',
@@ -231,20 +238,49 @@
   }
   function longestEm(text) { return String(text || '').split(/\s+/).reduce((m, x) => (x ? Math.max(m, emWidth(x)) : m), 1.2); }
   const kFor = (text) => (1 / (longestEm(text) * 1.04)).toFixed(4);   // 4% safety margin
-  // Re-measure every tile (after a font / capitals / size change, a resize, or a new board). A word so long that it would
-  // become tiny in the centred layout gets the wider layout (number circle beside the word) on that one tile only.
-  function refitTiles() {
-    const list = document.querySelectorAll('#tileGrid .tile, #tilePreview .tile'); if (!list.length) return;
-    const bdv = parseFloat(document.documentElement.style.getPropertyValue('--bd')), bd = Number.isFinite(bdv) ? bdv : 15;
-    const scale = Math.min(1, displayPrefs.tsize / 100);
-    list.forEach((el) => {
-      if (el._w === undefined) return;
-      const em = longestEm(el._w); el.style.setProperty('--k', (1 / (em * 1.04)).toFixed(4));
-      if (!displayPrefs.center) { el.classList.remove('wide'); return; }
-      const availC = el.getBoundingClientRect().width - 2 * (bd + 4) - 3;
-      el.classList.toggle('wide', displayPrefs.longWide && availC > 0 && (availC / (em * 1.04)) * scale < 7.2);
-    });
+  // Re-measure every tile (after a font / number / size change, a resize, or a new board).
+  // Each tile gets its OWN pixel font size and number size, worked out from the tile's real width and height, so that
+  //   - the number sits fully inside the tile border,
+  //   - the word never touches or hides under the number,
+  //   - the word is never cut off (a very long word gets a slightly smaller number first, then smaller letters).
+  const NUM_BASE = 24;   // px at 100%
+  function fitTile(el) {
+    if (el._w === undefined) return;
+    const W = el.clientWidth, H = el.clientHeight; if (!W || !H) return;
+    const d = displayPrefs, ts = d.tsize / 100;
+    const text = String(el._w), words = text.split(/\s+/).filter(Boolean).length || 1;
+    const emLong = longestEm(text), emAll = emWidth(text);
+    const subEl = el.querySelector('.tile-sub'), subOn = !!(subEl && subEl.textContent && getComputedStyle(subEl).display !== 'none');
+    const maxFs = Math.min(15 * ts, 20);
+    const heightRoom = H - 6 - (subOn ? 11 : 0);
+    function calc(bd, mode) {   // mode: 'side' (number beside the word, or centred word), 'wide' (centred layout fallback), 'stack' (number above the word)
+      let avail, room = heightRoom;
+      if (mode === 'stack') { avail = W - 14; room = H - 8 - bd - 3 - (subOn ? 11 : 0); }
+      else avail = (d.center && mode !== 'wide') ? W - 2 * (bd + 8) - 4 : W - bd - 17;
+      if (avail <= 4 || room <= 4) return { fs: 5, avail: 4 };
+      let fs = Math.min(maxFs, avail / (emLong * 1.04));
+      for (let i = 0; i < 3; i++) {                                   // two-word names may wrap onto 2 lines: keep them inside the height
+        const lines = Math.min(words, Math.max(1, Math.ceil(emAll * fs * 1.04 / avail)));
+        const byH = room / (lines * 1.1);
+        if (fs <= byH) break; fs = byH;
+      }
+      return { fs: Math.max(5, fs), avail };
+    }
+    let bd = Math.max(14, Math.min(NUM_BASE * d.numSize / 100, H - 10)), mode = 'side', r = calc(bd, 'side');
+    if (d.center && d.longWide && r.fs < 8.5) { const w2 = calc(bd, 'wide'); if (w2.fs > r.fs + 0.4) { mode = 'wide'; r = w2; } }
+    if (r.fs < 8 && bd > 17) {                                       // long word: give it room by trimming the number a little (never below 16px)
+      const bd2 = Math.max(16, Math.round(bd * 0.75)), r2 = calc(bd2, mode);
+      if (r2.fs > r.fs + 0.3) { bd = bd2; r = r2; }
+    }
+    if (r.fs < 8.5 && H >= 34) {                                     // still tiny (e.g. "Paddleboarding"): number goes above the word, word gets the full tile width
+      const bd3 = Math.max(16, Math.min(bd, 20)), r3 = calc(bd3, 'stack');
+      if (r3.fs > r.fs + 0.6) { mode = 'stack'; bd = bd3; r = r3; }
+    }
+    el.style.setProperty('--fs', r.fs.toFixed(2) + 'px');
+    el.style.setProperty('--bd', bd.toFixed(1) + 'px');
+    el.classList.add('fit'); el.classList.toggle('wide', mode === 'wide'); el.classList.toggle('stack', mode === 'stack');
   }
+  function refitTiles() { document.querySelectorAll('#tileGrid .tile, #tilePreview .tile').forEach(fitTile); }
   const clampNum = (v, a, b) => Math.min(b, Math.max(a, v));
   function cleanDisplay(src) {
     const o = Object.assign({}, DISPLAY_DEFAULTS); src = src || {};
@@ -257,7 +293,11 @@
     o.tsize = clampNum(o.tsize, 70, 125); o.volume = clampNum(o.volume, 0, 100); o.sbRows = o.sbRows >= 5 ? 5 : 3;
     if (!FONT_STACKS[o.font]) o.font = 'system';
     if (['square', 'soft', 'round'].indexOf(o.corner) < 0) o.corner = 'soft';
-    if (['small', 'normal', 'large'].indexOf(o.badge) < 0) o.badge = 'normal';
+    o.numSize = clampNum(o.numSize, 70, 150); o.chatSize = clampNum(o.chatSize, 80, 150);
+    if (['circle', 'rounded', 'square', 'none'].indexOf(o.numShape) < 0) o.numShape = 'circle';
+    if (['s', 'm', 'l'].indexOf(o.chatHeight) < 0) o.chatHeight = 'm';
+    o.legend1 = String(o.legend1 || '').slice(0, 80); o.legend2 = String(o.legend2 || '').slice(0, 80); o.chatName = String(o.chatName || '').slice(0, 24);
+    ['numColor', 'numBg', 'chatColor', 'chatBg'].forEach((k) => { if (!hexOk(o[k])) o[k] = ''; });
     o.title = String(o.title || '').slice(0, 24); o.hintText = String(o.hintText || '').slice(0, 90);
     o.blocked = String(o.blocked || '').slice(0, 600);
     if (!hexOk(o.accent)) o.accent = ''; if (!hexOk(o.selColor)) o.selColor = '';
@@ -274,6 +314,9 @@
     const n = squash(name);
     return blockedCache.list.some((w) => n.indexOf(w) >= 0) ? 'Viewer' : name;
   }
+  (function () {   // v3.2: larger numbers need the roomier layout; devices that saved the old centred layout get the new default once
+    try { if (localStorage.getItem('fusedle-num-v') !== '1') { const d = readJson('fusedle-display'); delete d.center; delete d.badge; writeJson('fusedle-display', d); localStorage.setItem('fusedle-num-v', '1'); } } catch (e) { /* ignore */ }
+  })();
   let displayPrefs = cleanDisplay(readJson('fusedle-display'));
 
   function buildTilePreview() {
@@ -304,8 +347,26 @@
     st.setProperty('--ts', String(ts)); st.setProperty('--tsl', String(Math.min(1, ts)));
     if (d.font === 'system') st.removeProperty('--tile-font'); else st.setProperty('--tile-font', FONT_STACKS[d.font]);
     if (d.corner === 'soft') st.removeProperty('--tile-r'); else st.setProperty('--tile-r', d.corner === 'square' ? '4px' : '20px');
-    const bdSizes = d.center ? { small: 12, normal: 15, large: 18 } : { small: 13, normal: 17, large: 21 };
-    if (d.badge === 'normal') { st.removeProperty('--bd'); tg('bdset', false); } else { st.setProperty('--bd', bdSizes[d.badge] + 'px'); tg('bdset', true); }
+    // tile number look (size is worked out per tile in fitTile)
+    st.setProperty('--num-font', FONT_STACKS[d.numFont] || FONT_STACKS.clear);
+    st.setProperty('--num-w', d.numBold ? '800' : '600');
+    st.setProperty('--num-r', d.numShape === 'circle' ? '50%' : d.numShape === 'rounded' ? '32%' : '3px');
+    tg('num-none', d.numShape === 'none'); tg('num-noring', !d.numRing); tg('num-custombg', !!d.numBg); tg('num-customfg', !!d.numColor);
+    if (d.numBg) st.setProperty('--num-bg', d.numBg); else st.removeProperty('--num-bg');
+    if (d.numColor) st.setProperty('--num-fg', d.numColor);
+    else if (d.numBg) st.setProperty('--num-fg', contrast(hexToRgb(d.numBg), [255, 255, 255]) >= contrast(hexToRgb(d.numBg), [30, 20, 8]) ? '#FFFFFF' : '#1E1408');
+    else st.removeProperty('--num-fg');
+    // legends + chat box
+    tg('chat-custom', !!(d.chatBg || d.chatColor)); tg('hide-legend', !d.legendShow); tg('hide-chat', !d.chatShow); tg('chat-noinput', !d.chatInput); tg('chat-noavatar', !d.chatAvatar);
+    st.setProperty('--chat-fs', (13 * d.chatSize / 100).toFixed(2) + 'px');
+    st.setProperty('--chat-font', FONT_STACKS[d.chatFont] || FONT_STACKS.system);
+    root.setAttribute('data-chat-h', d.chatHeight);
+    if (d.chatColor) st.setProperty('--chat-fg', d.chatColor); else st.removeProperty('--chat-fg');
+    if (d.chatBg) {
+      st.setProperty('--chat-bg', d.chatBg);
+      if (!d.chatColor) st.setProperty('--chat-fg', contrast(hexToRgb(d.chatBg), [255, 255, 255]) >= contrast(hexToRgb(d.chatBg), [30, 20, 8]) ? '#FFFFFF' : '#1E1408');
+    } else st.removeProperty('--chat-bg');
+    renderLegend();
     // host branding: own title and own instruction line (empty = the built-in text)
     const h1 = document.querySelector('.top-bar h1');
     if (h1) { if (H1_DEFAULT === null) H1_DEFAULT = h1.innerHTML; const t = d.title.trim(); if (t) h1.textContent = t; else h1.innerHTML = H1_DEFAULT; }
@@ -332,6 +393,10 @@
       if (el.type === 'checkbox') el.checked = !!v; else if (document.activeElement !== el || el.tagName === 'SELECT') el.value = String(v);
     });
     const tv = $('tsizeVal'); if (tv) tv.textContent = d.tsize + '%';
+    const nv = $('numSizeVal'); if (nv) nv.textContent = d.numSize + '%';
+    const cv = $('chatSizeVal'); if (cv) cv.textContent = d.chatSize + '%';
+    ['numColor', 'numBg', 'chatColor', 'chatBg'].forEach((k) => document.querySelectorAll('#' + k + 'Swatches .fc-sw').forEach((b) => { const on = (b.dataset.c || '').toLowerCase() === d[k].toLowerCase(); b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); }));
+    if (typeof applyChatLayout === 'function') applyChatLayout();
     const vv = $('volumeVal'); if (vv) vv.textContent = d.volume + '%';
     buildTilePreview();
     refitTiles();
@@ -356,6 +421,9 @@
   // ---- Host branding colours + quick styles ----
   const ACCENT_PALETTE = [['Teal', '#1F7A72'], ['Royal Blue', '#2F5DA8'], ['Navy', '#1F3A5F'], ['Forest', '#2F6B3A'], ['Burgundy', '#9B2C4F'], ['Red', '#C0392B'], ['Orange', '#C25E0E'], ['Violet', '#5B3A9E'], ['Hot Pink', '#C2185B'], ['Chocolate', '#5B3A21'], ['Charcoal', '#3A3F47']];
   const SEL_PALETTE = [['Amber', '#B45309'], ['Red', '#D13438'], ['Blue', '#2F5DA8'], ['Green', '#2F6B3A'], ['Violet', '#5B3A9E'], ['Hot Pink', '#E0457B'], ['Black', '#111111'], ['White', '#FFFFFF']];
+  const NUM_FG_PALETTE = [['White', '#FFFFFF'], ['Cream', '#FFF1D6'], ['Yellow', '#FFE066'], ['Black', '#111111'], ['Dark brown', '#2E1E10'], ['Navy', '#1F3A5F'], ['Red', '#B3261E']];
+  const NUM_BG_PALETTE = [['Dark brown', '#5B4636'], ['Black', '#111111'], ['Charcoal', '#3A3F47'], ['Navy', '#1F3A5F'], ['Royal Blue', '#2F5DA8'], ['Teal', '#1F7A72'], ['Forest', '#2F6B3A'], ['Burgundy', '#9B2C4F'], ['Violet', '#5B3A9E'], ['Orange', '#C25E0E'], ['White', '#FFFFFF'], ['Cream', '#FFF1D6'], ['Yellow', '#FFE066']];
+  const CHAT_BG_PALETTE = [['White', '#FFFFFF'], ['Cream', '#FFF8E8'], ['Light grey', '#E9ECEF'], ['Sky', '#E3F2FB'], ['Mint', '#E4F5DC'], ['Black', '#111111'], ['Charcoal', '#2B2F36'], ['Navy', '#14253F']];
   function buildBrandPickers() {
     const mkAll = (boxId, palette, key) => {
       const box = $(boxId); if (!box) return;
@@ -368,10 +436,12 @@
       add('Theme default', ''); palette.forEach((p) => add(p[0], p[1]));
     };
     mkAll('accentSwatches', ACCENT_PALETTE, 'accent'); mkAll('selSwatches', SEL_PALETTE, 'selColor');
+    mkAll('numColorSwatches', NUM_FG_PALETTE, 'numColor'); mkAll('numBgSwatches', NUM_BG_PALETTE, 'numBg');
+    mkAll('chatColorSwatches', NUM_FG_PALETTE, 'chatColor'); mkAll('chatBgSwatches', CHAT_BG_PALETTE, 'chatBg');
     const PRESETS = {
-      standard: { tsize: 100, font: 'system', upper: false, corner: 'soft', badge: 'normal', sub1: false, sub2: false, showChatFmt: true, showCounter: true, showTimer: true, showScores: true, sbRows: 5, showToasts: true, showStreak: true, anim: true, cardWords: true, cardPlayer: true, cardAvatar: true },
+      standard: { tsize: 100, font: 'system', upper: false, corner: 'soft', numSize: 100, numFont: 'clear', numShape: 'circle', numBold: true, numRing: true, numColor: '', numBg: '', legendShow: true, chatShow: true, chatHeight: 's', sub1: false, sub2: false, showChatFmt: true, showCounter: true, showTimer: true, showScores: true, sbRows: 5, showToasts: true, showStreak: true, anim: true, cardWords: true, cardPlayer: true, cardAvatar: true },
       clean: { showChatFmt: false, showCounter: false, showTimer: true, showScores: true, sbRows: 3, showToasts: true, showStreak: false, cardWords: false },
-      bold: { tsize: 115, font: 'rounded', upper: true, corner: 'round', badge: 'large', sbRows: 3 },
+      bold: { tsize: 115, font: 'rounded', upper: true, corner: 'round', numSize: 130, numBold: true, sbRows: 3 },
       detail: { tsize: 90, sub1: true, sub2: true, cardWords: true, cardPlayer: true, sbRows: 5 }
     };
     document.querySelectorAll('#presetBtns [data-preset]').forEach((b) => b.addEventListener('click', () => {
@@ -713,7 +783,7 @@
   function makeTile(t, fresh) {
     const b = mk('button', 'tile'); b.type = 'button'; b.dataset.n = t.n;
     b.dataset.s = String(Number(t.n) % 6);                 // 6 shades of gray for the number circle
-    b.appendChild(mk('i', '', t.n));                      // number circle (its own column, never over the word)
+    const nb = mk('i', 'd' + Math.min(3, String(t.n).length), t.n); b.appendChild(nb);   // number badge (kept inside the tile, never over the word)
     const body = mk('span', 'tile-text');
     if (t.f) {
       b.classList.add('fused'); b.dataset.f = Math.min(4, t.f);
@@ -975,7 +1045,7 @@
   });
 
   // ---- Settings drawer -------------------------------------------------------
-  const openSettings = () => { $('settingsOverlay').hidden = false; };
+  const openSettings = () => { $('settingsOverlay').hidden = false; setTimeout(refitTiles, 30); setTimeout(refitTiles, 300); };
   const closeSettings = () => { $('settingsOverlay').hidden = true; };
   $('settingsBtn').addEventListener('click', openSettings);
   $('closeSettingsBtn').addEventListener('click', closeSettings);
@@ -1094,6 +1164,77 @@
       if (d && d.mode) { if (d.theme) applyTheme(d.theme); socket.emit('host:applyDefaults', d); }
     }
   });
+
+  // ---- Legends for the two fused-tile colours (always the colours picked in Settings > Fused tile colours) ----
+  function renderLegend() {
+    [1, 2].forEach((k) => {
+      const sw = $('flSw' + k); if (!sw) return;
+      const v = fusedPrefs[k], on = hexOk(v);
+      if (on) { const st = fusedStyle(v); sw.style.background = 'linear-gradient(' + st.b1 + ',' + st.b2 + ')'; sw.style.borderColor = st.be; sw.style.outlineColor = st.be; sw.style.color = st.tx; sw.classList.remove('plain'); }
+      else { sw.style.background = ''; sw.style.borderColor = ''; sw.style.outlineColor = ''; sw.style.color = ''; sw.classList.add('plain'); }
+      sw.classList.toggle('lv2', k === 2);
+      let custom = ''; try { custom = String(displayPrefs['legend' + k] || '').trim(); } catch (e) { /* prefs not read yet */ }
+      const body = $('flBody' + k); if (body) body.textContent = custom || LEGEND_DEFAULTS[k];
+      const it = sw.parentNode; if (it) it.title = on ? '' : 'Same colour as the other tiles (chosen in Settings)';
+    });
+    if (typeof queueFit === 'function' && S) queueFit();
+  }
+
+  // ---- Live chat box under the tiles ----
+  const chatMsgs = [];
+  let chatCollapsed = false, chatSig = '';
+  try { chatCollapsed = localStorage.getItem('fusedle-chat-collapsed') === '1'; } catch (e) { /* ignore */ }
+  const CHAT_TAGS = { correct: ['\u2705', 'fused'], near: ['\u{1F90F}', 'one away'], wrong: ['\u274C', 'wrong'], invalid: ['\u274C', 'not on board'], cooldown: ['\u23F3', 'wait'], busy: ['\u23F8', 'round over'] };
+  function chatLi(m) {
+    const li = document.createElement('li'); li.className = 'chat-msg' + (m.guess ? ' is-guess' : '') + (m.kind ? ' k-' + m.kind : '');
+    li.appendChild(avatarImg(m.avatar, m.uniqueId, dn(m.name), 'sm'));
+    const body = document.createElement('span'); body.className = 'chat-body-text';
+    const nm = document.createElement('b'); nm.className = 'chat-name'; nm.textContent = dn(m.name); body.appendChild(nm);
+    const tx = document.createElement('span'); tx.className = 'chat-text'; tx.textContent = m.text; body.appendChild(tx);
+    const tag = m.guess && CHAT_TAGS[m.kind];
+    if (tag) { const t = document.createElement('span'); t.className = 'chat-tag'; t.textContent = tag[0] + ' ' + tag[1]; body.appendChild(t); }
+    li.appendChild(body);
+    return li;
+  }
+  const chatVisible = (m) => displayPrefs.chatGuesses || !m.guess;
+  function chatStuck(log) { return log.scrollTop + log.clientHeight >= log.scrollHeight - 28; }
+  function renderChatAll() {
+    const log = $('chatLog'); if (!log) return;
+    log.innerHTML = '';
+    chatMsgs.filter(chatVisible).forEach((m) => log.appendChild(chatLi(m)));
+    log.scrollTop = log.scrollHeight;
+    const c = $('chatCount'); if (c) c.textContent = log.children.length ? String(log.children.length) : '';
+    chatSig = displayPrefs.chatGuesses + '|' + displayPrefs.blocked;
+  }
+  function addChat(m) {
+    chatMsgs.push(m); while (chatMsgs.length > 80) chatMsgs.shift();
+    const log = $('chatLog'); if (!log || !chatVisible(m)) return;
+    const stick = chatStuck(log);
+    log.appendChild(chatLi(m));
+    while (log.children.length > 60) log.removeChild(log.firstChild);
+    if (stick) log.scrollTop = log.scrollHeight;
+    const c = $('chatCount'); if (c) c.textContent = String(log.children.length);
+  }
+  function applyChatLayout() {
+    const box = $('chatBox'); if (!box) return;
+    box.classList.toggle('collapsed', chatCollapsed);
+    const t = $('chatToggle'); if (t) { t.innerHTML = chatCollapsed ? '&#9650; Show' : '&#9660; Hide'; t.setAttribute('aria-expanded', chatCollapsed ? 'false' : 'true'); t.setAttribute('aria-label', chatCollapsed ? 'Show chat' : 'Hide chat'); }
+    const ph = $('chatInput'); if (ph && displayPrefs.chatName) ph.placeholder = 'Message as ' + displayPrefs.chatName; else if (ph) ph.placeholder = 'Message or guess';
+    if (chatSig && chatSig !== displayPrefs.chatGuesses + '|' + displayPrefs.blocked) renderChatAll();
+    if (typeof queueFit === 'function' && S) queueFit();
+  }
+  function sendChat() {
+    const inp = $('chatInput'); const v = inp.value.trim(); if (!v) return;
+    socket.emit('chat:send', { user: displayPrefs.chatName.trim() || 'Host', text: v }); inp.value = '';
+  }
+  $('chatSendBtn').addEventListener('click', sendChat);
+  $('chatInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendChat(); });
+  $('chatToggle').addEventListener('click', () => { chatCollapsed = !chatCollapsed; try { localStorage.setItem('fusedle-chat-collapsed', chatCollapsed ? '1' : '0'); } catch (e) { /* ignore */ } applyChatLayout(); });
+  $('chatClearBtn').addEventListener('click', () => socket.emit('host:clearChat'));
+  socket.on('chat', addChat);
+  socket.on('chatHistory', (list) => { chatMsgs.length = 0; (list || []).forEach((m) => chatMsgs.push(m)); renderChatAll(); });
+  if (window.ResizeObserver) { const pv = $('tilePreview'); if (pv) new ResizeObserver(refitTiles).observe(pv); }
+
   buildBrandPickers();
   applyDisplay(false);
   let panelsMode = null;
