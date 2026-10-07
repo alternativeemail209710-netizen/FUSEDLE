@@ -15,7 +15,24 @@
   function readJson(k) { try { return JSON.parse(localStorage.getItem(k) || '{}') || {}; } catch (e) { return {}; } }
   function writeJson(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* private mode */ } }
 
-  const LEGEND_DEFAULTS = { 1: 'Fused once. Still usable: add 3 more tiles.', 2: 'Fused twice. Still usable: add 3 more tiles to finish the group.' };
+  // The 7 difficulty levels (fusionLevels = fused tiles a group passes through; fusions = fusions needed to finish a group on Levels 4 to 7)
+  const LEVEL_INFO = {
+    1: { name: 'Easy', note: 'no fusion level', fusionLevels: 0, fusions: 1 },
+    2: { name: 'Moderate', note: '1 fusion level', fusionLevels: 1, fusions: 2 },
+    3: { name: 'Hard', note: 'up to 2 fusion levels', fusionLevels: 2, fusions: 3 },
+    4: { name: 'Very Hard', note: '3 fusion levels', fusionLevels: 3, fusions: 4 },
+    5: { name: 'Extreme', note: '4 fusion levels', fusionLevels: 4, fusions: 5 },
+    6: { name: 'Extremely Hard', note: '5 fusion levels', fusionLevels: 5, fusions: 6 },
+    7: { name: 'Insane', note: '6 fusion levels', fusionLevels: 6, fusions: 7 }
+  };
+  // Fusion levels: a fused tile has a level 1 to 6 (how many times it has been fused on the way to the finished group).
+  const FUSED_LEVELS = [1, 2, 3, 4, 5, 6];
+  const TIMES_WORD = { 1: 'once', 2: 'twice', 3: '3 times', 4: '4 times', 5: '5 times', 6: '6 times' };
+  // Built-in legend text for fusion level k. `last` = the highest fusion level on this difficulty (its tile only needs 3 more tiles to finish the group).
+  function legendDefault(k, last, compact) {
+    if (compact) return last ? 'Add 3 more to finish.' : 'Add 3 more tiles.';
+    return 'Fused ' + TIMES_WORD[k] + '. ' + (last ? 'Add 3 more tiles to finish the group.' : 'Still usable: add 3 more tiles to fuse again.');
+  }
 
   // ---- Themes -------------------------------------------------------------
   const KNIT_THEMES = { knit_cream: 'Cream Wool', knit_blue: 'Sky Blue Wool', knit_green: 'Meadow Green Wool', knit_pink: 'Blossom Pink Wool', knit_violet: 'Lavender Wool', knit_honey: 'Honey Gold Wool', knit_night: 'Night Wool (dark)' };
@@ -61,11 +78,11 @@
     ['Burgundy', '#9B2C4F'], ['Hot Pink', '#E0457B'], ['Violet', '#5B3A9E'], ['Lilac', '#B79CE8'],
     ['Chocolate', '#5B3A21'], ['Charcoal', '#3A3F47'], ['Silver', '#CBD2D9'], ['White', '#FFFFFF']
   ];
-  const FUSED_DEFAULTS = { 1: '#1F7A72', 2: '#9B2C4F' };       // 'none' = same as the other tiles
+  const FUSED_DEFAULTS = { 1: '#1F7A72', 2: '#9B2C4F', 3: '#2F5DA8', 4: '#E8731A', 5: '#5B3A9E', 6: '#9ACD32' };       // Teal, Burgundy, Royal Blue, Orange, Violet, Lime. 'none' = same as the other tiles
   const hexOk = (v) => /^#[0-9a-f]{6}$/i.test(String(v || ''));
   let fusedPrefs = (function () {
     const p = readJson('fusedle-fused'), o = {};
-    [1, 2].forEach((k) => { o[k] = (p[k] === 'none' || hexOk(p[k])) ? p[k] : FUSED_DEFAULTS[k]; });
+    FUSED_LEVELS.forEach((k) => { o[k] = (p[k] === 'none' || hexOk(p[k])) ? p[k] : FUSED_DEFAULTS[k]; });
     return o;
   })();
   function hexToRgb(h) { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
@@ -85,7 +102,7 @@
   }
   function applyFusedColors() {
     const root = document.documentElement;
-    [1, 2].forEach((k) => {
+    FUSED_LEVELS.forEach((k) => {
       const v = fusedPrefs[k], on = hexOk(v);
       root.classList.toggle('fc' + k, on);
       if (on) {
@@ -105,7 +122,7 @@
     renderLegend();
   }
   function buildFusedPickers() {
-    [1, 2].forEach((k) => {
+    FUSED_LEVELS.forEach((k) => {
       const box = $('fcSwatches' + k); if (!box) return;
       const mkSw = (name, c) => {
         const b = document.createElement('button'); b.type = 'button'; b.className = 'fc-sw' + (c === 'none' ? ' fc-none' : '');
@@ -118,7 +135,7 @@
       FUSED_PALETTE.forEach((p) => mkSw(p[0], p[1]));
       $('fcCustom' + k).addEventListener('input', (e) => { fusedPrefs[k] = e.target.value; applyFusedColors(); });
     });
-    $('fcResetBtn').addEventListener('click', () => { fusedPrefs = { 1: FUSED_DEFAULTS[1], 2: FUSED_DEFAULTS[2] }; applyFusedColors(); });
+    $('fcResetBtn').addEventListener('click', () => { fusedPrefs = Object.assign({}, FUSED_DEFAULTS); applyFusedColors(); });
     applyFusedColors();
   }
   buildFusedPickers();
@@ -211,12 +228,12 @@
   // ---- Tile & display options (saved on this device) ------------------------
   // Every option is a class or a variable on <html>; style.css (PART 19) does the rest.
   const DISPLAY_DEFAULTS = {
-    sub1: false, sub2: false,            // show the words inside Level 1 / Level 2 fused tiles (off = name sits in the exact centre)
+    sub1: false, sub2: false, sub3: false, sub4: false, sub5: false, sub6: false,   // show the words inside Level 1 to 6 fused tiles (off = name sits in the exact centre)
     center: false,                       // centre the word on the whole tile (number floats at the left edge). Off = word centred beside the (larger) number
     longWide: true,                      // a word that would get tiny when centred may use the wider layout (off = always centred, smaller)
     tsize: 100, font: 'system', upper: false, corner: 'soft',
     numSize: 100, numFont: 'clear', numShape: 'circle', numBold: true, numRing: true, numColor: '', numBg: '',   // tile number: size %, font, shape, digits colour ('' = automatic), background colour ('' = default)
-    legendShow: true, legend1: '', legend2: '',                                                              // the 2 fused-colour legends
+    legendShow: true, legend1: '', legend2: '', legend3: '', legend4: '', legend5: '', legend6: '',            // the fused-colour legends (up to 6)
     chatShow: true, chatLines: 4, chatKeep: 40, chatSize: 100, chatFont: 'system', chatColor: '', chatBg: '', chatAvatar: true, chatGuesses: true, chatInput: true, chatName: '',   // live chat box
     cardWords: true, cardPlayer: true, cardAvatar: true,
     showChatFmt: true, showCounter: true, showTimer: true, showScores: true, sbRows: 5, showToasts: true, showStreak: true, anim: true,
@@ -299,7 +316,7 @@
     o.numSize = clampNum(o.numSize, 70, 150); o.chatSize = clampNum(o.chatSize, 80, 150);
     if (['circle', 'rounded', 'square', 'none'].indexOf(o.numShape) < 0) o.numShape = 'circle';
     o.chatLines = Math.round(clampNum(o.chatLines, 1, 12)); o.chatKeep = Math.round(clampNum(o.chatKeep, 5, 80));
-    o.legend1 = String(o.legend1 || '').slice(0, 80); o.legend2 = String(o.legend2 || '').slice(0, 80); o.chatName = String(o.chatName || '').slice(0, 24);
+    FUSED_LEVELS.forEach((k) => { o['legend' + k] = String(o['legend' + k] || '').slice(0, 80); }); o.chatName = String(o.chatName || '').slice(0, 24);
     ['numColor', 'numBg', 'chatColor', 'chatBg'].forEach((k) => { if (!hexOk(o[k])) o[k] = ''; });
     o.title = String(o.title || '').slice(0, 24); o.hintText = String(o.hintText || '').slice(0, 90);
     o.blocked = String(o.blocked || '').slice(0, 600);
@@ -327,7 +344,11 @@
     box.innerHTML = '';
     [{ n: 7, w: 'Ford' },
      { n: 25, w: 'Car', f: 1, sub: 'Ford \u00B7 Toyota \u00B7 Honda \u00B7 BMW' },
-     { n: 41, w: 'Land Transport', f: 2, sub: 'Car \u00B7 Bus \u00B7 Tram \u00B7 Bicycle' }].forEach((t) => box.appendChild(makeTile(t, false)));
+     { n: 41, w: 'Land Transport', f: 2, sub: 'Car \u00B7 Bus \u00B7 Tram \u00B7 Bicycle' },
+     { n: 58, w: 'Motor Vehicle', f: 3, sub: 'Passenger Car \u00B7 Lorry \u00B7 Motorbike \u00B7 Minibus' },
+     { n: 73, w: 'Wheeled Vehicle', f: 4, sub: 'Motor Vehicle \u00B7 Skateboard \u00B7 Pushchair \u00B7 Wheelchair' },
+     { n: 96, w: 'Land Travel', f: 5, sub: 'Wheeled Vehicle \u00B7 Hiking \u00B7 Horse Riding \u00B7 Dog Sledding' },
+     { n: 112, w: 'Journey', f: 6, sub: 'Land Travel \u00B7 Sea Voyage \u00B7 Air Flight \u00B7 Space Mission' }].forEach((t) => box.appendChild(makeTile(t, false)));
   }
   var H1_DEFAULT = null, HINT_DEFAULT = null, DOC_TITLE_DEFAULT = document.title, lastBlocked = null, wakeLock = null;
   // keep the phone screen on while the game is open (needs a browser that supports it)
@@ -342,7 +363,7 @@
   function applyDisplay(save) {
     const d = displayPrefs, root = document.documentElement, st = root.style;
     const tg = (c, on) => root.classList.toggle(c, !!on);
-    tg('nosub1', !d.sub1); tg('nosub2', !d.sub2); tg('ctr', d.center); tg('upper', d.upper);
+    FUSED_LEVELS.forEach((k) => tg('nosub' + k, !d['sub' + k])); tg('ctr', d.center); tg('upper', d.upper);
     tg('hide-chatfmt', !d.showChatFmt); tg('hide-counter', !d.showCounter); tg('hide-timer', !d.showTimer); tg('hide-scores', !d.showScores);
     tg('hide-toasts', !d.showToasts); tg('nostreak', !d.showStreak); tg('noanim', !d.anim);
     tg('nocardwords', !d.cardWords); tg('nocardplayer', !d.cardPlayer); tg('nocardavatar', !d.cardAvatar);
@@ -443,10 +464,10 @@
     mkAll('numColorSwatches', NUM_FG_PALETTE, 'numColor'); mkAll('numBgSwatches', NUM_BG_PALETTE, 'numBg');
     mkAll('chatColorSwatches', NUM_FG_PALETTE, 'chatColor'); mkAll('chatBgSwatches', CHAT_BG_PALETTE, 'chatBg');
     const PRESETS = {
-      standard: { tsize: 100, font: 'system', upper: false, corner: 'soft', numSize: 100, numFont: 'clear', numShape: 'circle', numBold: true, numRing: true, numColor: '', numBg: '', legendShow: true, chatShow: true, chatLines: 4, sub1: false, sub2: false, showChatFmt: true, showCounter: true, showTimer: true, showScores: true, sbRows: 5, showToasts: true, showStreak: true, anim: true, cardWords: true, cardPlayer: true, cardAvatar: true },
+      standard: { tsize: 100, font: 'system', upper: false, corner: 'soft', numSize: 100, numFont: 'clear', numShape: 'circle', numBold: true, numRing: true, numColor: '', numBg: '', legendShow: true, chatShow: true, chatLines: 4, sub1: false, sub2: false, sub3: false, sub4: false, sub5: false, sub6: false, showChatFmt: true, showCounter: true, showTimer: true, showScores: true, sbRows: 5, showToasts: true, showStreak: true, anim: true, cardWords: true, cardPlayer: true, cardAvatar: true },
       clean: { showChatFmt: false, showCounter: false, showTimer: true, showScores: true, sbRows: 3, showToasts: true, showStreak: false, cardWords: false },
       bold: { tsize: 115, font: 'rounded', upper: true, corner: 'round', numSize: 130, numBold: true, sbRows: 3 },
-      detail: { tsize: 90, sub1: true, sub2: true, cardWords: true, cardPlayer: true, sbRows: 5 }
+      detail: { tsize: 90, sub1: true, sub2: true, sub3: true, sub4: true, sub5: true, sub6: true, cardWords: true, cardPlayer: true, sbRows: 5 }
     };
     document.querySelectorAll('#presetBtns [data-preset]').forEach((b) => b.addEventListener('click', () => {
       displayPrefs = cleanDisplay(Object.assign({}, displayPrefs, PRESETS[b.dataset.preset] || {}));
@@ -490,7 +511,7 @@
     const num = (id, d) => { const v = parseFloat($(id).value); return Number.isFinite(v) ? v : d; };
     const groups = clampNum(Math.round(num('rulesGroups', 8)), 1, 8);
     return {
-      difficulty: clampNum(Math.round(num('rulesLevel', 3)), 1, 3),
+      difficulty: clampNum(Math.round(num('rulesLevel', 3)), 1, 7),
       groupsPerRound: groups, twoLevel: clampNum(Math.round(num('rulesTwo', 4)), 0, groups),
       comboEnabled: $('comboToggle').checked, comboMax: clampNum(Math.round(num('comboMaxInput', 4)), 1, 10),
       showNear: $('nearToggle').checked, finalBonus: clampNum(Math.round(num('finalBonusInput', 0)), 0, 100),
@@ -504,6 +525,10 @@
     let txt;
     if (r.difficulty === 1) txt = 'Level 1 (Easy, no fusion level), next game: ' + g + ' groups of 4 words = ' + (g * 4) + ' tiles and ' + g + ' fusions.';
     else if (r.difficulty === 2) txt = 'Level 2 (Moderate, 1 fusion level), next game: ' + g + ' groups, each with one fused tile on the way = ' + (g * 7) + ' tiles and ' + (g * 2) + ' fusions.';
+    else if (r.difficulty >= 4) {
+      const lv = LEVEL_INFO[r.difficulty], f = lv.fusions;   // fusions per group: Level 4 = 4 ... Level 7 = 7
+      txt = 'Level ' + r.difficulty + ' (' + lv.name + ', ' + lv.fusionLevels + ' fusion levels), next game: ' + g + ' groups, each fused ' + f + ' times (' + (3 * f + 1) + ' tiles per group) = ' + (g * (3 * f + 1)) + ' tiles and ' + (g * f) + ' fusions.';
+    }
     else txt = 'Level 3 (Hard, up to 2 fusion levels), next game: ' + g + ' groups (' + two + ' two-level + ' + three + ' three-level) = ' + (two * 7 + three * 10) + ' tiles and ' + (two * 2 + three * 3) + ' fusions.';
     const el = $('rulesShape'); if (el) el.textContent = txt;
   }
@@ -536,7 +561,7 @@
         const d = JSON.parse(String(rd.result || '{}'));
         if (!d || d.app !== 'fusedle-live') throw new Error('not a FUSEDLE settings file');
         if (d.display) { displayPrefs = cleanDisplay(d.display); }
-        if (d.fusedColours) [1, 2].forEach((k) => { const v = d.fusedColours[k]; if (v === 'none' || hexOk(v)) fusedPrefs[k] = v; });
+        if (d.fusedColours) FUSED_LEVELS.forEach((k) => { const v = d.fusedColours[k]; if (v === 'none' || hexOk(v)) fusedPrefs[k] = v; });
         if (d.cardColours) cardPrefs = cardCleanPrefs(d.cardColours);
         if (d.timing) { ['toastSeconds', 'roundWindowSeconds', 'allTimeWindowSeconds'].forEach((k) => { const n = Number(d.timing[k]); if (Number.isFinite(n) && n > 0 && n <= 60) timingPrefs[k] = n; }); writeJson('fusedle-timing', timingPrefs); syncTimingInputs(); }
         if (typeof d.theme === 'string') applyTheme(d.theme);
@@ -591,7 +616,6 @@
   wireDropdown('modeDropdown', pickMode);
 
   // ---- Difficulty button (top toolbar) -------------------------------------------
-  const LEVEL_INFO = { 1: { name: 'Easy', note: 'no fusion level' }, 2: { name: 'Moderate', note: '1 fusion level' }, 3: { name: 'Hard', note: 'up to 2 fusion levels' } };
   // Switching level builds a new game at once. Returns false if the host backed out (so a settings control can reset itself).
   function pickLevel(v) {
     v = Math.round(Number(v)); if (!LEVEL_INFO[v]) return false;
@@ -816,7 +840,7 @@
     const nb = mk('i', 'd' + Math.min(3, String(t.n).length), t.n); b.appendChild(nb);   // number badge (kept inside the tile, never over the word)
     const body = mk('span', 'tile-text');
     if (t.f) {
-      b.classList.add('fused'); b.dataset.f = Math.min(4, t.f);
+      b.classList.add('fused'); b.dataset.f = Math.min(6, t.f);
       body.appendChild(mk('span', 'tile-name', t.w));
       body.appendChild(mk('span', 'tile-sub', t.sub || ''));
       if (fresh) b.classList.add('fresh');
@@ -1195,25 +1219,34 @@
     }
   });
 
-  // ---- Legends for the two fused-tile colours (always the colours picked in Settings > Fused tile colours) ----
+  // ---- Legends for the fused-tile colours (always the colours picked in Settings > Fused tile colours) ----
+  // The legend explains the current difficulty level and ONLY the fusion levels that can really appear on it:
+  //   Easy = no fused tiles (legend hidden), Moderate = Level 1, Hard = Levels 1-2, Very Hard = 1-3, Extreme = 1-4, Extremely Hard = 1-5, Insane = 1-6.
   function renderLegend() {
-    [1, 2].forEach((k) => {
+    const lg = $('fusedLegend');
+    const diff = S && LEVEL_INFO[S.difficulty] ? S.difficulty : 3, info = LEVEL_INFO[diff];
+    // S.maxLevels = the number of fusions of the deepest group on this board, so the highest fused-tile level is one less.
+    const topFused = S ? Math.max(0, (S.maxLevels || 0) - 1) : info.fusionLevels;
+    const cols = (topFused === 3 || topFused >= 5) ? 3 : topFused >= 2 ? 2 : 1;   // 3, 5 or 6 items sit in 3 columns, 2 or 4 items in 2 columns
+    const compact = cols === 3;   // 3 columns: shorter built-in texts so the legend stays small on a phone
+    FUSED_LEVELS.forEach((k) => {
       const sw = $('flSw' + k); if (!sw) return;
       const v = fusedPrefs[k], on = hexOk(v);
       if (on) { const st = fusedStyle(v); sw.style.background = 'linear-gradient(' + st.b1 + ',' + st.b2 + ')'; sw.style.borderColor = st.be; sw.style.outlineColor = st.be; sw.style.color = st.tx; sw.classList.remove('plain'); }
       else { sw.style.background = ''; sw.style.borderColor = ''; sw.style.outlineColor = ''; sw.style.color = ''; sw.classList.add('plain'); }
-      sw.classList.toggle('lv2', k === 2);
       let custom = ''; try { custom = String(displayPrefs['legend' + k] || '').trim(); } catch (e) { /* prefs not read yet */ }
-      const body = $('flBody' + k); if (body) body.textContent = custom || LEGEND_DEFAULTS[k];
-      const it = sw.parentNode; if (it) it.title = on ? '' : 'Same colour as the other tiles (chosen in Settings)';
+      const body = $('flBody' + k); if (body) body.textContent = custom || legendDefault(k, k === topFused, compact);
+      const ttl = $('flTitle' + k); if (ttl) ttl.textContent = (compact && !custom) ? 'Fused ' + TIMES_WORD[k] : 'Level ' + k;   // compact legend (3 columns): the swatch number is the level, the title says how often it was fused
+      const it = sw.parentNode; if (it) { it.title = on ? '' : 'Same colour as the other tiles (chosen in Settings)'; it.hidden = k > topFused; }
     });
-    // The legend only explains colours that can really appear: Easy has no fused tiles, Moderate only has "fused once".
-    const top = S ? (S.maxLevels || 3) : 3, lg = $('fusedLegend');
+    const head = $('flHead');
+    if (head) {
+      head.textContent = 'Level ' + diff + ' (' + info.name + '): ' + info.note + (topFused > 0 ? (compact ? '. Colour = times fused.' : '. Each colour shows how many times a tile has been fused.') : '.');
+    }
     if (lg) {
-      const i1 = lg.querySelector('[data-level="1"]'), i2 = lg.querySelector('[data-level="2"]');
-      if (i1) i1.hidden = top < 2; if (i2) i2.hidden = top < 3;
-      lg.hidden = top < 2;
-      lg.style.gridTemplateColumns = top >= 3 ? '' : '1fr';
+      lg.hidden = topFused < 1;
+      lg.dataset.items = String(Math.max(0, topFused));
+      lg.dataset.cols = String(cols);
     }
     if (typeof queueFit === 'function' && S) queueFit();
   }

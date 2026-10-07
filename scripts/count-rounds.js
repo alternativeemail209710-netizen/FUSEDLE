@@ -83,3 +83,12 @@ console.log('  Whole library, all ' + all.length + ' themes mixed (estimate):   
 console.log('  Original 8 themes, one theme per round (exact):  ' + fmt(oldSingle));
 console.log('\n  Brand-new rounds counted from the new themes alone: at least ' + fmt(newSingle) + ' (target: 50,000)');
 console.log('  The game never repeats an exact board until every possible board has been played.');
+
+// ---- Levels 4 to 7 (deep chains) ----
+(function deepSummary() {
+  const { LADDERS } = require('../puzzles');
+  const n = LADDERS.length;
+  console.log('\nLevels 4 to 7 (Very Hard, Extreme, Extremely Hard, Insane)');
+  console.log('  Deep chains available: ' + n + ' (a round uses 8 of them with no repeated word).');
+  console.log('  Upper limit of different rounds per level: ' + fmt(comb(n, 8)) + ' (chains that share a word are never used in the same round, so the real number is a little lower).');
+})();

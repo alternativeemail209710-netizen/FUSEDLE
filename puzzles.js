@@ -20,7 +20,12 @@
  *   Level 1 Easy     = 8 groups, no fusion level (4 words each, one fusion)         32 tiles
  *   Level 2 Moderate = 8 groups, 1 fusion level (a fused tile, then the group)    56 tiles
  *   Level 3 Hard     = 4 groups with 1 + 4 groups with 2 fusion levels (original)  68 tiles (BOARD near the bottom of this file)
+ *   Level 4 Very Hard      = 8 groups, 3 fusion levels (4 fusions each, 13 tiles per group)       104 tiles
+ *   Level 5 Extreme        = 8 groups, 4 fusion levels (5 fusions each, 16 tiles per group)       128 tiles
+ *   Level 6 Extremely Hard = 8 groups, 5 fusion levels (6 fusions each, 19 tiles per group)       152 tiles
+ *   Level 7 Insane         = 8 groups, 6 fusion levels (7 fusions each, 22 tiles per group)       176 tiles
  * Easy and Moderate pieces are cut out of the groups written below, so nothing extra has to be written.
+ * Levels 4 to 7 use the 7-fusion ladders in the ./packs-deep folder (see 01-deep-chains.js); each level is cut from the bottom of a ladder.
  * Words are separated by commas inside one string, so a word may contain spaces ("Ice Cream").
  * Keep every word and every group name UNIQUE across this whole file (the start-up check tells you if not).
  */
@@ -201,6 +206,32 @@ const PACKS = [
   });
 })();
 
+// ---------------------------------------------------------------------------
+// Deep chains (Levels 4 to 7): every .js file in ./packs-deep returns a list of ladders made with L(...).
+//   L('Theme', 'Name1: w1,w2,w3,w4', 'Name2: w5,w6,w7', ... up to 7 lines)   (read from the bottom up, see 01-deep-chains.js)
+// ---------------------------------------------------------------------------
+const DEEP_MAX = 7;                                  // a ladder has 7 fusions (6 fusion levels + the finished group)
+const LADDERS = [];
+const L = (theme, ...lines) => ({ theme, lines });
+(function loadDeepChains() {
+  const fs = require('fs'), path = require('path');
+  const dir = path.join(__dirname, 'packs-deep');
+  if (!fs.existsSync(dir)) return;
+  fs.readdirSync(dir).filter((f) => /\.js$/.test(f)).sort().forEach((f) => {
+    require(path.join(dir, f))({ L, N, W }).forEach((l) => LADDERS.push(l));
+  });
+})();
+// Cut the bottom `fusions` fusions of a ladder into a normal tree (same format as T / D groups).
+function ladderTree(ladder, fusions) {
+  let node = null;
+  ladder.lines.slice(0, fusions).forEach((line, i) => {
+    const at = line.indexOf(':');
+    const name = line.slice(0, at).trim(), words = W(line.slice(at + 1));
+    node = i === 0 ? N(name, ...words) : N(name, node, ...words);
+  });
+  return node;
+}
+
 const lc = (s) => String(s).trim().toLowerCase();
 
 // Walk a tree: returns { levels, leaves, fusions, words:[...], names:[...] }
@@ -252,6 +283,15 @@ PACKS.forEach((p) => {
   POOL[p.title] = pool;
 });
 
+// Deep pool: DEEP_POOL[f] = every ladder cut to its bottom f fusions (f = 4..7)
+const DEEP_POOL = {};
+for (let f = 4; f <= DEEP_MAX; f++) {
+  DEEP_POOL[f] = LADDERS.map((l) => {
+    const root = ladderTree(l, f);
+    return Object.assign({ pack: l.theme, root }, measure(root));
+  });
+}
+
 // ---------------------------------------------------------------------------
 // The one fixed build: every round has exactly 8 independent groups.
 //   2-level group = 7 tiles, 3-level group = 10 tiles   ->   tiles = 7 x two + 10 x three
@@ -261,21 +301,27 @@ const GROUPS_PER_BOARD = 8;
 const BOARD = { two: 4, three: 4 };
 BOARD.tiles = BOARD.two * 7 + BOARD.three * 10;   // 68
 
-// The three difficulty levels (every one has 8 groups unless the host lowers "Groups per round").
+// The seven difficulty levels (every one has 8 groups unless the host lowers "Groups per round").
+// fusionLevels = fused tiles a group passes through on the way (Level 3 Hard: up to 2). Levels 4 to 7 use the deep ladders.
 const LEVELS = {
-  1: { name: 'Easy', label: 'Level 1 (Easy)', maxFusionLevel: 1 },
-  2: { name: 'Moderate', label: 'Level 2 (Moderate)', maxFusionLevel: 2 },
-  3: { name: 'Hard', label: 'Level 3 (Hard)', maxFusionLevel: 3 },
+  1: { name: 'Easy', label: 'Level 1 (Easy)', fusionLevels: 0, maxFusionLevel: 1 },
+  2: { name: 'Moderate', label: 'Level 2 (Moderate)', fusionLevels: 1, maxFusionLevel: 2 },
+  3: { name: 'Hard', label: 'Level 3 (Hard)', fusionLevels: 2, maxFusionLevel: 3 },
+  4: { name: 'Very Hard', label: 'Level 4 (Very Hard)', fusionLevels: 3, maxFusionLevel: 4, deep: 4 },
+  5: { name: 'Extreme', label: 'Level 5 (Extreme)', fusionLevels: 4, maxFusionLevel: 5, deep: 5 },
+  6: { name: 'Extremely Hard', label: 'Level 6 (Extremely Hard)', fusionLevels: 5, maxFusionLevel: 6, deep: 6 },
+  7: { name: 'Insane', label: 'Level 7 (Insane)', fusionLevels: 6, maxFusionLevel: 7, deep: 7 },
 };
 // How many groups of each depth a round has. `twoHard` only matters on Level 3 (how many of the groups are 2-level).
 function mixFor(level, groups, twoHard) {
   groups = Math.min(GROUPS_PER_BOARD, Math.max(1, Math.round(groups) || GROUPS_PER_BOARD));
   if (level === 1) return { one: groups, two: 0, three: 0 };
   if (level === 2) return { one: 0, two: groups, three: 0 };
+  if (level >= 4 && LEVELS[level]) return { one: 0, two: 0, three: 0, deep: LEVELS[level].deep, deepCount: groups };   // `deep` = fusions per group
   const two = Math.min(groups, Math.max(0, Math.round(twoHard) || 0));
   return { one: 0, two, three: groups - two };
 }
-const tilesOfMix = (m) => m.one * 4 + m.two * 7 + m.three * 10;
+const tilesOfMix = (m) => m.one * 4 + m.two * 7 + m.three * 10 + (m.deep ? m.deepCount * (3 * m.deep + 1) : 0);   // a ladder of f fusions has 3f+1 words
 
 // Pick `count` pieces of one depth. No word or group name may repeat anywhere on the board.
 function pickPieces(packs, bucket, count, used, picked, recent, avoidRecent) {
@@ -300,6 +346,7 @@ const boardSig = (roots) => roots.map((r) => r.name).sort().join('|');
 function compose(pack, recent, seen, mix) {
   recent = recent || new Set();
   seen = seen || new Set();
+  if (mix && mix.deep) return composeDeep(pack, recent, seen, mix);
   const nThree = mix && Number.isInteger(mix.three) && mix.three >= 0 ? mix.three : BOARD.three;
   const nTwo = mix && Number.isInteger(mix.two) && mix.two >= 0 ? mix.two : BOARD.two;
   const nOne = mix && Number.isInteger(mix.one) && mix.one >= 0 ? mix.one : 0;
@@ -329,6 +376,36 @@ function compose(pack, recent, seen, mix) {
   return { title: packsUsed.size === 1 ? picks[0].pack : 'Mixed Board', roots: shuffled(picks).map((p) => p.root) };
 }
 
+// Levels 4 to 7: every group is a ladder cut to `mix.deep` fusions. Words may not repeat anywhere on the board.
+function composeDeep(pack, recent, seen, mix) {
+  const f = mix.deep, count = mix.deepCount;
+  const all = DEEP_POOL[f] || [];
+  const attempt = (themeOnly, avoidRecent) => {
+    const list = themeOnly ? all.filter((c) => c.pack === themeOnly) : all;
+    for (let i = 0; i < 80; i++) {
+      const used = new Set(), picked = new Set(), out = [];
+      for (const c of shuffled(list)) {
+        if (out.length === count) break;
+        if (picked.has(c.root.name)) continue;
+        if (avoidRecent && recent.has(c.root.name)) continue;
+        if (!keysOf(c).every((x) => !used.has(x))) continue;
+        out.push(c); picked.add(c.root.name); keysOf(c).forEach((x) => used.add(x));
+      }
+      if (out.length !== count) continue;
+      if (seen.has(boardSig(out.map((p) => p.root)))) continue;
+      return out;
+    }
+    return null;
+  };
+  // A theme is used on its own only when it has enough ladders for a whole round; otherwise the round mixes every theme.
+  const themeOnly = pack && pack !== 'mixed' && all.filter((c) => c.pack === pack).length >= count ? pack : null;
+  let picks = (themeOnly && (attempt(themeOnly, true) || attempt(themeOnly, false))) || attempt(null, true) || attempt(null, false);
+  if (!picks) { picks = attempt(null, false) || (function () { const keep = new Set(); return attempt(null, false); })(); }
+  if (!picks) throw new Error('Could not build a deep board for level ' + f);
+  const themes = new Set(picks.map((p) => p.pack));
+  return { title: themes.size === 1 ? picks[0].pack : 'Mixed Board', roots: shuffled(picks).map((p) => p.root) };
+}
+
 function validate() {
   const problems = [];
   const globalSeen = new Map();
@@ -348,13 +425,33 @@ function validate() {
       } catch (e) { problems.push(e.message); }
     }));
   });
+  // deep ladders: 4 words in the first line, 3 in each later line, 7 lines, every word and name unique across all ladders
+  // (A round on Levels 4 to 7 only ever holds deep ladders, so the unique-word rule applies among the ladders, not against the normal packs.)
+  const deepKeys = new Map();
+  if (LADDERS.length < GROUPS_PER_BOARD) problems.push('At least ' + GROUPS_PER_BOARD + ' deep ladders are needed for Levels 4 to 7 (found ' + LADDERS.length + ')');
+  LADDERS.forEach((l, idx) => {
+    const label = 'Deep ladder ' + (idx + 1) + ' (' + (l.lines[0] || '?') + ')';
+    if (l.lines.length !== DEEP_MAX) { problems.push(label + ' must have ' + DEEP_MAX + ' lines but has ' + l.lines.length); return; }
+    l.lines.forEach((line, i) => {
+      const at = line.indexOf(':');
+      if (at < 1) { problems.push(label + ': line ' + (i + 1) + ' needs the form "Name: word,word,word"'); return; }
+      const name = line.slice(0, at).trim(), words = W(line.slice(at + 1));
+      if (words.length !== (i === 0 ? 4 : 3) || words.some((w) => !w)) problems.push(label + ': "' + name + '" needs ' + (i === 0 ? 4 : 3) + ' words but has ' + words.length);
+      [name].concat(words).forEach((x) => {
+        const k = lc(x);
+        if (deepKeys.has(k) && deepKeys.get(k) !== l.lines[0]) problems.push('"' + x + '" is used in both "' + deepKeys.get(k) + '" and deep ladder "' + l.lines[0] + '"');
+        deepKeys.set(k, l.lines[0]);
+      });
+    });
+  });
   if (BOARD.two + BOARD.three !== GROUPS_PER_BOARD) problems.push('BOARD must add up to exactly ' + GROUPS_PER_BOARD + ' groups');
   if (!problems.length) {
     ['mixed'].concat(PACKS.map((p) => p.title)).forEach((pk) => {
       for (let i = 0; i < 5; i++) {
         try {
-          [1, 2, 3].forEach((lv) => {
+          [1, 2, 3, 4, 5, 6, 7].forEach((lv) => {
             const mix = lv === 3 ? { one: 0, two: BOARD.two, three: BOARD.three } : mixFor(lv, GROUPS_PER_BOARD, 0);
+            if (lv >= 4 && !LADDERS.length) return;
             const b = compose(pk, new Set(), null, mix);
             const tiles = b.roots.reduce((n, r) => n + measure(r).leaves, 0);
             if (b.roots.length !== GROUPS_PER_BOARD || tiles !== tilesOfMix(mix)) throw new Error('wrong group or tile count on level ' + lv);
@@ -366,4 +463,4 @@ function validate() {
   return problems;
 }
 
-module.exports = { PACKS, POOL, measure, validate, compose, boardSig, keysOf, BOARD, GROUPS_PER_BOARD, LEVELS, mixFor, tilesOfMix };
+module.exports = { PACKS, POOL, LADDERS, DEEP_POOL, measure, validate, compose, boardSig, keysOf, BOARD, GROUPS_PER_BOARD, LEVELS, mixFor, tilesOfMix };

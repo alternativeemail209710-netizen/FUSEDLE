@@ -32,6 +32,10 @@
           <li role="option" data-value="1" aria-selected="false"><span class="diff-badge dl-1">1</span><span class="dd-label">Easy <small>no fusion level</small></span></li>
           <li role="option" data-value="2" aria-selected="false"><span class="diff-badge dl-2">2</span><span class="dd-label">Moderate <small>1 fusion level</small></span></li>
           <li role="option" data-value="3" aria-selected="false"><span class="diff-badge dl-3">3</span><span class="dd-label">Hard <small>up to 2 fusion levels</small></span></li>
+          <li role="option" data-value="4" aria-selected="false"><span class="diff-badge dl-4">4</span><span class="dd-label">Very Hard <small>3 fusion levels</small></span></li>
+          <li role="option" data-value="5" aria-selected="false"><span class="diff-badge dl-5">5</span><span class="dd-label">Extreme <small>4 fusion levels</small></span></li>
+          <li role="option" data-value="6" aria-selected="false"><span class="diff-badge dl-6">6</span><span class="dd-label">Extremely Hard <small>5 fusion levels</small></span></li>
+          <li role="option" data-value="7" aria-selected="false"><span class="diff-badge dl-7">7</span><span class="dd-label">Insane <small>6 fusion levels</small></span></li>
         </ul>
       </div>
       <button id="newGameTopBtn" class="icon-btn" aria-label="New Game" title="New Game">&#8635;</button>
@@ -97,16 +101,33 @@
          the board never jumps when a pill appears or leaves. -->
     <div id="liveGuessToastArea" class="live-guess-toast-area" aria-live="polite"></div>
 
-    <!-- Legend for the two fused-tile colours. Sits directly under the floating guesses, in its own row, so it never overlaps anything.
+    <!-- Legend for the fused-tile colours (up to 6 fusion levels, only the ones the current difficulty can produce are shown). Sits directly under the floating guesses, in its own row, so it never overlaps anything.
          (colours follow Settings > Fused tile colours) -->
     <div id="fusedLegend" class="fused-legend" aria-label="Fused tile colour legend">
+      <div class="fl-head" id="flHead"></div>
       <div class="fl-item" data-level="1">
-        <span class="fl-sw" id="flSw1" aria-hidden="true">1</span>
-        <span class="fl-text"><b id="flTitle1">Level 1</b><span id="flBody1">Fused once. Still usable: add 3 more tiles.</span></span>
+        <span class="fl-sw lv1" id="flSw1" aria-hidden="true">1</span>
+        <span class="fl-text"><b id="flTitle1">Level 1</b><span id="flBody1"></span></span>
       </div>
       <div class="fl-item" data-level="2">
-        <span class="fl-sw" id="flSw2" aria-hidden="true">2</span>
-        <span class="fl-text"><b id="flTitle2">Level 2</b><span id="flBody2">Fused twice. Still usable: add 3 more tiles to finish the group.</span></span>
+        <span class="fl-sw lv2" id="flSw2" aria-hidden="true">2</span>
+        <span class="fl-text"><b id="flTitle2">Level 2</b><span id="flBody2"></span></span>
+      </div>
+      <div class="fl-item" data-level="3">
+        <span class="fl-sw lv3" id="flSw3" aria-hidden="true">3</span>
+        <span class="fl-text"><b id="flTitle3">Level 3</b><span id="flBody3"></span></span>
+      </div>
+      <div class="fl-item" data-level="4">
+        <span class="fl-sw lv4" id="flSw4" aria-hidden="true">4</span>
+        <span class="fl-text"><b id="flTitle4">Level 4</b><span id="flBody4"></span></span>
+      </div>
+      <div class="fl-item" data-level="5">
+        <span class="fl-sw lv5" id="flSw5" aria-hidden="true">5</span>
+        <span class="fl-text"><b id="flTitle5">Level 5</b><span id="flBody5"></span></span>
+      </div>
+      <div class="fl-item" data-level="6">
+        <span class="fl-sw lv6" id="flSw6" aria-hidden="true">6</span>
+        <span class="fl-text"><b id="flTitle6">Level 6</b><span id="flBody6"></span></span>
       </div>
     </div>
 
@@ -309,7 +330,7 @@
 
       <div class="fc-box" id="fusedColorBox">
         <h3 class="hints-title">&#127912; Fused tile colours</h3>
-        <p class="hint">Pick a colour for each fusion level, so fused tiles never look like tiles that are still waiting to be fused. Text colour adjusts itself to stay readable.</p>
+        <p class="hint">Pick a colour for each fusion level (Levels 1 to 6; Level 7 Insane uses all six), so fused tiles never look like tiles that are still waiting to be fused. Higher levels also get a different inner ring. Text colour adjusts itself to stay readable.</p>
         <div class="fc-row" data-level="1">
           <div class="fc-head"><span class="fc-title">Level 1 <small>(e.g. &ldquo;Car&rdquo;)</small></span><span class="fc-preview" id="fcPreview1">Car</span></div>
           <div class="fc-swatches" id="fcSwatches1" role="radiogroup" aria-label="Level 1 fused tile colour"></div>
@@ -319,6 +340,26 @@
           <div class="fc-head"><span class="fc-title">Level 2 <small>(e.g. &ldquo;Land Transport&rdquo;)</small></span><span class="fc-preview" id="fcPreview2">Land Transport</span></div>
           <div class="fc-swatches" id="fcSwatches2" role="radiogroup" aria-label="Level 2 fused tile colour"></div>
           <label class="fc-custom">Custom colour <input type="color" id="fcCustom2" value="#9B2C4F"></label>
+        </div>
+        <div class="fc-row" data-level="3">
+          <div class="fc-head"><span class="fc-title">Level 3 <small>(e.g. &ldquo;Motor Vehicle&rdquo;)</small></span><span class="fc-preview" id="fcPreview3">Motor Vehicle</span></div>
+          <div class="fc-swatches" id="fcSwatches3" role="radiogroup" aria-label="Level 3 fused tile colour"></div>
+          <label class="fc-custom">Custom colour <input type="color" id="fcCustom3" value="#2F5DA8"></label>
+        </div>
+        <div class="fc-row" data-level="4">
+          <div class="fc-head"><span class="fc-title">Level 4 <small>(e.g. &ldquo;Wheeled Vehicle&rdquo;)</small></span><span class="fc-preview" id="fcPreview4">Wheeled Vehicle</span></div>
+          <div class="fc-swatches" id="fcSwatches4" role="radiogroup" aria-label="Level 4 fused tile colour"></div>
+          <label class="fc-custom">Custom colour <input type="color" id="fcCustom4" value="#E8731A"></label>
+        </div>
+        <div class="fc-row" data-level="5">
+          <div class="fc-head"><span class="fc-title">Level 5 <small>(e.g. &ldquo;Land Travel&rdquo;)</small></span><span class="fc-preview" id="fcPreview5">Land Travel</span></div>
+          <div class="fc-swatches" id="fcSwatches5" role="radiogroup" aria-label="Level 5 fused tile colour"></div>
+          <label class="fc-custom">Custom colour <input type="color" id="fcCustom5" value="#5B3A9E"></label>
+        </div>
+        <div class="fc-row" data-level="6">
+          <div class="fc-head"><span class="fc-title">Level 6 <small>(e.g. &ldquo;Journey&rdquo;)</small></span><span class="fc-preview" id="fcPreview6">Journey</span></div>
+          <div class="fc-swatches" id="fcSwatches6" role="radiogroup" aria-label="Level 6 fused tile colour"></div>
+          <label class="fc-custom">Custom colour <input type="color" id="fcCustom6" value="#9ACD32"></label>
         </div>
         <button id="fcResetBtn" type="button" class="btn btn-secondary timing-reset-btn">Reset fused colours</button>
       </div>
@@ -351,7 +392,7 @@
 
       <div class="opt-wrap" id="displayOptions">
         <h3 class="hints-title">&#127899;&#65039; Tile &amp; display options</h3>
-        <p class="hint">These are saved on <b>this device</b> and change at once. The three sample tiles show exactly how your tiles will look.</p>
+        <p class="hint">These are saved on <b>this device</b> and change at once. The sample tiles (a plain tile and one for every fusion level) show exactly how your tiles will look.</p>
         <div id="tilePreview" class="tile-grid tile-preview" aria-hidden="true"></div>
 
         <details class="opt-box" open>
@@ -365,6 +406,26 @@
             <input type="checkbox" data-pref="sub2">
             <span class="toggle-switch" aria-hidden="true"></span>
             <span class="toggle-label">Show the words inside Level 2 tiles<small>Same, for Level 2 tiles such as &ldquo;Land Transport&rdquo;.</small></span>
+          </label>
+          <label class="auto-next-toggle">
+            <input type="checkbox" data-pref="sub3">
+            <span class="toggle-switch" aria-hidden="true"></span>
+            <span class="toggle-label">Show the words inside Level 3 tiles<small>Same, for Level 3 tiles such as &ldquo;Motor Vehicle&rdquo; (Levels 4 to 7 only).</small></span>
+          </label>
+          <label class="auto-next-toggle">
+            <input type="checkbox" data-pref="sub4">
+            <span class="toggle-switch" aria-hidden="true"></span>
+            <span class="toggle-label">Show the words inside Level 4 tiles<small>Same, for Level 4 tiles such as &ldquo;Wheeled Vehicle&rdquo; (Levels 4 to 7 only).</small></span>
+          </label>
+          <label class="auto-next-toggle">
+            <input type="checkbox" data-pref="sub5">
+            <span class="toggle-switch" aria-hidden="true"></span>
+            <span class="toggle-label">Show the words inside Level 5 tiles<small>Same, for Level 5 tiles such as &ldquo;Land Travel&rdquo; (Levels 4 to 7 only).</small></span>
+          </label>
+          <label class="auto-next-toggle">
+            <input type="checkbox" data-pref="sub6">
+            <span class="toggle-switch" aria-hidden="true"></span>
+            <span class="toggle-label">Show the words inside Level 6 tiles<small>Same, for Level 6 tiles such as &ldquo;Journey&rdquo; (Levels 4 to 7 only).</small></span>
           </label>
           <label class="auto-next-toggle">
             <input type="checkbox" data-pref="center">
@@ -441,13 +502,25 @@
           <label class="auto-next-toggle">
             <input type="checkbox" data-pref="legendShow">
             <span class="toggle-switch" aria-hidden="true"></span>
-            <span class="toggle-label">Show the 2 legends under the floating guesses<small>Explains the Level 1 and Level 2 colours. The colours always follow &ldquo;Fused tile colours&rdquo; above.</small></span>
+            <span class="toggle-label">Show the legends under the floating guesses<small>Explains the current difficulty level and each fusion-level colour that can appear on it (up to 6). The colours always follow &ldquo;Fused tile colours&rdquo; above.</small></span>
           </label>
           <label class="opt-row opt-col">Level 1 legend text
-            <input type="text" data-pref="legend1" maxlength="80" placeholder="Fused once. Still usable: add 3 more tiles." autocomplete="off">
+            <input type="text" data-pref="legend1" maxlength="80" placeholder="Leave empty for the built-in text" autocomplete="off">
           </label>
           <label class="opt-row opt-col">Level 2 legend text
-            <input type="text" data-pref="legend2" maxlength="80" placeholder="Fused twice. Still usable: add 3 more tiles to finish the group." autocomplete="off">
+            <input type="text" data-pref="legend2" maxlength="80" placeholder="Leave empty for the built-in text" autocomplete="off">
+          </label>
+          <label class="opt-row opt-col">Level 3 legend text
+            <input type="text" data-pref="legend3" maxlength="80" placeholder="Leave empty for the built-in text" autocomplete="off">
+          </label>
+          <label class="opt-row opt-col">Level 4 legend text
+            <input type="text" data-pref="legend4" maxlength="80" placeholder="Leave empty for the built-in text" autocomplete="off">
+          </label>
+          <label class="opt-row opt-col">Level 5 legend text
+            <input type="text" data-pref="legend5" maxlength="80" placeholder="Leave empty for the built-in text" autocomplete="off">
+          </label>
+          <label class="opt-row opt-col">Level 6 legend text
+            <input type="text" data-pref="legend6" maxlength="80" placeholder="Leave empty for the built-in text" autocomplete="off">
           </label>
           <p class="hint">Leave a box empty to keep the built-in text.</p>
         </details>
@@ -720,6 +793,10 @@
               <option value="1">Level 1 - Easy (no fusion level)</option>
               <option value="2">Level 2 - Moderate (1 fusion level)</option>
               <option value="3">Level 3 - Hard (up to 2 fusion levels)</option>
+              <option value="4">Level 4 - Very Hard (3 fusion levels)</option>
+              <option value="5">Level 5 - Extreme (4 fusion levels)</option>
+              <option value="6">Level 6 - Extremely Hard (5 fusion levels)</option>
+              <option value="7">Level 7 - Insane (6 fusion levels)</option>
             </select>
           </label>
           <label class="timing-field">
@@ -805,9 +882,9 @@
       <div class="legend-box-full">
         <strong class="how-to-play-title">&#128218; How To Play (Live Game)</strong>
         <ol class="how-to-play-list">
-          <li><span class="htp-icon">&#9997;&#65039;</span><span>Type <b>four tile numbers</b> in chat, e.g. <span class="mono highlight">2 5 8 12</span>. Every round has <b>8 separate groups</b> (Hard: some 2-level, some 3-level fusions. Moderate: 1 fusion level. Easy: no fusion level, one fusion per group). Only <b>24 tiles</b> show at a time; when tiles fuse, <b>new tiles drop into the free spaces</b> until every group is found</span></li>
+          <li><span class="htp-icon">&#9997;&#65039;</span><span>Type <b>four tile numbers</b> in chat, e.g. <span class="mono highlight">2 5 8 12</span>. Every round has <b>8 separate groups</b> (Level 1 Easy: no fusion level, one fusion per group. Level 2 Moderate: 1 fusion level. Level 3 Hard: up to 2. Level 4 Very Hard: 3. Level 5 Extreme: 4. Level 6 Extremely Hard: 5. Level 7 Insane: 6 fusion levels, so every group takes 7 fusions). Only <b>24 tiles</b> show at a time; when tiles fuse, <b>new tiles drop into the free spaces</b> until every group is found</span></li>
           <li><span class="htp-icon">&#129513;</span><span>If all four share a link (Ford, Toyota, Honda, BMW), they are <b>destroyed</b> and <b>fuse into one new tile</b> (&ldquo;Car&rdquo;) with a brand-new number</span></li>
-          <li><span class="htp-icon">&#9889;</span><span><b>Fuse again:</b> the new &ldquo;Car&rdquo; tile can now join Boat, Plane and Train to fuse into the final group &ldquo;Transportation&rdquo;. A 3-level group goes one step further: the new tile fuses into another new tile, which then fuses into the final group</span></li>
+          <li><span class="htp-icon">&#9889;</span><span><b>Fuse again:</b> the new &ldquo;Car&rdquo; tile can now join Boat, Plane and Train to fuse into the final group &ldquo;Transportation&rdquo;. A 3-level group goes one step further: the new tile fuses into another new tile, which then fuses into the final group. On Levels 4 to 7 the chain is longer still: up to 6 fused tiles in a row (each with its own colour, explained in the legend under the guesses) before the final group</span></li>
           <li><span class="htp-icon">&#128064;</span><span>Three of four right shows <b>&ldquo;one away&rdquo;</b>. Anything else is marked wrong</span></li>
           <li><span class="htp-icon">&#11088;</span><span>Every fusion earns points, the same for every level (the host can add a bonus for finishing a group)</span></li>
           <li><span class="htp-icon">&#128293;</span><span>Fuse <b>back-to-back</b> for a combo streak: 1x, 2x, 3x, up to 4x by default. A wrong guess resets it</span></li>

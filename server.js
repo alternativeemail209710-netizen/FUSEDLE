@@ -40,7 +40,8 @@ app.use(express.static(path.join(__dirname, 'public'), {
 // ---------------------------------------------------------------------------
 // Settings tables
 // ---------------------------------------------------------------------------
-// Three difficulty levels (Settings > Game rules): 1 Easy (no fusion level), 2 Moderate (1 fusion level), 3 Hard (up to 2 fusion levels, the original mix).
+// Seven difficulty levels (Settings > Game rules or the toolbar button): 1 Easy (no fusion level), 2 Moderate (1 fusion level), 3 Hard (up to 2 fusion levels, the original mix),
+// 4 Very Hard (3 fusion levels), 5 Extreme (4), 6 Extremely Hard (5), 7 Insane (6). Levels 4 to 7 use the deep ladders in ./packs-deep.
 // Every round has 8 independent groups (see LEVELS and BOARD in puzzles.js).
 // Only SHOWN tiles (4 columns x 6 rows = 24) are on screen at any moment. When tiles are fused, the freed spaces are
 // refilled from the waiting tiles until every tile of the round has appeared and every group is discovered.
@@ -479,7 +480,7 @@ function applyRules(p) {
   if (p.guessCooldown !== undefined) state.guessCooldown = clampSeconds(p.guessCooldown, { min: 0, max: 30, def: 0 });
   if (p.groupsPerRound !== undefined) state.groupsPerRound = int(p.groupsPerRound, 1, 8, 8);
   if (p.twoLevel !== undefined) state.twoLevel = int(p.twoLevel, 0, 8, 4);
-  if (p.difficulty !== undefined) state.difficulty = int(p.difficulty, 1, 3, 3);
+  if (p.difficulty !== undefined) state.difficulty = int(p.difficulty, 1, 7, 3);
   state.twoLevel = Math.min(state.twoLevel, state.groupsPerRound);
 }
 function setBots(enabled) {

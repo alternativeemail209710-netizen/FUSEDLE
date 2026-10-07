@@ -1,7 +1,7 @@
 {
   "name": "fusedle-live",
-  "version": "8.6.0",
-  "description": "FUSEDLE Live: 8 independent groups per round, 24 tiles on screen at a time, 3 difficulty levels (Easy, Moderate, Hard). 46 themes across science, tech, history, arts, society and lifestyle. For TikTok LIVE chat.",
+  "version": "8.7.0",
+  "description": "FUSEDLE Live: 8 independent groups per round, 24 tiles on screen at a time, 7 difficulty levels (Easy, Moderate, Hard, Very Hard, Extreme, Extremely Hard, Insane). 46 themes across science, tech, history, arts, society and lifestyle. For TikTok LIVE chat.",
   "main": "server.js",
   "engines": {
     "node": ">=18.0.0"

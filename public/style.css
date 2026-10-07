@@ -1590,13 +1590,17 @@ html[data-theme="dark"] .mode-btn.active, html[data-theme="dark"] .lb-modal-tab.
 
 
 /* =====================================================================
-   PART 17 - FUSED TILE COLOURS (level 1 and level 2 picked in Settings)
-   html.fc1 / html.fc2 are set by client.js when a colour is chosen.
+   PART 17 - FUSED TILE COLOURS (fusion levels 1 to 6 picked in Settings)
+   html.fc1 ... html.fc6 are set by client.js when a colour is chosen.
    The colour wins over the yarn colours; selected / wrong / peek tiles
    keep their own look so those signals are never hidden.
    ===================================================================== */
 html.fc1 .tile.fused[data-f="1"]:not(.sel):not(.wrong):not(.peek),
-html.fc2 .tile.fused[data-f="2"]:not(.sel):not(.wrong):not(.peek) {
+html.fc2 .tile.fused[data-f="2"]:not(.sel):not(.wrong):not(.peek),
+html.fc3 .tile.fused[data-f="3"]:not(.sel):not(.wrong):not(.peek),
+html.fc4 .tile.fused[data-f="4"]:not(.sel):not(.wrong):not(.peek),
+html.fc5 .tile.fused[data-f="5"]:not(.sel):not(.wrong):not(.peek),
+html.fc6 .tile.fused[data-f="6"]:not(.sel):not(.wrong):not(.peek) {
   background: linear-gradient(var(--fc-b1), var(--fc-b2));
   border-color: var(--fc-be); border-width: 2px;
   box-shadow: 0 3px 0 var(--fc-be);
@@ -1604,14 +1608,36 @@ html.fc2 .tile.fused[data-f="2"]:not(.sel):not(.wrong):not(.peek) {
 }
 html.fc1 .tile.fused[data-f="1"] { --fc-b1: var(--f1-b1); --fc-b2: var(--f1-b2); --fc-be: var(--f1-be); --fc-tx: var(--f1-tx); }
 html.fc2 .tile.fused[data-f="2"] { --fc-b1: var(--f2-b1); --fc-b2: var(--f2-b2); --fc-be: var(--f2-be); --fc-tx: var(--f2-tx); }
+html.fc3 .tile.fused[data-f="3"] { --fc-b1: var(--f3-b1); --fc-b2: var(--f3-b2); --fc-be: var(--f3-be); --fc-tx: var(--f3-tx); }
+html.fc4 .tile.fused[data-f="4"] { --fc-b1: var(--f4-b1); --fc-b2: var(--f4-b2); --fc-be: var(--f4-be); --fc-tx: var(--f4-tx); }
+html.fc5 .tile.fused[data-f="5"] { --fc-b1: var(--f5-b1); --fc-b2: var(--f5-b2); --fc-be: var(--f5-be); --fc-tx: var(--f5-tx); }
+html.fc6 .tile.fused[data-f="6"] { --fc-b1: var(--f6-b1); --fc-b2: var(--f6-b2); --fc-be: var(--f6-be); --fc-tx: var(--f6-tx); }
 html.fc1 .tile.fused[data-f="1"]:not(.sel):not(.wrong):not(.peek)::before,
-html.fc2 .tile.fused[data-f="2"]:not(.sel):not(.wrong):not(.peek)::before { border-color: color-mix(in srgb, var(--fc-tx) 45%, transparent); }
+html.fc2 .tile.fused[data-f="2"]:not(.sel):not(.wrong):not(.peek)::before,
+html.fc3 .tile.fused[data-f="3"]:not(.sel):not(.wrong):not(.peek)::before,
+html.fc4 .tile.fused[data-f="4"]:not(.sel):not(.wrong):not(.peek)::before,
+html.fc5 .tile.fused[data-f="5"]:not(.sel):not(.wrong):not(.peek)::before,
+html.fc6 .tile.fused[data-f="6"]:not(.sel):not(.wrong):not(.peek)::before { border-color: color-mix(in srgb, var(--fc-tx) 45%, transparent); }
 html.fc1 .tile.fused[data-f="1"]:not(.sel):not(.wrong):not(.peek) .tile-sub,
-html.fc2 .tile.fused[data-f="2"]:not(.sel):not(.wrong):not(.peek) .tile-sub { opacity: 1; }
-/* level 2 also gets a second thin ring, so the two levels differ by more than colour alone */
+html.fc2 .tile.fused[data-f="2"]:not(.sel):not(.wrong):not(.peek) .tile-sub,
+html.fc3 .tile.fused[data-f="3"]:not(.sel):not(.wrong):not(.peek) .tile-sub,
+html.fc4 .tile.fused[data-f="4"]:not(.sel):not(.wrong):not(.peek) .tile-sub,
+html.fc5 .tile.fused[data-f="5"]:not(.sel):not(.wrong):not(.peek) .tile-sub,
+html.fc6 .tile.fused[data-f="6"]:not(.sel):not(.wrong):not(.peek) .tile-sub { opacity: 1; }
+/* every level above 1 also gets its own inner ring, so the levels differ by more than colour alone:
+   2 = thin solid, 3 = dashed, 4 = dotted, 5 = double, 6 = thick double */
 html.fc2 .tile.fused[data-f="2"]:not(.sel):not(.wrong):not(.peek) { outline: 2px solid var(--fc-be); outline-offset: -5px; }
+html.fc3 .tile.fused[data-f="3"]:not(.sel):not(.wrong):not(.peek) { outline: 2px dashed var(--fc-be); outline-offset: -5px; }
+html.fc4 .tile.fused[data-f="4"]:not(.sel):not(.wrong):not(.peek) { outline: 3px dotted var(--fc-be); outline-offset: -5px; }
+html.fc5 .tile.fused[data-f="5"]:not(.sel):not(.wrong):not(.peek) { outline: 3px double var(--fc-be); outline-offset: -5px; }
+html.fc6 .tile.fused[data-f="6"]:not(.sel):not(.wrong):not(.peek) { outline: 5px double var(--fc-be); outline-offset: -6px; }
 html.fc1 .tile.fused[data-f="1"]:not(.sel):not(.wrong):not(.peek):active,
-html.fc2 .tile.fused[data-f="2"]:not(.sel):not(.wrong):not(.peek):active { box-shadow: 0 1px 0 var(--fc-be); }
+html.fc2 .tile.fused[data-f="2"]:not(.sel):not(.wrong):not(.peek):active,
+html.fc3 .tile.fused[data-f="3"]:not(.sel):not(.wrong):not(.peek):active,
+html.fc4 .tile.fused[data-f="4"]:not(.sel):not(.wrong):not(.peek):active,
+html.fc5 .tile.fused[data-f="5"]:not(.sel):not(.wrong):not(.peek):active,
+html.fc6 .tile.fused[data-f="6"]:not(.sel):not(.wrong):not(.peek):active { box-shadow: 0 1px 0 var(--fc-be); }
+
 
 /* settings box */
 .fc-box { border: 2px dashed var(--border); border-radius: 12px; padding: 10px 12px; margin: 0 0 12px; background: var(--bg-panel); }
@@ -1665,7 +1691,11 @@ html.upper .tile-word, html.upper .tile-name { text-transform: uppercase; }
 
 /* --- the words inside a fused tile can be hidden per level: the name then sits in the exact centre --- */
 html.nosub1 .tile.fused[data-f="1"] .tile-sub,
-html.nosub2 .tile.fused[data-f="2"] .tile-sub { display: none !important; }
+html.nosub2 .tile.fused[data-f="2"] .tile-sub,
+html.nosub3 .tile.fused[data-f="3"] .tile-sub,
+html.nosub4 .tile.fused[data-f="4"] .tile-sub,
+html.nosub5 .tile.fused[data-f="5"] .tile-sub,
+html.nosub6 .tile.fused[data-f="6"] .tile-sub { display: none !important; }
 
 /* --- centre the word on the WHOLE tile: the number circle floats at the left edge, text has equal space both sides --- */
 html.ctr .tile-grid { --avail: calc((min(100vw, 520px) - 35px) / 4 - 2 * (var(--bd, 15px) + 4px) - 3px); }
@@ -1865,7 +1895,21 @@ html.ctr .app-shell .tile.wide i { position: relative; left: auto; top: auto; tr
   display: flex; align-items: center; justify-content: center; font: 800 12px/1 Verdana, "DejaVu Sans", system-ui, sans-serif;
 }
 .fl-sw.plain { background: var(--given); border-color: var(--border); color: var(--text); }
-.fl-sw.lv2 { outline: 2px solid var(--border); outline-offset: -5px; }
+.fl-sw.lv2 { outline: 2px solid var(--border); outline-offset: -4px; }
+.fl-sw.lv3 { outline: 2px dashed var(--border); outline-offset: -4px; }
+.fl-sw.lv4 { outline: 2px dotted var(--border); outline-offset: -4px; }
+.fl-sw.lv5 { outline: 3px double var(--border); outline-offset: -4px; }
+.fl-sw.lv6 { outline: 4px double var(--border); outline-offset: -5px; }
+/* the legend header (explains the current difficulty level) always spans the whole legend */
+.fl-head { grid-column: 1 / -1; font-size: 10.5px; line-height: 1.2; font-weight: 800; color: var(--text); padding: 0 2px; overflow-wrap: anywhere; }
+.fl-head:empty { display: none; }
+.fused-legend[data-cols="1"] { grid-template-columns: 1fr; }
+.fused-legend[data-cols="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+.fused-legend[data-cols="3"] .fl-item { padding: 3px 4px; gap: 4px; }
+.fused-legend[data-cols="3"] .fl-sw { width: 20px; height: 18px; font-size: 11px; }
+.fused-legend[data-cols="3"] .fl-text { font-size: 9px; }
+.fused-legend[data-cols="3"] .fl-text b { font-size: 10px; }
+.fused-legend[data-cols="3"] .fl-head { font-size: 9.5px; }
 .fl-text { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; font-size: 10.5px; line-height: 1.2; font-weight: 600; color: var(--text); }
 .fl-text b { font-size: 11.5px; font-weight: 900; margin-bottom: 1px; }
 html.hide-legend .fused-legend { display: none !important; }
@@ -1921,8 +1965,13 @@ html .tile.stack .tile-text { flex: 1 1 0; width: 100%; min-height: 0; }
 .fused-legend[hidden], .fl-item[hidden] { display: none !important; }
 
 /* difficulty button in the top toolbar: 1 Easy = green, 2 Moderate = amber, 3 Hard = red */
+/* 1 Easy = green, 2 Moderate = lime, 3 Hard = amber, 4 Very Hard = orange, 5 Extreme = red, 6 Extremely Hard = dark red, 7 Insane = purple-black */
 .diff-badge.dl-1 { background: #16a34a; }
-.diff-badge.dl-2 { background: #ca8a04; }
-.diff-badge.dl-3 { background: #dc2626; }
+.diff-badge.dl-2 { background: #65a30d; }
+.diff-badge.dl-3 { background: #ca8a04; }
+.diff-badge.dl-4 { background: #ea580c; }
+.diff-badge.dl-5 { background: #dc2626; }
+.diff-badge.dl-6 { background: #991b1b; }
+.diff-badge.dl-7 { background: #3b0764; box-shadow: 0 0 0 2px #f59e0b inset; }
 .toolbar-dropdown-menu .diff-badge { width: 22px; height: 22px; font-size: 12px; }
 .toolbar-dropdown-menu .dd-head small { font-weight: 600; opacity: .8; }

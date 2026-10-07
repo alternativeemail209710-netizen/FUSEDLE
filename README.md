@@ -1,6 +1,15 @@
-# FUSEDLE Live (TikTok LIVE) - Up to 8 Groups per Round, 24 Tiles on Screen
+# FUSEDLE Live (TikTok LIVE) - 7 Difficulty Levels, 8 Groups per Round, 24 Tiles on Screen
 
 This folder is the complete, finished app. You do not need to edit any code.
+
+> **v8.7 - four new difficulty levels: Very Hard, Extreme, Extremely Hard, Insane**
+> - **Level 4 (Very Hard):** 3 fusion levels. **Level 5 (Extreme):** 4 fusion levels. **Level 6 (Extremely Hard):** 5 fusion levels. **Level 7 (Insane):** 6 fusion levels. Every level still has **8 groups per round** and **24 tiles on screen at a time**.
+> - A "fusion level" is a fused tile that is made on the way to the finished group (Hard = up to 2, as before). So a Level 4 group is fused 4 times (13 tiles), Level 5 five times (16 tiles), Level 6 six times (19 tiles) and Level 7 seven times (22 tiles). A full round has 104 / 128 / 152 / 176 tiles.
+> - **Pick the level** with the difficulty button in the top toolbar (now 1 to 7: green, lime, amber, orange, red, dark red, purple) or in **Settings > Game rules > Difficulty level**. Changing the level starts a new game at once.
+> - **Legends explain every level.** The legend row under the floating guesses now has a heading for the current difficulty (for example "Level 6 (Extremely Hard): 5 fusion levels") and one colour chip for **each fusion level that can appear on that difficulty** (none on Easy, 1 on Moderate, up to 6 on Insane). Each chip says how many times the tile has been fused and whether it can fuse again or only needs 3 more tiles to finish the group. With 3, 5 or 6 chips the legend switches to a compact 3-column layout so it still fits on a phone.
+> - **Six fused-tile colours.** Settings > *Fused tile colours* now has Levels 1 to 6 (defaults: Teal, Burgundy, Royal Blue, Orange, Violet, Lime). Levels 2 to 6 also get a different inner ring (solid, dashed, dotted, double, thick double) so levels differ by more than colour. *Tile text* (words inside fused tiles) and *Fused colour legend* (your own legend texts) have a switch / box for every level 1 to 6. Colours, texts and switches are saved on the device and included in Export / Import settings.
+> - **New puzzle content: 40 deep chains** in the new `packs-deep/` folder (`01-deep-chains.js`). Each chain is a ladder of 7 fusions; Level 4 uses its bottom 4 fusions, Level 5 the bottom 5, Level 6 the bottom 6 and Level 7 all 7. Deep rounds always pick 8 different chains with no repeated word, give up to about 76 million different boards, and never repeat a board until all have been played. Add your own by copying a chain (see "Adding deep chains" below). The Puzzle Pack choice does not apply to Levels 4 to 7 (no single theme has 8 chains), so those rounds are always "Mixed Board".
+> - Files changed: `puzzles.js`, `server.js`, `public/client.js`, `public/index.html`, `public/style.css`, `package.json`, `README.md`, `scripts/count-rounds.js`; new folder `packs-deep/`. Levels 1 to 3 and everything else work exactly as before.
 
 > **v8.3 - bigger tile numbers, fused-colour legends, live chat box**
 > - **Bigger, clearer tile numbers.** The number badge is now 24px (was 15-17px) in a clear Verdana-style font. Every tile measures its own width and height, so the number always stays **inside the tile border** and the word **never overlaps it**. A long word first gets slightly smaller letters; a very long word such as "Paddleboarding" moves the number above the word so it still reads well.
@@ -110,17 +119,21 @@ the leaderboards stay on the screen. If the host used Reveal, the card says "Hos
 > **Before you go live:** in the TikTok app open LIVE settings, then **Comments > Filtered**, and turn **OFF**
 > the **Spam filter** and **Potentially unkind words**. TikTok can quietly hide short number comments.
 
-## Difficulty levels (new in 8.5)
+## Difficulty levels (7 levels since 8.7)
 
-Choose the level with the **difficulty button in the top toolbar** (the green, amber or red number next to the mode button) or in **Settings > Game rules > Difficulty level**. Changing the level starts a new game at once (it asks first if a round is in progress). Every level has 8 groups per round and 24 tiles on screen at a time.
+Choose the level with the **difficulty button in the top toolbar** (the coloured number next to the mode button) or in **Settings > Game rules > Difficulty level**. Changing the level starts a new game at once (it asks first if a round is in progress). Every level has 8 groups per round and 24 tiles on screen at a time.
 
 | Level | Name | What a round has | Tiles |
 | --- | --- | --- | --- |
 | 1 | Easy | No fusion level: 8 groups of 4 words each, one fusion finishes a group | 32 |
 | 2 | Moderate | 1 fusion level: 8 groups, each makes one fused tile that then finishes the group | 56 |
 | 3 | Hard | Up to 2 fusion levels: 4 groups with 1 and 4 groups with 2 (the original game, still the default) | 68 |
+| 4 | Very Hard | 3 fusion levels: every group is fused 4 times | 104 |
+| 5 | Extreme | 4 fusion levels: every group is fused 5 times | 128 |
+| 6 | Extremely Hard | 5 fusion levels: every group is fused 6 times | 152 |
+| 7 | Insane | 6 fusion levels: every group is fused 7 times | 176 |
 
-The colour legends only show the fusion levels that can appear: none on Easy, "fused once" on Moderate, both on Hard. Easy and Moderate rounds are cut from the groups already in the packs, so adding your own puzzles still works the same way.
+The colour legends only show the fusion levels that can appear: none on Easy, "fused once" on Moderate, Levels 1-2 on Hard, 1-3 on Very Hard, 1-4 on Extreme, 1-5 on Extremely Hard and 1-6 on Insane. Easy and Moderate rounds are cut from the groups already in the packs, so adding your own puzzles still works the same way. Levels 4 to 7 use the deep chains in `packs-deep/`.
 
 ## What is new in 8.4
 
@@ -153,7 +166,7 @@ Render updates the game by itself in a minute or two.
   Hints and Reveals, Reset Scores, Auto Next Game, Timing, and Save & Apply as Default.
 - **Modes:** *Offline* = you play alone with the Player Guess Bar (tap 4 tiles or type them). *Test* = fake
   viewers (turn on **Auto-Play Bots**) so you can rehearse. *Live* = real TikTok chat counts.
-- **One build, no difficulty levels:** by default every round has **8 groups**: **4 two-level** groups (7 tiles each) and
+- **Default build (Level 3 Hard):** by default every round has **8 groups**: **4 two-level** groups (7 tiles each) and
   **4 three-level** groups (10 tiles each), so **68 tiles** and **20 fusions** in total. (Settings > Game rules can change the number of groups and the 2-level / 3-level mix.)
   **Only 24 tiles (4 columns x 6 rows) are on the screen at any moment.** When viewers fuse a group, 4 tiles disappear and 1 new fused tile
   takes the first freed space; the other freed spaces are filled by **new tiles dropping in** from the waiting pile, until every tile of
@@ -200,6 +213,20 @@ T('Transport', 'Land Transport', 'Car', 'Ford,Toyota,Honda,BMW', 'Bus,Tram,Bicyc
 a `D(...)` has 7 words, and **no word or group name is used twice anywhere in the file**. Each pack needs at least 8 three-level groups
 so that a round can be built from a single theme. The mix for the round is `BOARD` near the bottom of `puzzles.js`
 (`two` = number of 2-level groups, `three` = number of 3-level groups; they must add up to 8). The 24-tile screen size is `COLS` and `ROWS` at the top of `server.js`.
+
+## Adding deep chains (Levels 4 to 7)
+Create a new `.js` file in `packs-deep/` (or add lines to `01-deep-chains.js`). A chain is 7 lines read from the bottom up: the first line has **4 words**, every later line has **3 words** and the previous line's tile fuses with them:
+```js
+L('Getting Around',
+  'Supercar: Ferrari,Lamborghini,McLaren,Bugatti',      // 4 words -> "Supercar"
+  'Passenger Car: Saloon,Hatchback,Estate',              // "Supercar" + 3 words -> "Passenger Car"
+  'Motor Vehicle: Lorry,Motorbike,Minibus',              // ... -> "Motor Vehicle"
+  'Wheeled Vehicle: Skateboard,Pushchair,Wheelchair',
+  'Land Travel: Hiking,Horse Riding,Dog Sledding',
+  'Journey: Sea Voyage,Air Flight,Space Mission',
+  'Travel: Tourism,Commuting,Migration')                 // finished group on Level 7
+```
+Every step must be a plain "kind of / part of / example of" link, and every word and name must be unique across all chains (the game checks this at start-up). You need at least 8 chains. Each level is cut from the bottom of the chain: Level 4 stops at the 4th line ("Wheeled Vehicle"), Level 5 at the 5th, Level 6 at the 6th and Level 7 uses all 7.
 
 ## Keep it awake while you stream
 Render's free plan sleeps after about 15 minutes with no visitors, which drops the TikTok connection.
