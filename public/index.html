@@ -23,6 +23,17 @@
           <li role="option" data-value="live" aria-selected="false"><span class="dd-emoji">&#128225;</span><span class="dd-label">Live <small>TikTok chat</small></span></li>
         </ul>
       </div>
+      <div class="toolbar-dropdown" id="levelDropdown">
+        <button type="button" id="levelDropdownBtn" class="icon-btn toolbar-dropdown-trigger" aria-haspopup="listbox" aria-expanded="false" aria-label="Difficulty level" title="Difficulty: tap to change">
+          <span id="levelDropdownIcon" class="diff-badge dl-3">3</span>
+        </button>
+        <ul id="levelDropdownMenu" class="toolbar-dropdown-menu" role="listbox" aria-label="Difficulty level" hidden>
+          <li class="dd-head" role="presentation">&#127919; Difficulty <small>(starts a new game)</small></li>
+          <li role="option" data-value="1" aria-selected="false"><span class="diff-badge dl-1">1</span><span class="dd-label">Easy <small>no fusion level</small></span></li>
+          <li role="option" data-value="2" aria-selected="false"><span class="diff-badge dl-2">2</span><span class="dd-label">Moderate <small>1 fusion level</small></span></li>
+          <li role="option" data-value="3" aria-selected="false"><span class="diff-badge dl-3">3</span><span class="dd-label">Hard <small>up to 2 fusion levels</small></span></li>
+        </ul>
+      </div>
       <button id="newGameTopBtn" class="icon-btn" aria-label="New Game" title="New Game">&#8635;</button>
       <button id="leaderboardTopBtn" class="icon-btn" aria-label="Leaderboard" title="Leaderboard">&#127942;</button>
       <button id="peekTopBtn" class="icon-btn" aria-label="Peek: tint tiles by group" title="Peek: tint tiles by group">&#128065;</button>
@@ -701,7 +712,7 @@
 
       <div class="timing-box rules-box" id="rulesBox">
         <h3 class="hints-title">&#127918; Game rules</h3>
-        <p class="hint">Scoring rules work immediately and are shared with every screen. The round shape is used the next time a game is built (tap <b>New Game</b>).</p>
+        <p class="hint">Scoring rules work immediately and are shared with every screen. The round shape is used the next time a game is built (tap <b>New Game</b>). Changing the difficulty level starts a new game at once.</p>
         <div class="timing-grid">
           <label class="timing-field" style="grid-column: 1 / -1;">
             Difficulty level

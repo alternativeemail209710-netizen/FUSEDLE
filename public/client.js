@@ -507,10 +507,11 @@
     else txt = 'Level 3 (Hard, up to 2 fusion levels), next game: ' + g + ' groups (' + two + ' two-level + ' + three + ' three-level) = ' + (two * 7 + three * 10) + ' tiles and ' + (two * 2 + three * 3) + ' fusions.';
     const el = $('rulesShape'); if (el) el.textContent = txt;
   }
-  ['rulesLevel', 'rulesGroups', 'rulesTwo', 'comboMaxInput', 'finalBonusInput', 'cooldownInput', 'comboToggle', 'nearToggle'].forEach((id) => {
+  ['rulesGroups', 'rulesTwo', 'comboMaxInput', 'finalBonusInput', 'cooldownInput', 'comboToggle', 'nearToggle'].forEach((id) => {
     $(id).addEventListener('input', updateRulesShape);
     $(id).addEventListener('change', () => { updateRulesShape(); socket.emit('host:setRules', rulesPayload()); });
   });
+  $('rulesLevel').addEventListener('change', () => { if (!pickLevel($('rulesLevel').value) && S) $('rulesLevel').value = String(S.difficulty); updateRulesShape(); });
   function fillRules(r) {
     $('rulesLevel').value = String(r.difficulty || 3); $('rulesGroups').value = r.groupsPerRound; $('rulesTwo').value = r.twoLevel; $('comboToggle').checked = !!r.comboEnabled;
     $('comboMaxInput').value = r.comboMax; $('nearToggle').checked = !!r.showNear; $('finalBonusInput').value = r.finalBonus; $('cooldownInput').value = r.guessCooldown;
@@ -588,6 +589,24 @@
     if (m === 'live') openLive();      // choosing Live opens the TikTok connection window straight away
   }
   wireDropdown('modeDropdown', pickMode);
+
+  // ---- Difficulty button (top toolbar) -------------------------------------------
+  const LEVEL_INFO = { 1: { name: 'Easy', note: 'no fusion level' }, 2: { name: 'Moderate', note: '1 fusion level' }, 3: { name: 'Hard', note: 'up to 2 fusion levels' } };
+  // Switching level builds a new game at once. Returns false if the host backed out (so a settings control can reset itself).
+  function pickLevel(v) {
+    v = Math.round(Number(v)); if (!LEVEL_INFO[v]) return false;
+    if (S && S.difficulty === v) return true;
+    if (S && !S.solvedAt && S.fusionsDone > 0 && !confirm('Switch to Level ' + v + ' (' + LEVEL_INFO[v].name + ')? This starts a new game and the round in progress is lost.')) return false;
+    socket.emit('host:setRules', { difficulty: v });
+    return true;
+  }
+  wireDropdown('levelDropdown', pickLevel);
+  function renderLevelButton() {
+    const lv = S && LEVEL_INFO[S.difficulty] ? S.difficulty : 3, btn = $('levelDropdownBtn'), ic = $('levelDropdownIcon');
+    ic.textContent = String(lv); ic.className = 'diff-badge dl-' + lv;
+    btn.title = 'Difficulty: Level ' + lv + ' (' + LEVEL_INFO[lv].name + ') - tap to change'; btn.setAttribute('aria-label', btn.title);
+    document.querySelectorAll('#levelDropdownMenu li[data-value]').forEach((li) => { const on = Number(li.dataset.value) === lv; li.classList.toggle('dd-active', on); li.setAttribute('aria-selected', on); });
+  }
   function renderModeButton(phase) {
     const m = S ? S.mode : 'test', btn = $('modeDropdownBtn');
     $('modeDropdownIcon').textContent = MODES[m].icon;
@@ -1165,7 +1184,7 @@
   socket.on('leaderboard', (d) => { lb = d; renderLists(); });
   socket.on('state', (s) => {
     const first = !S; S = s;
-    renderBoard(); renderStatus(); renderPacks(); syncControls(); showPanelsOnce(); onTikTokState(); renderLegend();
+    renderBoard(); renderStatus(); renderPacks(); syncControls(); showPanelsOnce(); onTikTokState(); renderLegend(); renderLevelButton();
     $('playerGuessBar').hidden = s.mode !== 'offline';
     $('rawEventCount').textContent = s.rawEventCount;
     const ev = s.lastEvent; $('lastReceived').textContent = ev && ev.text ? ev.user + ': "' + ev.text + '" \u2192 ' + (ev.read ? 'read as ' + ev.read + ' (' + ev.kind + ')' : ev.kind) : '(none yet)';

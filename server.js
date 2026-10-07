@@ -568,7 +568,9 @@ io.on('connection', (socket) => {
     if (p.mismatchSeconds !== undefined) state.mismatchSeconds = clampSeconds(p.mismatchSeconds, TIMING.mismatch);
     if (p.peekSeconds !== undefined) state.peekSeconds = clampSeconds(p.peekSeconds, TIMING.peek);
     if (p.pointsPerGroup !== undefined) state.pointsPerGroup = Math.round(clampSeconds(p.pointsPerGroup, { min: 1, max: 100, def: 1 }));
+    const levelBefore = state.difficulty;
     applyRules(p);
+    if (state.difficulty !== levelBefore) newGame();
     if (typeof p.pack === 'string' && p.pack !== state.pack && (p.pack === 'mixed' || PACKS.some((x) => x.title === p.pack))) { state.pack = p.pack; newGame(); }
     if (typeof p.bots === 'boolean') setBots(p.bots && state.mode === 'test');
     broadcast();
@@ -593,7 +595,11 @@ io.on('connection', (socket) => {
     if (p.pointsPerGroup !== undefined) state.pointsPerGroup = Math.round(clampSeconds(p.pointsPerGroup, { min: 1, max: 100, def: 1 }));
     broadcast();
   }, true));
-  socket.on('host:setRules', safe((p) => { applyRules(p); broadcast(); }, true));
+  socket.on('host:setRules', safe((p) => {
+    const before = state.difficulty;
+    applyRules(p);
+    if (state.difficulty !== before) newGame(); else broadcast();   // a new difficulty level starts a new game at once
+  }, true));
   socket.on('host:setBots', safe((p) => setBots(!!p.enabled && state.mode === 'test'), true));
   socket.on('host:resetRoundScores', safe(() => { state.scores = {}; broadcast(); }, true));
   socket.on('host:resetAllTimeScores', safe(() => { state.allTimeScores = {}; saveAllTimeNow(); broadcast(); }, true));

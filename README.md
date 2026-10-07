@@ -112,7 +112,7 @@ the leaderboards stay on the screen. If the host used Reveal, the card says "Hos
 
 ## Difficulty levels (new in 8.5)
 
-Choose the level in **Settings > Game rules > Difficulty level**. It is used the next time a game is built (tap **New Game**). Every level has 8 groups per round and 24 tiles on screen at a time.
+Choose the level with the **difficulty button in the top toolbar** (the green, amber or red number next to the mode button) or in **Settings > Game rules > Difficulty level**. Changing the level starts a new game at once (it asks first if a round is in progress). Every level has 8 groups per round and 24 tiles on screen at a time.
 
 | Level | Name | What a round has | Tiles |
 | --- | --- | --- | --- |

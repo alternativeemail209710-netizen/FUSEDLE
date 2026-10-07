@@ -1919,3 +1919,10 @@ html .tile.stack .tile-text { flex: 1 1 0; width: 100%; min-height: 0; }
 
 /* difficulty: the legend (or one of its two items) is hidden when that fusion level cannot appear on the current board */
 .fused-legend[hidden], .fl-item[hidden] { display: none !important; }
+
+/* difficulty button in the top toolbar: 1 Easy = green, 2 Moderate = amber, 3 Hard = red */
+.diff-badge.dl-1 { background: #16a34a; }
+.diff-badge.dl-2 { background: #ca8a04; }
+.diff-badge.dl-3 { background: #dc2626; }
+.toolbar-dropdown-menu .diff-badge { width: 22px; height: 22px; font-size: 12px; }
+.toolbar-dropdown-menu .dd-head small { font-weight: 600; opacity: .8; }
