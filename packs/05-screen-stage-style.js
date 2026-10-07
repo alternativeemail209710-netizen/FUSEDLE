@@ -20,8 +20,8 @@ module.exports = ({ T, D }) => [
     two: [
       D('Superheroes', 'Hero Gear', 'Cape,Hero Mask,Utility Belt,Secret Identity', 'Sidekick Hero,Lair,Villain Plot'),
       D('Spy Films', 'Secret Agents', 'Gadget Pen,Fake Passport,Secret Code,Safe House', 'Double Agent,Cover Story,Briefcase Switch'),
-      D('Disaster Movies', 'Big Screen Chaos', 'Asteroid Strike,Alien Invasion,Tidal Wave Film,Zombie Outbreak', 'Last Survivor,Escape Plan,Countdown Clock'),
-      D('Western Props', 'Old West Film', 'Ten Gallon Hat,Six Shooter,Tumbleweed,Duel at Noon', 'Horse Chase,Bar Brawl,Sunset Ride'),
+      D('Disaster Movies', 'Big Screen Chaos', 'Asteroid Strike,Alien Invasion,Tidal Wave Film,Volcano Eruption', 'Last Survivor,Escape Plan,Countdown Clock'),
+      D('Western Props', 'Old West Film', 'Ten Gallon Hat,Six Shooter,Tumbleweed,Duel at Noon', 'Horse Chase,Saloon Door,Sunset Ride'),
     ] },
 
   { title: 'Stage & Dance',
@@ -76,8 +76,8 @@ module.exports = ({ T, D }) => [
       T('Podcasting', 'Audio Shows', 'Podcast Gear', 'Studio Mic,Pop Filter,Audio Interface,Boom Arm', 'Episode,Season,Listener Review', 'Subscribe Button,Theme Music,Download Count'),
       T('Advertising', 'Adverts', 'Advert Types', 'Billboard,Jingle Ad,Banner Ad,Flyer', 'Slogan,Logo,Brand', 'Campaign,Sponsor,Product Placement'),
       T('Cartoons', 'Cartoon Shows', 'Cartoon Features', 'Cartoon Character,Theme Song,Saturday Morning,Catchphrase', 'Animated Series,Pilot Episode,Season Finale', 'Mascot,Sticker Pack,Merch'),
-      T('Game Shows', 'Quiz Programmes', 'Quiz Features', 'Buzzer Round,Lifeline,Jackpot,Final Question', 'Host,Contestant,Studio Audience', 'Prize Money,Wheel Spin,Golden Buzzer'),
-      T('Soap Operas', 'Serial Drama', 'Drama Parts', 'Cliffhanger Episode,Love Triangle,Evil Twin,Wedding Day Drama', 'Pub Scene,Market Street,Cafe Set', 'Soap Theme Tune,Omnibus,Spoiler'),
+      T('Game Shows', 'Quiz Programmes', 'Quiz Features', 'Buzzer Round,Lifeline,Bonus Round,Final Question', 'Host,Contestant,Studio Audience', 'Prize Money,Wheel Spin,Golden Buzzer'),
+      T('Soap Operas', 'Serial Drama', 'Drama Parts', 'Cliffhanger Episode,Love Triangle,Evil Twin,Wedding Day Drama', 'Launderette Set,Market Street,Cafe Set', 'Soap Theme Tune,Omnibus,Spoiler'),
       T('Sports Broadcasting', 'Sports Coverage', 'Sports TV', 'Commentator,Replay,Slow Motion Replay,Pundit', 'Half-time Show,Scoreboard Graphic,Camera Angle', 'Highlights,Live Feed,Trophy Lift'),
       T('Magazines', 'Magazine Sections', 'Magazine Content', 'Cover Star,Horoscope,Agony Aunt,Problem Page', 'Glossy Pages,Advert Page,Feature Article', 'Subscription,Back Issue,Newsstand'),
       T('Photography', 'Photo Types', 'Photo Genres', 'Portrait Photo,Landscape Photo,Macro Photo,Action Shot', 'Aperture,Shutter Speed,ISO', 'Darkroom,Film Negative,Contact Sheet'),
@@ -86,7 +86,7 @@ module.exports = ({ T, D }) => [
     two: [
       D('Broadcast Voices', 'Broadcast Voice', 'Narrator Broadcast,Announcer,Voiceover Artist,Newsreader', 'Tannoy,Loudspeaker,Megaphone'),
       D('Binge Culture', 'Streaming Culture', 'Boxset Binge,Cliffhanger Night,Spoiler Alert,Series Marathon', 'Watch Party,Fan Theory,Recap'),
-      D('Documentaries', 'Documentary Types', 'Nature Documentary,True Crime,History Documentary,Sports Documentary', 'Voice of God,Archive Footage,Talking Head'),
+      D('Documentaries', 'Documentary Types', 'Nature Documentary,Travel Documentary,History Documentary,Sports Documentary', 'Voice of God,Archive Footage,Talking Head'),
       D('Comics Page', 'Newspaper Funnies', 'Comic Strip,Cartoonist,Caption Contest,Political Cartoon', 'Doodle,Sketch Pad,Ink Wash'),
     ] },
 

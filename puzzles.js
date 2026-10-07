@@ -78,7 +78,7 @@ const PACKS = [
   { title: 'Food & Drink',
     three: [
       T('Food Groups', 'Fruit', 'Citrus', 'Orange,Lemon,Lime,Grapefruit', 'Banana,Grape,Strawberry', 'Vegetables,Grains,Protein'),
-      T('Drinks', 'Hot Drinks', 'Coffee', 'Latte,Espresso,Mocha,Cappuccino', 'Tea,Hot Chocolate,Mulled Wine', 'Juice,Soda,Lemonade'),
+      T('Drinks', 'Hot Drinks', 'Coffee', 'Latte,Espresso,Mocha,Cappuccino', 'Tea,Hot Chocolate,Hot Squash', 'Juice,Soda,Lemonade'),
       T('Supermarket Aisles', 'Dairy Foods', 'Cheese', 'Cheddar,Brie,Gouda,Feta', 'Milk,Butter,Yoghurt', 'Frozen Food,Tinned Food,Fresh Produce'),
       T('World Cuisine', 'Italian', 'Pasta', 'Penne,Fusilli,Spaghetti,Ravioli', 'Pizza,Risotto,Gelato', 'Japanese,Mexican,Indian'),
       T('Sweet Treats', 'Baked Goods', 'Cake', 'Sponge,Cheesecake,Cupcake,Brownie', 'Pie,Muffin,Scone', 'Ice Cream,Lollipop,Jelly'),
@@ -252,7 +252,10 @@ function measure(root) {
   const levels = walk(root);
   return { levels, leaves: words.length, fusions: names.length, words, names };
 }
-const keysOf = (p) => p.words.concat(p.names).map(lc);
+// Fairness: two tiles that are the same word apart from plural / spacing / hyphens ("Rocket" and "Rockets", "Camp Fire" and "Campfire",
+// "Slide Show" and "Slideshow") would look identical to a viewer, so a round never contains both. This key makes them equal.
+const twinKey = (w) => lc(w).replace(/[^a-z0-9]/g, '').replace(/ies$/, 'y').replace(/(es|s)$/, '');
+const keysOf = (p) => p.words.concat(p.names).map(twinKey);
 const shuffled = (arr) => {
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
@@ -376,34 +379,35 @@ function compose(pack, recent, seen, mix) {
   return { title: packsUsed.size === 1 ? picks[0].pack : 'Mixed Board', roots: shuffled(picks).map((p) => p.root) };
 }
 
-// Levels 4 to 7: every group is a ladder cut to `mix.deep` fusions. Words may not repeat anywhere on the board.
+// Levels 4 to 7: every group is a ladder cut to `mix.deep` fusions.
+// FAIRNESS: a round takes at most one chain per theme (8 themes = 8 groups), so no two groups on a board share a topic and no tile can
+// sensibly fit two groups. With fewer groups per round, a random selection of themes is used.
 function composeDeep(pack, recent, seen, mix) {
   const f = mix.deep, count = mix.deepCount;
   const all = DEEP_POOL[f] || [];
-  const attempt = (themeOnly, avoidRecent) => {
-    const list = themeOnly ? all.filter((c) => c.pack === themeOnly) : all;
+  const themes = [...new Set(all.map((c) => c.pack))];
+  const attempt = (avoidRecent) => {
     for (let i = 0; i < 80; i++) {
-      const used = new Set(), picked = new Set(), out = [];
-      for (const c of shuffled(list)) {
-        if (out.length === count) break;
-        if (picked.has(c.root.name)) continue;
-        if (avoidRecent && recent.has(c.root.name)) continue;
-        if (!keysOf(c).every((x) => !used.has(x))) continue;
-        out.push(c); picked.add(c.root.name); keysOf(c).forEach((x) => used.add(x));
+      const used = new Set(), out = [];
+      // round-robin over shuffled themes (a theme is only used twice if the host asked for more groups than there are themes)
+      const order = [];
+      for (let r = 0; order.length < count && r < count; r++) shuffled(themes).forEach((t) => { if (order.length < count) order.push(t); });
+      let ok = true;
+      for (const theme of order) {
+        const cands = shuffled(all.filter((c) => c.pack === theme && !out.includes(c) && !(avoidRecent && recent.has(c.root.name))));
+        const pick = cands.find((c) => keysOf(c).every((x) => !used.has(x)));
+        if (!pick) { ok = false; break; }
+        out.push(pick); keysOf(pick).forEach((x) => used.add(x));
       }
-      if (out.length !== count) continue;
+      if (!ok || out.length !== count) continue;
       if (seen.has(boardSig(out.map((p) => p.root)))) continue;
       return out;
     }
     return null;
   };
-  // A theme is used on its own only when it has enough ladders for a whole round; otherwise the round mixes every theme.
-  const themeOnly = pack && pack !== 'mixed' && all.filter((c) => c.pack === pack).length >= count ? pack : null;
-  let picks = (themeOnly && (attempt(themeOnly, true) || attempt(themeOnly, false))) || attempt(null, true) || attempt(null, false);
-  if (!picks) { picks = attempt(null, false) || (function () { const keep = new Set(); return attempt(null, false); })(); }
+  const picks = attempt(true) || attempt(false);
   if (!picks) throw new Error('Could not build a deep board for level ' + f);
-  const themes = new Set(picks.map((p) => p.pack));
-  return { title: themes.size === 1 ? picks[0].pack : 'Mixed Board', roots: shuffled(picks).map((p) => p.root) };
+  return { title: 'Mixed Board', roots: shuffled(picks).map((p) => p.root) };
 }
 
 function validate() {
@@ -428,7 +432,7 @@ function validate() {
   // deep ladders: 4 words in the first line, 3 in each later line, 7 lines, every word and name unique across all ladders
   // (A round on Levels 4 to 7 only ever holds deep ladders, so the unique-word rule applies among the ladders, not against the normal packs.)
   const deepKeys = new Map();
-  if (LADDERS.length < GROUPS_PER_BOARD) problems.push('At least ' + GROUPS_PER_BOARD + ' deep ladders are needed for Levels 4 to 7 (found ' + LADDERS.length + ')');
+  if (new Set(LADDERS.map((l) => l.theme)).size < GROUPS_PER_BOARD) problems.push('Levels 4 to 7 need chains from at least ' + GROUPS_PER_BOARD + ' different themes (found ' + new Set(LADDERS.map((l) => l.theme)).size + ')');
   LADDERS.forEach((l, idx) => {
     const label = 'Deep ladder ' + (idx + 1) + ' (' + (l.lines[0] || '?') + ')';
     if (l.lines.length !== DEEP_MAX) { problems.push(label + ' must have ' + DEEP_MAX + ' lines but has ' + l.lines.length); return; }
@@ -438,7 +442,7 @@ function validate() {
       const name = line.slice(0, at).trim(), words = W(line.slice(at + 1));
       if (words.length !== (i === 0 ? 4 : 3) || words.some((w) => !w)) problems.push(label + ': "' + name + '" needs ' + (i === 0 ? 4 : 3) + ' words but has ' + words.length);
       [name].concat(words).forEach((x) => {
-        const k = lc(x);
+        const k = twinKey(x);   // also catches plural / spacing twins
         if (deepKeys.has(k) && deepKeys.get(k) !== l.lines[0]) problems.push('"' + x + '" is used in both "' + deepKeys.get(k) + '" and deep ladder "' + l.lines[0] + '"');
         deepKeys.set(k, l.lines[0]);
       });

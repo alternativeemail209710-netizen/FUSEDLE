@@ -2,13 +2,21 @@
 
 This folder is the complete, finished app. You do not need to edit any code.
 
+> **v8.8 - content audit: suitability and fairness**
+> - **Deep chains rewritten.** All 40 chains were rewritten so every step is a clear "kind of / part of / belongs to" link, with no jumps between unrelated topics. They are family friendly (no alcohol, gambling, politics, religion, violence or crime).
+> - **One chain per theme per round** on Levels 4 to 7 (see above), which removes any chance of two groups on the same board overlapping in topic.
+> - **Look-alike tiles can no longer share a round (all levels).** 58 pairs in the existing packs differ only by a plural, spacing or hyphen (for example Rocket / Rockets, Camp Fire / Campfire, Slide Show / Slideshow). A viewer could not tell which group such tiles belong to, so the round builder now treats them as the same word and never puts both on one board. The start-up check also rejects such twins inside the deep chains.
+> - **Existing packs: 24 items replaced** that were not suitable for a TikTok LIVE audience: alcohol (Mulled Wine, Wine List, Champagne Cork, Pub Meals, Pub Scene, Root Beer), gambling (Poker, Jackpot, Lottery Ticket, Gambler), smoking (Smoking Pipe) and graphic violence or gore (Murder Hole, Boiling Oil, Witch Hunt, Gallows, Battle Axe, Zombie Outbreak, Bar Brawl, Deathmatch, Battle Royale, Ray Gun, True Crime, Crime Psychology, Dead Letter Box). Each was swapped for a harmless word that fits the same group.
+> - **Left as they are (your decision):** whole packs on sensitive topics were not removed because that changes your game's content: *Politics & Government*, *World Beliefs* (religion), *Law & Order* (crime and prison) and the war topics in *Modern History*. They are written neutrally and educationally, but if you stream to a wide or young audience you can delete those pack files from `packs/` (and the pack lines in `puzzles.js` if any).
+> - **Rounds per level** (run `npm run count-rounds`): Level 1 about 1.4 quintillion, Level 2 about 1.4 quintillion, Level 3 about 29.7 quintillion (all themes mixed), Levels 4, 5, 6 and 7: exactly 390,625 each (5 chains in each of 8 themes). The game never repeats a board until all have been played.
+
 > **v8.7 - four new difficulty levels: Very Hard, Extreme, Extremely Hard, Insane**
 > - **Level 4 (Very Hard):** 3 fusion levels. **Level 5 (Extreme):** 4 fusion levels. **Level 6 (Extremely Hard):** 5 fusion levels. **Level 7 (Insane):** 6 fusion levels. Every level still has **8 groups per round** and **24 tiles on screen at a time**.
 > - A "fusion level" is a fused tile that is made on the way to the finished group (Hard = up to 2, as before). So a Level 4 group is fused 4 times (13 tiles), Level 5 five times (16 tiles), Level 6 six times (19 tiles) and Level 7 seven times (22 tiles). A full round has 104 / 128 / 152 / 176 tiles.
 > - **Pick the level** with the difficulty button in the top toolbar (now 1 to 7: green, lime, amber, orange, red, dark red, purple) or in **Settings > Game rules > Difficulty level**. Changing the level starts a new game at once.
 > - **Legends explain every level.** The legend row under the floating guesses now has a heading for the current difficulty (for example "Level 6 (Extremely Hard): 5 fusion levels") and one colour chip for **each fusion level that can appear on that difficulty** (none on Easy, 1 on Moderate, up to 6 on Insane). Each chip says how many times the tile has been fused and whether it can fuse again or only needs 3 more tiles to finish the group. With 3, 5 or 6 chips the legend switches to a compact 3-column layout so it still fits on a phone.
 > - **Six fused-tile colours.** Settings > *Fused tile colours* now has Levels 1 to 6 (defaults: Teal, Burgundy, Royal Blue, Orange, Violet, Lime). Levels 2 to 6 also get a different inner ring (solid, dashed, dotted, double, thick double) so levels differ by more than colour. *Tile text* (words inside fused tiles) and *Fused colour legend* (your own legend texts) have a switch / box for every level 1 to 6. Colours, texts and switches are saved on the device and included in Export / Import settings.
-> - **New puzzle content: 40 deep chains** in the new `packs-deep/` folder (`01-deep-chains.js`). Each chain is a ladder of 7 fusions; Level 4 uses its bottom 4 fusions, Level 5 the bottom 5, Level 6 the bottom 6 and Level 7 all 7. Deep rounds always pick 8 different chains with no repeated word, give up to about 76 million different boards, and never repeat a board until all have been played. Add your own by copying a chain (see "Adding deep chains" below). The Puzzle Pack choice does not apply to Levels 4 to 7 (no single theme has 8 chains), so those rounds are always "Mixed Board".
+> - **New puzzle content: 40 deep chains** in the new `packs-deep/` folder (`01-deep-chains.js`): 8 themes (Transport, Animals, Food, Music, Sport, Earth & Space, Body & Mind, Home) x 5 chains. Each chain is a ladder of 7 fusions; Level 4 uses its bottom 4 fusions, Level 5 the bottom 5, Level 6 the bottom 6 and Level 7 all 7. **A deep round uses exactly one chain from each theme**, so the 8 groups on a board are always about 8 different things. The Puzzle Pack choice does not apply to Levels 4 to 7 (those rounds are always "Mixed Board").
 > - Files changed: `puzzles.js`, `server.js`, `public/client.js`, `public/index.html`, `public/style.css`, `package.json`, `README.md`, `scripts/count-rounds.js`; new folder `packs-deep/`. Levels 1 to 3 and everything else work exactly as before.
 
 > **v8.3 - bigger tile numbers, fused-colour legends, live chat box**
@@ -215,18 +223,18 @@ so that a round can be built from a single theme. The mix for the round is `BOAR
 (`two` = number of 2-level groups, `three` = number of 3-level groups; they must add up to 8). The 24-tile screen size is `COLS` and `ROWS` at the top of `server.js`.
 
 ## Adding deep chains (Levels 4 to 7)
-Create a new `.js` file in `packs-deep/` (or add lines to `01-deep-chains.js`). A chain is 7 lines read from the bottom up: the first line has **4 words**, every later line has **3 words** and the previous line's tile fuses with them:
+Create a new `.js` file in `packs-deep/` (or add lines to `01-deep-chains.js`). A chain is 7 lines read from the bottom up: the first line has **4 words**, every later line has **3 words** and the previous line's tile fuses with them. The first argument is the **theme**; a round takes one chain per theme, so keep the same 8 theme names (or add more themes, but you need at least 8):
 ```js
-L('Getting Around',
+L('Transport',
   'Supercar: Ferrari,Lamborghini,McLaren,Bugatti',      // 4 words -> "Supercar"
-  'Passenger Car: Saloon,Hatchback,Estate',              // "Supercar" + 3 words -> "Passenger Car"
-  'Motor Vehicle: Lorry,Motorbike,Minibus',              // ... -> "Motor Vehicle"
-  'Wheeled Vehicle: Skateboard,Pushchair,Wheelchair',
-  'Land Travel: Hiking,Horse Riding,Dog Sledding',
-  'Journey: Sea Voyage,Air Flight,Space Mission',
-  'Travel: Tourism,Commuting,Migration')                 // finished group on Level 7
+  'Car: Saloon,Hatchback,Estate',                        // "Supercar" + 3 words -> "Car"
+  'Road Vehicle: Bus,Lorry,Motorbike',                   // ... -> "Road Vehicle"
+  'Land Vehicle: Train,Tractor,Sledge',
+  'Vehicle: Hovercraft,Aeroplane,Spacecraft',
+  'Transport: Road,Station,Timetable',
+  'Travel: Passport,Luggage,Sightseeing')                // finished group on Level 7
 ```
-Every step must be a plain "kind of / part of / example of" link, and every word and name must be unique across all chains (the game checks this at start-up). You need at least 8 chains. Each level is cut from the bottom of the chain: Level 4 stops at the 4th line ("Wheeled Vehicle"), Level 5 at the 5th, Level 6 at the 6th and Level 7 uses all 7.
+Every step must be a plain "kind of / part of / belongs to" link where all 4 pieces clearly fit the new name. Every word and name must be unique across all chains, plurals included (the game checks this at start-up). Each level is cut from the bottom of the chain: Level 4 stops at the 4th line ("Land Vehicle"), Level 5 at the 5th, Level 6 at the 6th and Level 7 uses all 7. The number of deep rounds is the number of chains in each theme multiplied together.
 
 ## Keep it awake while you stream
 Render's free plan sleeps after about 15 minutes with no visitors, which drops the TikTok connection.

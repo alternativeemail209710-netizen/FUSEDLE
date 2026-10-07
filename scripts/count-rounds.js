@@ -84,11 +84,32 @@ console.log('  Original 8 themes, one theme per round (exact):  ' + fmt(oldSingl
 console.log('\n  Brand-new rounds counted from the new themes alone: at least ' + fmt(newSingle) + ' (target: 50,000)');
 console.log('  The game never repeats an exact board until every possible board has been played.');
 
-// ---- Levels 4 to 7 (deep chains) ----
-(function deepSummary() {
+// ---- ALL 7 LEVELS: how many different rounds each difficulty level can build ----
+// Level 1 = 8 innermost groups, Level 2 = 8 one-fusion-level groups, Level 3 = 4 + 4 (counted above),
+// Levels 4 to 7 = one deep chain from each of the 8 themes (exact count = chains per theme multiplied together).
+(function allLevels() {
   const { LADDERS } = require('../puzzles');
-  const n = LADDERS.length;
-  console.log('\nLevels 4 to 7 (Very Hard, Extreme, Extremely Hard, Insane)');
-  console.log('  Deep chains available: ' + n + ' (a round uses 8 of them with no repeated word).');
-  console.log('  Upper limit of different rounds per level: ' + fmt(comb(n, 8)) + ' (chains that share a word are never used in the same round, so the real number is a little lower).');
+  let seed = 987654321; const rnd = () => { seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5; return ((seed >>> 0) / 4294967296); };
+  const SAMPLES = 400000;
+  // pick 8 pieces from a list of pieces; clash = a shared word / group name (or a plural twin)
+  function estimate(pieces) {
+    const keys = pieces.map((c) => new Set(keysOf(c)));
+    let good = 0;
+    for (let t = 0; t < SAMPLES; t++) {
+      const pick = new Set(); while (pick.size < 8) pick.add(Math.floor(rnd() * pieces.length));
+      const used = new Set(); let ok = true;
+      for (const i of pick) { for (const x of keys[i]) { if (used.has(x)) { ok = false; break; } used.add(x); } if (!ok) break; }
+      if (ok) good++;
+    }
+    return comb(pieces.length, 8) * (good / SAMPLES);
+  }
+  const all1 = [].concat(...PACKS.map((p) => POOL[p.title].d1)), all2 = [].concat(...PACKS.map((p) => POOL[p.title].d2));
+  console.log('\nROUNDS PER DIFFICULTY LEVEL (all themes mixed)');
+  console.log('  Level 1 Easy             ~ ' + fmt(estimate(all1)) + '   (from ' + all1.length + ' groups, 8 per round)');
+  console.log('  Level 2 Moderate         ~ ' + fmt(estimate(all2)) + '   (from ' + all2.length + ' groups, 8 per round)');
+  const d3 = [].concat(...PACKS.map((p) => POOL[p.title].d3)), d2b = all2;
+  console.log('  Level 3 Hard             ~ ' + fmt(estimateMixed(PACKS.map((p) => p.title), 400000)) + '   (4 three-level + 4 two-level groups)');
+  const themes = {}; LADDERS.forEach((l) => { themes[l.theme] = (themes[l.theme] || 0) + 1; });
+  const deepTotal = Object.values(themes).reduce((a, b) => a * b, 1);
+  ['Level 4 Very Hard      ', 'Level 5 Extreme        ', 'Level 6 Extremely Hard ', 'Level 7 Insane         '].forEach((n) => console.log('  ' + n + '   = ' + fmt(deepTotal) + '   (exact: ' + Object.values(themes).join(' x ') + ' chains over ' + Object.keys(themes).length + ' themes)'));
 })();

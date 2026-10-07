@@ -34,7 +34,7 @@ module.exports = ({ T, D }) => [
       T('Online Learning', 'E-Learning', 'Online Classroom', 'Webinar,Video Lesson,Online Quiz,Forum', 'Podcast Lesson,E-Book,Online Course', 'Certificate,Tutor Chat,Class Login'),
       T('Search Engines', 'Searching', 'Search Steps', 'Keyword,Query,Result List,Snippet', 'Bookmark,History,Tab', 'Autocomplete,Filter Results,Advert'),
       T('Messaging', 'Chat', 'Chat Tools', 'Emoji,Sticker,Voice Note,GIF Reply', 'Group Chat,Read Receipt,Typing Dots', 'Emoticon,Acronym,Meme'),
-      T('Online Gaming', 'Multiplayer', 'Game Modes', 'Co-op,Battle Royale,Deathmatch,Race Mode', 'Lobby,Server Ping,Respawn', 'Game Streamer,Online Leaderboard,Esports'),
+      T('Online Gaming', 'Multiplayer', 'Game Modes', 'Co-op,Last Team Standing,Team Match,Race Mode', 'Lobby,Server Ping,Respawn', 'Game Streamer,Online Leaderboard,Esports'),
       T('Video Calls', 'Remote Work', 'Call Features', 'Mute,Screen Share,Background Blur,Waiting Room', 'Headset Mic,Ring Light,Laptop Stand', 'Home Office,Commute Free,Time Zone Gap'),
       T('Digital Money', 'Online Payments', 'Payment Methods', 'Contactless,Card Reader,Mobile Wallet,QR Payment', 'Bitcoin,Blockchain,Crypto Wallet', 'Pay Link,Online Banking,Bank Transfer'),
       T('Content Creators', 'Influencers', 'Creator Skills', 'Vlog,Podcast Episode,Livestream,Tutorial Video', 'Subscriber,Sponsorship,Channel', 'Thumbnail,Editing Suite,Upload Schedule'),
@@ -59,7 +59,7 @@ module.exports = ({ T, D }) => [
       T('Future Tech', 'Tomorrow World', 'Future Transport', 'Flying Car,Hyperloop,Jetpack,Space Elevator', 'Hologram,Teleporter,Time Capsule', 'Smart City,Vertical Farm,Moon Base'),
       T('Voice Tech', 'Speech Tech', 'Voice Tools', 'Dictation,Text to Speech,Translation App,Voice Search', 'Wake Word,Speech Bubble,Subtitle Maker', 'Noise Cancelling,Echo Removal,Auto Caption'),
       T('Maker Space', '3D Making', 'Maker Tools', 'Laser Cutter,Soldering Iron,CNC Machine,Filament', 'Arduino,Raspberry Pi,Circuit Kit', 'Prototype,Blueprint,Invention'),
-      T('Sci-Fi Tech', 'Movie Gadgets', 'Laser Gadgets', 'Ray Gun,Laser Sword,Force Field,Tractor Beam', 'Spaceship Bridge,Warp Core,Cloaking Device', 'Robot Butler,Clone,Time Loop'),
+      T('Sci-Fi Tech', 'Movie Gadgets', 'Laser Gadgets', 'Hover Board,Laser Sword,Force Field,Tractor Beam', 'Spaceship Bridge,Warp Core,Cloaking Device', 'Robot Butler,Clone,Time Loop'),
     ],
     two: [
       D('Machine Vision', 'Camera Intelligence', 'Face Unlock,Barcode Reader,Number Plate Reader,Motion Sensor', 'Security Camera,Scanner,Night Vision'),
