@@ -19,7 +19,7 @@ process.on('uncaughtException', (err) => console.error('[FATAL-CAUGHT] uncaughtE
 process.on('unhandledRejection', (reason) => console.error('[FATAL-CAUGHT] unhandledRejection:', reason));
 
 const createTikTokConnector = require('./tiktok-connector');
-const { PACKS, validate: validatePuzzles, compose: composeBoard, boardSig, BOARD } = require('./puzzles');
+const { PACKS, validate: validatePuzzles, compose: composeBoard, boardSig, BOARD, LEVELS, mixFor } = require('./puzzles');
 { const problems = validatePuzzles(); if (problems.length) { console.error('[puzzles] PROBLEMS:\n  ' + problems.join('\n  ')); process.exit(1); } }
 
 const DEFAULT_TIKTOK_USERNAME = String(process.env.TIKTOK_USERNAME || '').replace('@', '').trim();
@@ -40,7 +40,8 @@ app.use(express.static(path.join(__dirname, 'public'), {
 // ---------------------------------------------------------------------------
 // Settings tables
 // ---------------------------------------------------------------------------
-// ONE fixed build, no difficulty levels: every round has 8 independent groups (see BOARD in puzzles.js).
+// Three difficulty levels (Settings > Game rules): 1 Easy (no fusion level), 2 Moderate (1 fusion level), 3 Hard (up to 2 fusion levels, the original mix).
+// Every round has 8 independent groups (see LEVELS and BOARD in puzzles.js).
 // Only SHOWN tiles (4 columns x 6 rows = 24) are on screen at any moment. When tiles are fused, the freed spaces are
 // refilled from the waiting tiles until every tile of the round has appeared and every group is discovered.
 const COLS = 4, ROWS = 6, SHOWN = COLS * ROWS;
@@ -70,7 +71,7 @@ const state = {
   autoNext: true, autoNextDelaySeconds: TIMING.autoNext.def, autoNextAt: 0,
   mismatchSeconds: TIMING.mismatch.def, peekSeconds: TIMING.peek.def, pointsPerGroup: 1,
   // Game rules the host can change in Settings > Game rules (see applyRules)
-  comboEnabled: true, comboMax: 4, showNear: true, finalBonus: 0, guessCooldown: 0, groupsPerRound: BOARD.two + BOARD.three, twoLevel: BOARD.two,
+  comboEnabled: true, comboMax: 4, showNear: true, finalBonus: 0, guessCooldown: 0, groupsPerRound: BOARD.two + BOARD.three, twoLevel: BOARD.two, difficulty: 3,
   title: '', nodes: [], tiles: [], queues: {}, seq: [], nextN: 1, completed: [], rootsTotal: 0, fusionsDone: 0, lastFusion: null, hint: '', peeking: false,
   startedAt: 0, solvedAt: 0,
   scores: {}, allTimeScores: {}, rawEventCount: 0, lastEvent: null,
@@ -120,8 +121,8 @@ function rememberBoard(sig) {
 }
 
 function pickTrees(pack) {
-  const groups = Math.min(8, Math.max(1, state.groupsPerRound)), two = Math.min(groups, Math.max(0, state.twoLevel));
-  const b = composeBoard(pack, new Set(recentGroups), playedSet, { two, three: groups - two });
+  const groups = Math.min(8, Math.max(1, state.groupsPerRound));
+  const b = composeBoard(pack, new Set(recentGroups), playedSet, mixFor(state.difficulty, groups, state.twoLevel));
   rememberBoard(boardSig(b.roots));
   b.roots.forEach((r) => { recentGroups.push(r.name); });
   while (recentGroups.length > 24) recentGroups.shift();
@@ -253,7 +254,7 @@ function publicState() {
     autoNext: state.autoNext, autoNextDelaySeconds: state.autoNextDelaySeconds, autoNextAt: state.autoNextAt,
     mismatchSeconds: state.mismatchSeconds, peekSeconds: state.peekSeconds, pointsPerGroup: state.pointsPerGroup,
     comboEnabled: state.comboEnabled, comboMax: state.comboMax, showNear: state.showNear, finalBonus: state.finalBonus,
-    guessCooldown: state.guessCooldown, groupsPerRound: state.groupsPerRound, twoLevel: state.twoLevel,
+    guessCooldown: state.guessCooldown, groupsPerRound: state.groupsPerRound, twoLevel: state.twoLevel, difficulty: state.difficulty, difficultyName: LEVELS[state.difficulty].name,
     rawEventCount: state.rawEventCount, lastEvent: state.lastEvent, bots: state.bots,
     tiktok: state.tiktok, configured: state.configured,
   };
@@ -478,6 +479,7 @@ function applyRules(p) {
   if (p.guessCooldown !== undefined) state.guessCooldown = clampSeconds(p.guessCooldown, { min: 0, max: 30, def: 0 });
   if (p.groupsPerRound !== undefined) state.groupsPerRound = int(p.groupsPerRound, 1, 8, 8);
   if (p.twoLevel !== undefined) state.twoLevel = int(p.twoLevel, 0, 8, 4);
+  if (p.difficulty !== undefined) state.difficulty = int(p.difficulty, 1, 3, 3);
   state.twoLevel = Math.min(state.twoLevel, state.groupsPerRound);
 }
 function setBots(enabled) {

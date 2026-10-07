@@ -1916,3 +1916,6 @@ html.hide-chat .chat-box { display: none !important; }
 html .tile-grid .tile.fit.stack { flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 3px; padding: 3px 5px 3px 5px; }
 html .app-shell .tile.stack i { position: relative; left: auto; top: auto; transform: none; align-self: flex-start; }
 html .tile.stack .tile-text { flex: 1 1 0; width: 100%; min-height: 0; }
+
+/* difficulty: the legend (or one of its two items) is hidden when that fusion level cannot appear on the current board */
+.fused-legend[hidden], .fl-item[hidden] { display: none !important; }

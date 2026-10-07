@@ -703,12 +703,20 @@
         <h3 class="hints-title">&#127918; Game rules</h3>
         <p class="hint">Scoring rules work immediately and are shared with every screen. The round shape is used the next time a game is built (tap <b>New Game</b>).</p>
         <div class="timing-grid">
+          <label class="timing-field" style="grid-column: 1 / -1;">
+            Difficulty level
+            <select id="rulesLevel">
+              <option value="1">Level 1 - Easy (no fusion level)</option>
+              <option value="2">Level 2 - Moderate (1 fusion level)</option>
+              <option value="3">Level 3 - Hard (up to 2 fusion levels)</option>
+            </select>
+          </label>
           <label class="timing-field">
             Groups per round (1-8)
             <input type="number" id="rulesGroups" min="1" max="8" step="1">
           </label>
-          <label class="timing-field">
-            How many are 2-level
+          <label class="timing-field" id="rulesTwoField">
+            How many are 2-level (Hard only)
             <input type="number" id="rulesTwo" min="0" max="8" step="1">
           </label>
           <label class="timing-field">
@@ -786,7 +794,7 @@
       <div class="legend-box-full">
         <strong class="how-to-play-title">&#128218; How To Play (Live Game)</strong>
         <ol class="how-to-play-list">
-          <li><span class="htp-icon">&#9997;&#65039;</span><span>Type <b>four tile numbers</b> in chat, e.g. <span class="mono highlight">2 5 8 12</span>. Every round has <b>8 separate groups</b> (some 2-level, some 3-level fusions). Only <b>24 tiles</b> show at a time; when tiles fuse, <b>new tiles drop into the free spaces</b> until every group is found</span></li>
+          <li><span class="htp-icon">&#9997;&#65039;</span><span>Type <b>four tile numbers</b> in chat, e.g. <span class="mono highlight">2 5 8 12</span>. Every round has <b>8 separate groups</b> (Hard: some 2-level, some 3-level fusions. Moderate: 1 fusion level. Easy: no fusion level, one fusion per group). Only <b>24 tiles</b> show at a time; when tiles fuse, <b>new tiles drop into the free spaces</b> until every group is found</span></li>
           <li><span class="htp-icon">&#129513;</span><span>If all four share a link (Ford, Toyota, Honda, BMW), they are <b>destroyed</b> and <b>fuse into one new tile</b> (&ldquo;Car&rdquo;) with a brand-new number</span></li>
           <li><span class="htp-icon">&#9889;</span><span><b>Fuse again:</b> the new &ldquo;Car&rdquo; tile can now join Boat, Plane and Train to fuse into the final group &ldquo;Transportation&rdquo;. A 3-level group goes one step further: the new tile fuses into another new tile, which then fuses into the final group</span></li>
           <li><span class="htp-icon">&#128064;</span><span>Three of four right shows <b>&ldquo;one away&rdquo;</b>. Anything else is marked wrong</span></li>

@@ -110,6 +110,18 @@ the leaderboards stay on the screen. If the host used Reveal, the card says "Hos
 > **Before you go live:** in the TikTok app open LIVE settings, then **Comments > Filtered**, and turn **OFF**
 > the **Spam filter** and **Potentially unkind words**. TikTok can quietly hide short number comments.
 
+## Difficulty levels (new in 8.5)
+
+Choose the level in **Settings > Game rules > Difficulty level**. It is used the next time a game is built (tap **New Game**). Every level has 8 groups per round and 24 tiles on screen at a time.
+
+| Level | Name | What a round has | Tiles |
+| --- | --- | --- | --- |
+| 1 | Easy | No fusion level: 8 groups of 4 words each, one fusion finishes a group | 32 |
+| 2 | Moderate | 1 fusion level: 8 groups, each makes one fused tile that then finishes the group | 56 |
+| 3 | Hard | Up to 2 fusion levels: 4 groups with 1 and 4 groups with 2 (the original game, still the default) | 68 |
+
+The colour legends only show the fusion levels that can appear: none on Easy, "fused once" on Moderate, both on Hard. Easy and Moderate rounds are cut from the groups already in the packs, so adding your own puzzles still works the same way.
+
 ## What is new in 8.4
 
 - **Legends** now sit in their own row directly under the floating guesses, above the game, so they never overlap anything.

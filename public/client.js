@@ -485,11 +485,12 @@
   document.addEventListener('pointerdown', () => { if (displayPrefs.sound) audio(); }, { passive: true });
 
   // ---- Game rules (shared by every screen; the server keeps them) ----
-  const RULE_DEFAULTS = { groupsPerRound: 8, twoLevel: 4, comboEnabled: true, comboMax: 4, showNear: true, finalBonus: 0, guessCooldown: 0 };
+  const RULE_DEFAULTS = { difficulty: 3, groupsPerRound: 8, twoLevel: 4, comboEnabled: true, comboMax: 4, showNear: true, finalBonus: 0, guessCooldown: 0 };
   function rulesPayload() {
     const num = (id, d) => { const v = parseFloat($(id).value); return Number.isFinite(v) ? v : d; };
     const groups = clampNum(Math.round(num('rulesGroups', 8)), 1, 8);
     return {
+      difficulty: clampNum(Math.round(num('rulesLevel', 3)), 1, 3),
       groupsPerRound: groups, twoLevel: clampNum(Math.round(num('rulesTwo', 4)), 0, groups),
       comboEnabled: $('comboToggle').checked, comboMax: clampNum(Math.round(num('comboMaxInput', 4)), 1, 10),
       showNear: $('nearToggle').checked, finalBonus: clampNum(Math.round(num('finalBonusInput', 0)), 0, 100),
@@ -497,15 +498,21 @@
     };
   }
   function updateRulesShape() {
-    const r = rulesPayload(), three = r.groupsPerRound - r.twoLevel, tiles = r.twoLevel * 7 + three * 10, fusions = r.twoLevel * 2 + three * 3;
-    const el = $('rulesShape'); if (el) el.textContent = 'Next game: ' + r.groupsPerRound + ' groups (' + r.twoLevel + ' two-level + ' + three + ' three-level) = ' + tiles + ' tiles and ' + fusions + ' fusions.';
+    const r = rulesPayload(), g = r.groupsPerRound;
+    const two = r.difficulty === 3 ? r.twoLevel : 0, three = r.difficulty === 3 ? g - r.twoLevel : 0;
+    const tw = $('rulesTwoField'); if (tw) tw.hidden = r.difficulty !== 3;
+    let txt;
+    if (r.difficulty === 1) txt = 'Level 1 (Easy, no fusion level), next game: ' + g + ' groups of 4 words = ' + (g * 4) + ' tiles and ' + g + ' fusions.';
+    else if (r.difficulty === 2) txt = 'Level 2 (Moderate, 1 fusion level), next game: ' + g + ' groups, each with one fused tile on the way = ' + (g * 7) + ' tiles and ' + (g * 2) + ' fusions.';
+    else txt = 'Level 3 (Hard, up to 2 fusion levels), next game: ' + g + ' groups (' + two + ' two-level + ' + three + ' three-level) = ' + (two * 7 + three * 10) + ' tiles and ' + (two * 2 + three * 3) + ' fusions.';
+    const el = $('rulesShape'); if (el) el.textContent = txt;
   }
-  ['rulesGroups', 'rulesTwo', 'comboMaxInput', 'finalBonusInput', 'cooldownInput', 'comboToggle', 'nearToggle'].forEach((id) => {
+  ['rulesLevel', 'rulesGroups', 'rulesTwo', 'comboMaxInput', 'finalBonusInput', 'cooldownInput', 'comboToggle', 'nearToggle'].forEach((id) => {
     $(id).addEventListener('input', updateRulesShape);
     $(id).addEventListener('change', () => { updateRulesShape(); socket.emit('host:setRules', rulesPayload()); });
   });
   function fillRules(r) {
-    $('rulesGroups').value = r.groupsPerRound; $('rulesTwo').value = r.twoLevel; $('comboToggle').checked = !!r.comboEnabled;
+    $('rulesLevel').value = String(r.difficulty || 3); $('rulesGroups').value = r.groupsPerRound; $('rulesTwo').value = r.twoLevel; $('comboToggle').checked = !!r.comboEnabled;
     $('comboMaxInput').value = r.comboMax; $('nearToggle').checked = !!r.showNear; $('finalBonusInput').value = r.finalBonus; $('cooldownInput').value = r.guessCooldown;
     updateRulesShape();
   }
@@ -1072,7 +1079,7 @@
     $('autoNextToggle').checked = S.autoNext; $('botsToggle').checked = S.bots;
     $('autoNextDelayInput').value = S.autoNextDelaySeconds; $('mismatchDelayInput').value = S.mismatchSeconds;
     $('peekDurationInput').value = S.peekSeconds; $('pointsInput').value = S.pointsPerGroup;
-    fillRules({ groupsPerRound: S.groupsPerRound, twoLevel: S.twoLevel, comboEnabled: S.comboEnabled, comboMax: S.comboMax, showNear: S.showNear, finalBonus: S.finalBonus, guessCooldown: S.guessCooldown });
+    fillRules({ difficulty: S.difficulty, groupsPerRound: S.groupsPerRound, twoLevel: S.twoLevel, comboEnabled: S.comboEnabled, comboMax: S.comboMax, showNear: S.showNear, finalBonus: S.finalBonus, guessCooldown: S.guessCooldown });
     $('toastDurationInput').value = timingPrefs.toastSeconds; $('roundWindowDurationInput').value = timingPrefs.roundWindowSeconds; $('allTimeWindowDurationInput').value = timingPrefs.allTimeWindowSeconds;
   }
   function pushSettings() {
@@ -1158,7 +1165,7 @@
   socket.on('leaderboard', (d) => { lb = d; renderLists(); });
   socket.on('state', (s) => {
     const first = !S; S = s;
-    renderBoard(); renderStatus(); renderPacks(); syncControls(); showPanelsOnce(); onTikTokState();
+    renderBoard(); renderStatus(); renderPacks(); syncControls(); showPanelsOnce(); onTikTokState(); renderLegend();
     $('playerGuessBar').hidden = s.mode !== 'offline';
     $('rawEventCount').textContent = s.rawEventCount;
     const ev = s.lastEvent; $('lastReceived').textContent = ev && ev.text ? ev.user + ': "' + ev.text + '" \u2192 ' + (ev.read ? 'read as ' + ev.read + ' (' + ev.kind + ')' : ev.kind) : '(none yet)';
@@ -1181,6 +1188,14 @@
       const body = $('flBody' + k); if (body) body.textContent = custom || LEGEND_DEFAULTS[k];
       const it = sw.parentNode; if (it) it.title = on ? '' : 'Same colour as the other tiles (chosen in Settings)';
     });
+    // The legend only explains colours that can really appear: Easy has no fused tiles, Moderate only has "fused once".
+    const top = S ? (S.maxLevels || 3) : 3, lg = $('fusedLegend');
+    if (lg) {
+      const i1 = lg.querySelector('[data-level="1"]'), i2 = lg.querySelector('[data-level="2"]');
+      if (i1) i1.hidden = top < 2; if (i2) i2.hidden = top < 3;
+      lg.hidden = top < 2;
+      lg.style.gridTemplateColumns = top >= 3 ? '' : '1fr';
+    }
     if (typeof queueFit === 'function' && S) queueFit();
   }
 

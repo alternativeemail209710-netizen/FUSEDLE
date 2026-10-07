@@ -16,7 +16,11 @@
  *
  * HOW TO WRITE A GOOD GROUP: every fusion is a plain "is a kind of / is part of" link. All 4 pieces must clearly belong to the
  * new tile's name, using everyday words anyone knows (no obscure terms), and no piece may also fit another group in the same pack.
- * There are NO difficulty levels. Every round is one fixed build: 8 groups (BOARD near the bottom of this file).
+ * DIFFICULTY (chosen by the host in Settings > Game rules), always 8 groups per round:
+ *   Level 1 Easy     = 8 groups, no fusion level (4 words each, one fusion)         32 tiles
+ *   Level 2 Moderate = 8 groups, 1 fusion level (a fused tile, then the group)    56 tiles
+ *   Level 3 Hard     = 4 groups with 1 + 4 groups with 2 fusion levels (original)  68 tiles (BOARD near the bottom of this file)
+ * Easy and Moderate pieces are cut out of the groups written below, so nothing extra has to be written.
  * Words are separated by commas inside one string, so a word may contain spaces ("Ice Cream").
  * Keep every word and every group name UNIQUE across this whole file (the start-up check tells you if not).
  */
@@ -228,10 +232,11 @@ const shuffled = (arr) => {
 // The piece pool per pack
 //   d3 = the 3-level groups (10 tiles each)
 //   d2 = the 2-level groups (7 tiles each): the ones written with D(...) plus the middle part of every 3-level group
+//   d1 = the 1-step groups (4 tiles each): the innermost group of every 2-level and 3-level group
 // ---------------------------------------------------------------------------
 const POOL = {};
 PACKS.forEach((p) => {
-  const pool = { d2: [], d3: [] };
+  const pool = { d1: [], d2: [], d3: [] };
   const seen = new Set();
   const add = (node, bucket) => {
     const m = measure(node);
@@ -240,8 +245,10 @@ PACKS.forEach((p) => {
     seen.add(sig);
     pool[bucket].push(Object.assign({ pack: p.title, root: node }, m));
   };
-  p.three.forEach((t) => { add(t, 'd3'); add(t.kids.find((k) => typeof k !== 'string'), 'd2'); });
-  p.two.forEach((t) => add(t, 'd2'));
+  // d1 = the innermost 4-word group of every tree (no fused tiles at all): used by Level 1 (Easy)
+  const innermost = (node) => { const k = node.kids.find((x) => typeof x !== 'string'); return k ? innermost(k) : node; };
+  p.three.forEach((t) => { add(t, 'd3'); add(t.kids.find((k) => typeof k !== 'string'), 'd2'); add(innermost(t), 'd1'); });
+  p.two.forEach((t) => { add(t, 'd2'); add(innermost(t), 'd1'); });
   POOL[p.title] = pool;
 });
 
@@ -253,6 +260,22 @@ PACKS.forEach((p) => {
 const GROUPS_PER_BOARD = 8;
 const BOARD = { two: 4, three: 4 };
 BOARD.tiles = BOARD.two * 7 + BOARD.three * 10;   // 68
+
+// The three difficulty levels (every one has 8 groups unless the host lowers "Groups per round").
+const LEVELS = {
+  1: { name: 'Easy', label: 'Level 1 (Easy)', maxFusionLevel: 1 },
+  2: { name: 'Moderate', label: 'Level 2 (Moderate)', maxFusionLevel: 2 },
+  3: { name: 'Hard', label: 'Level 3 (Hard)', maxFusionLevel: 3 },
+};
+// How many groups of each depth a round has. `twoHard` only matters on Level 3 (how many of the groups are 2-level).
+function mixFor(level, groups, twoHard) {
+  groups = Math.min(GROUPS_PER_BOARD, Math.max(1, Math.round(groups) || GROUPS_PER_BOARD));
+  if (level === 1) return { one: groups, two: 0, three: 0 };
+  if (level === 2) return { one: 0, two: groups, three: 0 };
+  const two = Math.min(groups, Math.max(0, Math.round(twoHard) || 0));
+  return { one: 0, two, three: groups - two };
+}
+const tilesOfMix = (m) => m.one * 4 + m.two * 7 + m.three * 10;
 
 // Pick `count` pieces of one depth. No word or group name may repeat anywhere on the board.
 function pickPieces(packs, bucket, count, used, picked, recent, avoidRecent) {
@@ -272,13 +295,14 @@ function pickPieces(packs, bucket, count, used, picked, recent, avoidRecent) {
 
 // Returns { title, roots:[8 trees] }
 const boardSig = (roots) => roots.map((r) => r.name).sort().join('|');
-// `mix` (optional) = { two, three }: how many 2-level and 3-level groups this round has. Default = BOARD.
+// `mix` (optional) = { one, two, three }: how many 1-step, 2-level and 3-level groups this round has. Default = BOARD (Hard).
 // The host can change it in Settings > Game rules; every combination from 1 to 8 groups is allowed.
 function compose(pack, recent, seen, mix) {
   recent = recent || new Set();
   seen = seen || new Set();
   const nThree = mix && Number.isInteger(mix.three) && mix.three >= 0 ? mix.three : BOARD.three;
   const nTwo = mix && Number.isInteger(mix.two) && mix.two >= 0 ? mix.two : BOARD.two;
+  const nOne = mix && Number.isInteger(mix.one) && mix.one >= 0 ? mix.one : 0;
   const attempt = (packs, avoidRecent) => {
     for (let i = 0; i < 60; i++) {
       const used = new Set(), picked = new Set();
@@ -286,7 +310,9 @@ function compose(pack, recent, seen, mix) {
       if (!threes) continue;
       const twos = pickPieces(packs, 'd2', nTwo, used, picked, recent, avoidRecent);
       if (!twos) continue;
-      const picks = threes.concat(twos);
+      const ones = pickPieces(packs, 'd1', nOne, used, picked, recent, avoidRecent);
+      if (!ones) continue;
+      const picks = threes.concat(twos, ones);
       if (seen.has(boardSig(picks.map((p) => p.root)))) continue;   // this exact board was already played
       return picks;
     }
@@ -327,9 +353,12 @@ function validate() {
     ['mixed'].concat(PACKS.map((p) => p.title)).forEach((pk) => {
       for (let i = 0; i < 5; i++) {
         try {
-          const b = compose(pk, new Set());
-          const tiles = b.roots.reduce((n, r) => n + measure(r).leaves, 0);
-          if (b.roots.length !== GROUPS_PER_BOARD || tiles !== BOARD.tiles) throw new Error('wrong group or tile count');
+          [1, 2, 3].forEach((lv) => {
+            const mix = lv === 3 ? { one: 0, two: BOARD.two, three: BOARD.three } : mixFor(lv, GROUPS_PER_BOARD, 0);
+            const b = compose(pk, new Set(), null, mix);
+            const tiles = b.roots.reduce((n, r) => n + measure(r).leaves, 0);
+            if (b.roots.length !== GROUPS_PER_BOARD || tiles !== tilesOfMix(mix)) throw new Error('wrong group or tile count on level ' + lv);
+          });
         } catch (e) { problems.push(pk + ': ' + e.message); break; }
       }
     });
@@ -337,4 +366,4 @@ function validate() {
   return problems;
 }
 
-module.exports = { PACKS, POOL, measure, validate, compose, boardSig, keysOf, BOARD, GROUPS_PER_BOARD };
+module.exports = { PACKS, POOL, measure, validate, compose, boardSig, keysOf, BOARD, GROUPS_PER_BOARD, LEVELS, mixFor, tilesOfMix };
