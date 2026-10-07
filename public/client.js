@@ -217,12 +217,14 @@
     tsize: 100, font: 'system', upper: false, corner: 'soft',
     numSize: 100, numFont: 'clear', numShape: 'circle', numBold: true, numRing: true, numColor: '', numBg: '',   // tile number: size %, font, shape, digits colour ('' = automatic), background colour ('' = default)
     legendShow: true, legend1: '', legend2: '',                                                              // the 2 fused-colour legends
-    chatShow: true, chatHeight: 's', chatSize: 100, chatFont: 'system', chatColor: '', chatBg: '', chatAvatar: true, chatGuesses: true, chatInput: true, chatName: '',   // live chat box
+    chatShow: true, chatLines: 4, chatKeep: 40, chatSize: 100, chatFont: 'system', chatColor: '', chatBg: '', chatAvatar: true, chatGuesses: true, chatInput: true, chatName: '',   // live chat box
     cardWords: true, cardPlayer: true, cardAvatar: true,
     showChatFmt: true, showCounter: true, showTimer: true, showScores: true, sbRows: 5, showToasts: true, showStreak: true, anim: true,
     sound: false, volume: 60,
     title: '', hintText: '', accent: '', selColor: '', wake: false, blocked: '',   // host branding, colours, screen-awake, hidden viewer names
   };
+  // Colour-emoji and symbol fonts, so every emoji / emoticon / symbol a viewer types has a font to draw it with.
+  const EMOJI_FONTS = '"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji","Noto Sans Symbols","Noto Sans Symbols 2","Noto Sans CJK SC","Noto Sans Arabic",sans-serif';
   const FONT_STACKS = {
     system: 'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif',
     clear: 'Verdana,"DejaVu Sans",Tahoma,"Segoe UI",system-ui,sans-serif',
@@ -284,6 +286,7 @@
   const clampNum = (v, a, b) => Math.min(b, Math.max(a, v));
   function cleanDisplay(src) {
     const o = Object.assign({}, DISPLAY_DEFAULTS); src = src || {};
+    if (src.chatLines === undefined && src.chatHeight) src = Object.assign({}, src, { chatLines: { s: 3, m: 5, l: 8 }[src.chatHeight] || 4 });   // older saved setting (Small/Medium/Large)
     Object.keys(DISPLAY_DEFAULTS).forEach((k) => {
       const dv = DISPLAY_DEFAULTS[k], v = src[k];
       if (typeof dv === 'boolean') { if (typeof v === 'boolean') o[k] = v; }
@@ -295,7 +298,7 @@
     if (['square', 'soft', 'round'].indexOf(o.corner) < 0) o.corner = 'soft';
     o.numSize = clampNum(o.numSize, 70, 150); o.chatSize = clampNum(o.chatSize, 80, 150);
     if (['circle', 'rounded', 'square', 'none'].indexOf(o.numShape) < 0) o.numShape = 'circle';
-    if (['s', 'm', 'l'].indexOf(o.chatHeight) < 0) o.chatHeight = 'm';
+    o.chatLines = Math.round(clampNum(o.chatLines, 1, 12)); o.chatKeep = Math.round(clampNum(o.chatKeep, 5, 80));
     o.legend1 = String(o.legend1 || '').slice(0, 80); o.legend2 = String(o.legend2 || '').slice(0, 80); o.chatName = String(o.chatName || '').slice(0, 24);
     ['numColor', 'numBg', 'chatColor', 'chatBg'].forEach((k) => { if (!hexOk(o[k])) o[k] = ''; });
     o.title = String(o.title || '').slice(0, 24); o.hintText = String(o.hintText || '').slice(0, 90);
@@ -359,8 +362,8 @@
     // legends + chat box
     tg('chat-custom', !!(d.chatBg || d.chatColor)); tg('hide-legend', !d.legendShow); tg('hide-chat', !d.chatShow); tg('chat-noinput', !d.chatInput); tg('chat-noavatar', !d.chatAvatar);
     st.setProperty('--chat-fs', (13 * d.chatSize / 100).toFixed(2) + 'px');
-    st.setProperty('--chat-font', FONT_STACKS[d.chatFont] || FONT_STACKS.system);
-    root.setAttribute('data-chat-h', d.chatHeight);
+    st.setProperty('--chat-font', (FONT_STACKS[d.chatFont] || FONT_STACKS.system) + ',' + EMOJI_FONTS);
+    st.setProperty('--chat-lines', String(d.chatLines));
     if (d.chatColor) st.setProperty('--chat-fg', d.chatColor); else st.removeProperty('--chat-fg');
     if (d.chatBg) {
       st.setProperty('--chat-bg', d.chatBg);
@@ -395,6 +398,7 @@
     const tv = $('tsizeVal'); if (tv) tv.textContent = d.tsize + '%';
     const nv = $('numSizeVal'); if (nv) nv.textContent = d.numSize + '%';
     const cv = $('chatSizeVal'); if (cv) cv.textContent = d.chatSize + '%';
+    const clv = $('chatLinesVal'); if (clv) clv.textContent = String(d.chatLines);
     ['numColor', 'numBg', 'chatColor', 'chatBg'].forEach((k) => document.querySelectorAll('#' + k + 'Swatches .fc-sw').forEach((b) => { const on = (b.dataset.c || '').toLowerCase() === d[k].toLowerCase(); b.classList.toggle('active', on); b.setAttribute('aria-checked', on ? 'true' : 'false'); }));
     if (typeof applyChatLayout === 'function') applyChatLayout();
     const vv = $('volumeVal'); if (vv) vv.textContent = d.volume + '%';
@@ -439,7 +443,7 @@
     mkAll('numColorSwatches', NUM_FG_PALETTE, 'numColor'); mkAll('numBgSwatches', NUM_BG_PALETTE, 'numBg');
     mkAll('chatColorSwatches', NUM_FG_PALETTE, 'chatColor'); mkAll('chatBgSwatches', CHAT_BG_PALETTE, 'chatBg');
     const PRESETS = {
-      standard: { tsize: 100, font: 'system', upper: false, corner: 'soft', numSize: 100, numFont: 'clear', numShape: 'circle', numBold: true, numRing: true, numColor: '', numBg: '', legendShow: true, chatShow: true, chatHeight: 's', sub1: false, sub2: false, showChatFmt: true, showCounter: true, showTimer: true, showScores: true, sbRows: 5, showToasts: true, showStreak: true, anim: true, cardWords: true, cardPlayer: true, cardAvatar: true },
+      standard: { tsize: 100, font: 'system', upper: false, corner: 'soft', numSize: 100, numFont: 'clear', numShape: 'circle', numBold: true, numRing: true, numColor: '', numBg: '', legendShow: true, chatShow: true, chatLines: 4, sub1: false, sub2: false, showChatFmt: true, showCounter: true, showTimer: true, showScores: true, sbRows: 5, showToasts: true, showStreak: true, anim: true, cardWords: true, cardPlayer: true, cardAvatar: true },
       clean: { showChatFmt: false, showCounter: false, showTimer: true, showScores: true, sbRows: 3, showToasts: true, showStreak: false, cardWords: false },
       bold: { tsize: 115, font: 'rounded', upper: true, corner: 'round', numSize: 130, numBold: true, sbRows: 3 },
       detail: { tsize: 90, sub1: true, sub2: true, cardWords: true, cardPlayer: true, sbRows: 5 }
@@ -1185,12 +1189,33 @@
   let chatCollapsed = false, chatSig = '';
   try { chatCollapsed = localStorage.getItem('fusedle-chat-collapsed') === '1'; } catch (e) { /* ignore */ }
   const CHAT_TAGS = { correct: ['\u2705', 'fused'], near: ['\u{1F90F}', 'one away'], wrong: ['\u274C', 'wrong'], invalid: ['\u274C', 'not on board'], cooldown: ['\u23F3', 'wait'], busy: ['\u23F8', 'round over'] };
+  // Writes a comment into the page as plain text (never as HTML), so any letters, symbols, emojis, emoticons and
+  // other languages show exactly as typed. TikTok emotes (small pictures) are placed where the viewer put them.
+  function fillChatText(el, text, emotes) {
+    text = String(text == null ? '' : text);
+    const list = Array.isArray(emotes) ? emotes.filter((e) => e && typeof e.url === 'string' && /^https?:\/\//i.test(e.url)) : [];
+    if (!list.length) { el.textContent = text; return; }
+    const chars = Array.from(text);
+    const at = {};
+    list.forEach((e) => { const p = Math.max(0, Math.min(chars.length, Number.isFinite(Number(e.pos)) ? Math.floor(Number(e.pos)) : chars.length)); (at[p] = at[p] || []).push(e.url); });
+    const addImgs = (p) => (at[p] || []).forEach((u) => {
+      const im = document.createElement('img'); im.className = 'chat-emote'; im.src = u; im.alt = ''; im.loading = 'lazy'; im.referrerPolicy = 'no-referrer';
+      im.addEventListener('error', () => { im.remove(); });
+      el.appendChild(im);
+    });
+    let buf = '';
+    for (let i = 0; i <= chars.length; i++) {
+      if (at[i]) { if (buf) { el.appendChild(document.createTextNode(buf)); buf = ''; } addImgs(i); }
+      if (i < chars.length) buf += chars[i];
+    }
+    if (buf) el.appendChild(document.createTextNode(buf));
+  }
   function chatLi(m) {
     const li = document.createElement('li'); li.className = 'chat-msg' + (m.guess ? ' is-guess' : '') + (m.kind ? ' k-' + m.kind : '');
     li.appendChild(avatarImg(m.avatar, m.uniqueId, dn(m.name), 'sm'));
     const body = document.createElement('span'); body.className = 'chat-body-text';
     const nm = document.createElement('b'); nm.className = 'chat-name'; nm.textContent = dn(m.name); body.appendChild(nm);
-    const tx = document.createElement('span'); tx.className = 'chat-text'; tx.textContent = m.text; body.appendChild(tx);
+    const tx = document.createElement('span'); tx.className = 'chat-text'; fillChatText(tx, m.text, m.emotes); body.appendChild(tx);
     const tag = m.guess && CHAT_TAGS[m.kind];
     if (tag) { const t = document.createElement('span'); t.className = 'chat-tag'; t.textContent = tag[0] + ' ' + tag[1]; body.appendChild(t); }
     li.appendChild(body);
@@ -1201,17 +1226,17 @@
   function renderChatAll() {
     const log = $('chatLog'); if (!log) return;
     log.innerHTML = '';
-    chatMsgs.filter(chatVisible).forEach((m) => log.appendChild(chatLi(m)));
+    chatMsgs.filter(chatVisible).slice(-displayPrefs.chatKeep).forEach((m) => log.appendChild(chatLi(m)));
     log.scrollTop = log.scrollHeight;
     const c = $('chatCount'); if (c) c.textContent = log.children.length ? String(log.children.length) : '';
-    chatSig = displayPrefs.chatGuesses + '|' + displayPrefs.blocked;
+    chatSig = displayPrefs.chatGuesses + '|' + displayPrefs.blocked + '|' + displayPrefs.chatKeep;
   }
   function addChat(m) {
-    chatMsgs.push(m); while (chatMsgs.length > 80) chatMsgs.shift();
+    chatMsgs.push(m); while (chatMsgs.length > 120) chatMsgs.shift();
     const log = $('chatLog'); if (!log || !chatVisible(m)) return;
     const stick = chatStuck(log);
     log.appendChild(chatLi(m));
-    while (log.children.length > 60) log.removeChild(log.firstChild);
+    while (log.children.length > displayPrefs.chatKeep) log.removeChild(log.firstChild);
     if (stick) log.scrollTop = log.scrollHeight;
     const c = $('chatCount'); if (c) c.textContent = String(log.children.length);
   }
@@ -1220,7 +1245,7 @@
     box.classList.toggle('collapsed', chatCollapsed);
     const t = $('chatToggle'); if (t) { t.innerHTML = chatCollapsed ? '&#9650; Show' : '&#9660; Hide'; t.setAttribute('aria-expanded', chatCollapsed ? 'false' : 'true'); t.setAttribute('aria-label', chatCollapsed ? 'Show chat' : 'Hide chat'); }
     const ph = $('chatInput'); if (ph && displayPrefs.chatName) ph.placeholder = 'Message as ' + displayPrefs.chatName; else if (ph) ph.placeholder = 'Message or guess';
-    if (chatSig && chatSig !== displayPrefs.chatGuesses + '|' + displayPrefs.blocked) renderChatAll();
+    if (chatSig && chatSig !== displayPrefs.chatGuesses + '|' + displayPrefs.blocked + '|' + displayPrefs.chatKeep) renderChatAll();
     if (typeof queueFit === 'function' && S) queueFit();
   }
   function sendChat() {
@@ -1228,7 +1253,7 @@
     socket.emit('chat:send', { user: displayPrefs.chatName.trim() || 'Host', text: v }); inp.value = '';
   }
   $('chatSendBtn').addEventListener('click', sendChat);
-  $('chatInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendChat(); });
+  $('chatInput').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) sendChat(); });   // not while an emoji / Chinese / Japanese / Korean suggestion is being picked
   $('chatToggle').addEventListener('click', () => { chatCollapsed = !chatCollapsed; try { localStorage.setItem('fusedle-chat-collapsed', chatCollapsed ? '1' : '0'); } catch (e) { /* ignore */ } applyChatLayout(); });
   $('chatClearBtn').addEventListener('click', () => socket.emit('host:clearChat'));
   socket.on('chat', addChat);

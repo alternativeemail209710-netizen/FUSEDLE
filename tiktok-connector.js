@@ -204,6 +204,33 @@ function createTikTokConnector(onChat, onStatus, onRawEvent) {
     return null;
   }
 
+  // TikTok emotes (the small pictures viewers can put in a comment) arrive as a list with a picture link and the
+  // position in the comment where each one belongs. Several library versions name the fields differently, so a
+  // few shapes are tried. Anything that is not a normal web link is ignored.
+  function extractEmotes(data) {
+    var out = [];
+    var list = data && (data.emotes || data.emoteList || data.emotesList);
+    if (!Array.isArray(list)) return out;
+    list.forEach(function (e) {
+      if (!e || out.length >= 12) return;
+      var url = null;
+      function take(u) { if (!url && typeof u === "string" && /^https?:\/\//i.test(u)) url = u; }
+      take(e.emoteImageUrl); take(e.imageUrl); take(e.url);
+      var imgs = [e.image, e.emote && e.emote.image];
+      imgs.forEach(function (im) {
+        if (!im) return;
+        take(im.imageUrl); take(im.url);
+        var ul = im.urlList || im.urlListList || im.urls;
+        if (Array.isArray(ul)) ul.forEach(take);
+      });
+      if (!url) return;
+      var pos = e.placeInComment;
+      if (typeof pos !== "number") pos = Number(pos);
+      out.push({ pos: Number.isFinite(pos) ? pos : 0, url: url });
+    });
+    return out;
+  }
+
   function extractChatFields(data) {
     if (!data) return null;
     var text = coerceCommentText(data.comment) ||
@@ -280,7 +307,7 @@ function createTikTokConnector(onChat, onStatus, onRawEvent) {
     });
     var avatarUrl = candidates.length ? candidates[0] : null;
 
-    return { text: text === null ? null : String(text), uniqueId: String(uniqueId), nickname: String(nickname), avatarUrl: avatarUrl ? String(avatarUrl) : null, avatarUrls: candidates };
+    return { text: text === null ? null : String(text), emotes: extractEmotes(data), uniqueId: String(uniqueId), nickname: String(nickname), avatarUrl: avatarUrl ? String(avatarUrl) : null, avatarUrls: candidates };
   }
 
   // ---------------------------------------------------------------------

@@ -110,6 +110,13 @@ the leaderboards stay on the screen. If the host used Reveal, the card says "Hos
 > **Before you go live:** in the TikTok app open LIVE settings, then **Comments > Filtered**, and turn **OFF**
 > the **Spam filter** and **Potentially unkind words**. TikTok can quietly hide short number comments.
 
+## What is new in 8.4
+
+- **Legends** now sit in their own row directly under the floating guesses, above the game, so they never overlap anything.
+- **Live chat** now sits under the leaderboards.
+- **Settings > Live chat box**: *Chat lines visible* (1 to 12) sets how many lines the chat shows, and *Messages kept in the chat* (last 10 to 80) sets how many recent messages stay in it.
+- **Any text** shows in the chat: letters in any language, symbols, emojis, emoticons such as :) and the shrug face, and TikTok emotes (small pictures). Long emojis are never cut in half, and comments that contain only emotes now show too.
+
 ## First time: put it online
 1. Create a new empty repository on GitHub.
 2. Upload everything from this folder to it. Keep the `public` folder as it is.

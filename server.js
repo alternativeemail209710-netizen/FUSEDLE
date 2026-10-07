@@ -301,6 +301,21 @@ function finishGame() {
 // ---------------------------------------------------------------------------
 // Guessing
 // ---------------------------------------------------------------------------
+// Text helpers that are safe for emojis and other characters made of two code units: they never cut one in half,
+// and they swap a stray half-character for a replacement mark so the screen never shows broken text.
+function wellFormed(str) {
+  return String(str == null ? '' : str).replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '\uFFFD');
+}
+function cpSlice(str, max) {
+  const chars = Array.from(wellFormed(str));
+  return chars.length > max ? chars.slice(0, max).join('') : chars.join('');
+}
+function cleanEmotes(list) {
+  if (!Array.isArray(list)) return [];
+  return list.filter((e) => e && typeof e.url === 'string' && /^https?:\/\//i.test(e.url))
+    .slice(0, 12).map((e) => ({ pos: Number.isFinite(Number(e.pos)) ? Math.max(0, Math.floor(Number(e.pos))) : 0, url: String(e.url).slice(0, 500) }));
+}
+
 function normalizeText(text) {
   return String(text == null ? '' : text).replace(/[\uFF10-\uFF19]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0));
 }
@@ -344,16 +359,18 @@ function attemptFuse(nums, player) {
 // ---------------------------------------------------------------------------
 // Live chat box: every comment (TikTok, Test bots, Host console, chat box) is kept in a short log and shown under the tiles.
 // ---------------------------------------------------------------------------
-const CHAT_MAX = 80;
+const CHAT_MAX = 120;
 const chatLog = [];
 let chatSeq = 0;
-function pushChat(player, text, kind, nums) {
+function pushChat(player, text, kind, nums, emotes) {
   const entry = {
-    id: ++chatSeq, uniqueId: player.uniqueId, name: String(player.name || 'Viewer').slice(0, 30), avatar: player.avatar || null,
-    text: String(text == null ? '' : text).replace(/[\u0000-\u001f\u007f]+/g, ' ').trim().slice(0, 140),
+    id: ++chatSeq, uniqueId: player.uniqueId, name: cpSlice(player.name || 'Viewer', 30), avatar: player.avatar || null,
+    text: cpSlice(String(text == null ? '' : text).replace(/[\u0000-\u001f\u007f]+/g, ' '), 300).trim(),
     kind: kind || 'chat', guess: !!(nums && nums.length), ts: Date.now(),
   };
-  if (!entry.text) return;
+  const em = cleanEmotes(emotes);
+  if (em.length) entry.emotes = em;
+  if (!entry.text && !em.length) return;
   chatLog.push(entry);
   while (chatLog.length > CHAT_MAX) chatLog.shift();
   io.emit('chat', entry);
@@ -370,8 +387,8 @@ function handleIncomingComment(player, text, opts) {
     if (nums && state.guessCooldown > 0 && player.uniqueId !== HOST_PLAYER.uniqueId) {
       const now = Date.now(), last = lastGuessAt[player.uniqueId] || 0;
       if (now - last < state.guessCooldown * 1000) {
-        state.lastEvent = { user: player.name, text: text.slice(0, 80), read: nums.join(' '), kind: 'cooldown' };
-        pushChat(player, text, 'cooldown', nums);
+        state.lastEvent = { user: player.name, text: cpSlice(text, 80), read: nums.join(' '), kind: 'cooldown' };
+        pushChat(player, text, 'cooldown', nums, opts && opts.emotes);
         broadcast();
         return;
       }
@@ -379,10 +396,10 @@ function handleIncomingComment(player, text, opts) {
       if (Object.keys(lastGuessAt).length > 5000) Object.keys(lastGuessAt).forEach((k) => { if (now - lastGuessAt[k] > 60000) delete lastGuessAt[k]; });
     }
     const result = nums ? attemptFuse(nums, player) : { kind: 'format' };
-    state.lastEvent = { user: player.name, text: text.slice(0, 80), read: nums ? nums.join(' ') : null, kind: result.kind };
-    pushChat(player, text, result.kind, nums);
+    state.lastEvent = { user: player.name, text: cpSlice(text, 80), read: nums ? nums.join(' ') : null, kind: result.kind };
+    pushChat(player, text, result.kind, nums, opts && opts.emotes);
     io.emit('guessResult', {
-      uniqueId: player.uniqueId, name: player.name, avatar: player.avatar, text: text.slice(0, 60),
+      uniqueId: player.uniqueId, name: player.name, avatar: player.avatar, text: cpSlice(text, 60),
       kind: result.kind, nums: nums && nums.length === 4 ? nums : null,
       streak: result.streak || 0, gained: result.gained || 0, group: result.group || null,
       newN: result.newN || null, height: result.height || 0, final: !!result.final,
@@ -500,7 +517,7 @@ const tiktokConnector = createTikTokConnector(
   function onChat(fields) {
     if (state.mode !== 'live') { state.rawEventCount += 1; return; } // Test/Offline stay private
     const photo = registerAvatar(fields.uniqueId, fields.avatarUrls && fields.avatarUrls.length ? fields.avatarUrls : (fields.avatarUrl ? [fields.avatarUrl] : []));
-    handleIncomingComment({ uniqueId: fields.uniqueId, name: fields.nickname, avatar: photo }, fields.text);
+    handleIncomingComment({ uniqueId: fields.uniqueId, name: fields.nickname, avatar: photo }, fields.text, { emotes: fields.emotes });
   },
   setTikTokStatus,
   function onRawEvent() {}
@@ -531,9 +548,9 @@ io.on('connection', (socket) => {
     const now = Date.now();
     if (now - lastChatAt < 600) return;            // simple flood guard: one message per 0.6 s per screen
     lastChatAt = now;
-    const text = String(p.text == null ? '' : p.text).trim().slice(0, 140);
+    const text = cpSlice(p.text, 300).trim();
     if (!text) return;
-    const name = String(p.user || 'Host').replace(/[\u0000-\u001f\u007f]+/g, ' ').trim().slice(0, 24) || 'Host';
+    const name = cpSlice(String(p.user || 'Host').replace(/[\u0000-\u001f\u007f]+/g, ' '), 24).trim() || 'Host';
     const player = name === 'Host' ? { ...HOST_PLAYER } : { uniqueId: 'named-' + name.toLowerCase(), name, avatar: null };
     handleIncomingComment(player, text);
   }));
